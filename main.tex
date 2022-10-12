@@ -1,0 +1,64 @@
+\documentclass[a4paper,11pt,twoside,openany,final,openbib]{memoir} %showtrims
+
+\usepackage{setup}
+\input{chapters/firstpage.tex}
+% DOC at http://tug.ctan.org/macros/latex/contrib/memoir/memman.pdf
+
+
+\begin{document}
+\fontsize{10.5pt}{13.5pt}\selectfont %  select font size
+
+
+
+% title
+\maketitle
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% FRONTMATTER
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+\frontmatter
+
+% \clearpage
+% \input{ubx/abstracts}
+\clearpage
+\tableofcontents*
+
+
+\clearpage
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% MAINMATTER
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+\mainmatter
+\subfile{chapters/introduction}
+
+\subfile{chapters/background}
+
+\subfile{chapters/conclusion}
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% APPENDICES
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+\appendixpage
+\appendix
+\subfile{Appendices/appendix1}
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% BACKMATTER
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+\backmatter
+
+% Bibliography
+\clearpage
+\bibliography{biblio}
+\bibliographystyle{bibstyle}
+
+% List of figures and tables
+\clearpage
+\listoffigures*
+\clearpage
+\listoftables*
+
+\end{document}

@@ -1,0 +1,371 @@
+\usepackage[utf8]{inputenc} % If utf8 encoding
+\usepackage[T1]{fontenc}
+
+\usepackage[english]{babel} % English please
+\usepackage{natbib}
+\usepackage{subfiles}
+
+\usepackage{amsmath,amssymb,mathtools} % Math
+\usepackage{graphicx} % Include figures
+
+\usepackage{xr-hyper}
+\PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}   % Internal hyperlinks
+\hypersetup{
+pdfborder={0 0 0},      % No borders around internal hyperlinks
+    pdfauthor={Cédric Colas}, % author,
+    colorlinks = True,
+    citecolor=mybluetwo,  % color of citations
+    linkcolor=mybluetwo,  % color of href links
+    urlcolor=black,       % color of url links
+    allcolors=mybluetwo
+}
+
+% TRIM MARKS HERE
+
+% \settrims{0.5\trimtop}{\trimedge}
+% \trimLmarks
+% Set margins
+\setlrmarginsandblock{0.15\paperwidth}{*}{1} % Left and right margin
+\setulmarginsandblock{0.15\paperwidth}{*}{.9}  % Upper and lower margin
+
+% header and footer
+\setmarginnotes{17pt}{51pt}{\onelineskip}
+\setheadfoot{2\onelineskip}{2cm}
+\setheaderspaces{*}{2\onelineskip}{*}
+
+% adjust interline spacing
+\renewcommand{\baselinestretch}{1.08}
+\checkandfixthelayout
+\sloppybottom
+
+%%% SECTIONAL DIVISIONS
+%%%------------------------------------------------------------------------------
+\maxsecnumdepth{subsection} % Subsections (and higher) are numbered
+\setsecnumdepth{subsection} % Lower than subsec are not in ToC
+
+% Define Chapter page style
+\makeatletter %
+\makechapterstyle{standard}{
+  \setlength{\beforechapskip}{0\baselineskip}
+  \setlength{\midchapskip}{1\baselineskip}
+  \setlength{\afterchapskip}{8\baselineskip}
+  \renewcommand{\chapterheadstart}{\vspace*{\beforechapskip}}
+  \renewcommand{\chapnamefont}{\centering\normalfont\huge}
+  \renewcommand{\printchaptername}{\chapnamefont \@chapapp}
+  \renewcommand{\chapternamenum}{\space}
+  \renewcommand{\chapnumfont}{\normalfont\Large}
+  \renewcommand{\printchapternum}{\chapnumfont \thechapter}
+  \renewcommand{\afterchapternum}{\par\nobreak\vskip \midchapskip}
+  \renewcommand{\printchapternonum}{\vspace*{\midchapskip}\vspace*{5mm}}
+  \renewcommand{\chaptitlefont}{\color{mybluethree}\centering\bfseries\huge}
+  \renewcommand{\printchaptertitle}[1]{\chaptitlefont ##1}
+  \renewcommand{\afterchaptertitle}{\par\nobreak\vskip \afterchapskip}
+}
+\makeatother
+\aliaspagestyle{chapter}{empty}
+
+\chapterstyle{standard}
+% modify skip before and after section titles
+\setbeforesecskip{0.8cm}%
+\setaftersecskip{0.5cm}%
+\setsecheadstyle{\color{mybluethree}\normalfont\Large\bfseries}
+% \setsubsecheadstyle{\normalfont\normalsize\bfseries}
+
+\setbeforesubsubsecskip{0.8cm}
+\setaftersubsubsecskip{0.5cm}%
+\setsubsecheadstyle{\color{mybluethree}\large\bfseries\raggedright}
+
+\setbeforesubsecskip{0.8cm}%
+\setaftersubsecskip{0.5cm}%
+\setsubsubsecheadstyle{\color{mybluethree}\shortcenter}
+
+\setparaheadstyle{\normalfont\normalsize\bfseries}
+\setparaindent{0pt}\setafterparaskip{0pt}
+
+%%% FLOATS AND CAPTIONS
+%%%------------------------------------------------------------------------------
+
+\makeatletter                  % You do not need to write [htpb] all the time
+\renewcommand\fps@figure{htbp} %
+\renewcommand\fps@table{htbp}  %
+\makeatother                   %
+
+% HEADER AND FOOTER MAGIC
+\nouppercaseheads
+\makepagestyle{mystyle}
+\makeevenhead{mystyle}{\small\llap{\thepage\hspace{\marginparsep}\small}\leftmark}{}{}
+\makeoddhead{mystyle}{}{}{\small\rightmark\rlap{\hspace{\marginparsep}\thepage}}
+\makepsmarks{mystyle}{%
+ \createmark{chapter}{both}{nonumber}{\@chapapp\ }{. \ }
+ \createmark{section}{right}{nonumber}{}{. \ } 
+}
+\makeheadrule{mystyle}{\textwidth}{\normalrulethickness}
+\pagestyle{mystyle}
+\setlength{\skip\footins}{1cm}
+
+
+% skip between paragraphs
+\setlength{\parskip}{0.5em}
+
+% heading style (used for subsubsec)
+\newcommand*{\shortcenter}[1]{
+\sethangfrom{\noindent ##1}
+% \normalfont\centering\parbox{4in}{\centering #1}\par}
+\normalfont\boldmath\bfseries\centering\parbox{4in}{\centering #1}\par}
+
+% my imports
+\usepackage{enumitem}
+\usepackage{caption} % to change the style of captions
+\DeclareCaptionStyle{mystyle}
+[justification=centering]
+{font=footnotesize,margin={2cm,2cm}}
+\captionsetup{style=mystyle,hypcap=false}
+\setlength{\textfloatsep}{1cm}  % change sepration between floats
+\setlength{\intextsep}{0.8cm} % change separation between float and text
+\usepackage{xspace}
+\usepackage{subfig}
+\usepackage[noend]{algpseudocode} 
+\usepackage{algorithm}
+\newfloat{architecture}{t}{lop}  % Create an architecture float
+\floatname{architecture}{Architecture}
+% nice tables
+\usepackage{booktabs}
+\renewcommand{\arraystretch}{1.2}  % increase space between rows
+\usepackage{array}
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}} % equally spaced columns
+\usepackage{multirow}
+
+% italic small caps with \textsl{\textsc{}}
+\usepackage{slantsc}% http://ctan.org/pkg/slantsc
+
+% \begin{tabular}{@{}lll@{}}  % Remove space to the vertical edges
+\newcommand{\centered}[1]{\begin{tabular}{l} #1 \end{tabular}}
+\usepackage{lscape}  % package to define a landscape page
+
+% colors
+\usepackage[dvipsnames]{xcolor}
+\definecolor{myred}{rgb}{0.8,0,0}
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{myblue}{rgb}{0,0,0.7}
+\definecolor{mybluetwo}{rgb}{0,0.25,0.55}
+\definecolor{mybluethree}{rgb}{0,0.2,0.45}
+
+% hack to change margin temporarily (used for the abstract page)
+\newenvironment{changemargin}[2]{%
+\begin{list}{}{%
+    \setlength{\topsep}{0pt}%
+    \setlength{\leftmargin}{#1}%
+    \setlength{\rightmargin}{#2}%
+    \setlength{\listparindent}{\parindent}%
+    \setlength{\itemindent}{\parindent}%
+    \setlength{\parsep}{\parskip}%
+    }%
+    \item[]}{
+\end{list}}
+
+% change quote margins
+\renewenvironment{quote}%
+  {\list{}{\leftmargin=2cm\rightmargin=2cm}\item[]}%
+  {\endlist}
+
+% maths
+\newcommand{\m}[1]{\mathcal{#1}}
+\usepackage{stmaryrd}
+\usepackage{bbold} % alternative mathbb symbols (i think they are cooler)
+
+% algorithm voodoo
+\newlength{\whilewidth}
+\settowidth{\whilewidth}{\algorithmicwhile\ }
+\algnewcommand{\parState}[1]{\State%
+  \parbox[t]{\dimexpr\linewidth-\algmargin}{\strut #1\strut}}
+ 
+% Define function to enable line comments for algorithms, starting with a little triangle
+\makeatletter
+\newlength{\trianglerightwidth}
+\settowidth{\trianglerightwidth}{$\triangleright$~}
+\algnewcommand{\LineComment}[1]{\Statex \hskip\ALG@thistlm $\triangleright$ #1}
+\algnewcommand{\LineCommentCont}[1]{\Statex \hskip\ALG@thistlm%
+  \parbox[t]{\dimexpr\linewidth-\ALG@thistlm}{\hangindent=\trianglerightwidth \hangafter=1 \strut$~~~\triangleright$ #1\strut}}
+\algnewcommand{\LineCommentConttwo}[1]{\Statex \hskip\ALG@thistlm%
+  \parbox[t]{\dimexpr\linewidth-\ALG@thistlm}{\hangindent=\trianglerightwidth \hangafter=1 \strut$~~~~~\nobreak\hspace{.16667em plus .08333em}~~\triangleright$ #1\strut}}
+\makeatother
+
+%%% NEW COMMANDS
+%%%------------------------------------------------------------------------------
+
+% to do
+% you can comment the renew commands to make them disappear
+\newcommand{\todo}[1]{}
+\renewcommand{\todo}[1]{\textcolor{myred}{\textbf{Todo:}\textit{#1}}}
+\newcommand{\tocite}[1]{}
+\renewcommand{\tocite}[1]{\textcolor{myred}{\textbf{Tocite:}\textit{#1}}}
+
+% shortcuts for algorithm names and maths stuff
+\newcommand{\bi}[1]{\textbf{\textit{#1}}}
+\newcommand{\bDelta}{\boldsymbol{\Delta}}
+\newcommand{\balpha}{\boldsymbol{\alpha}}
+\newcommand{\bbeta}{\boldsymbol{\beta}}
+\newcommand{\bgamma}{\boldsymbol{\gamma}}
+
+\newcommand{\NL}{\textsc{nl}\xspace}
+\newcommand{\MA}{\textsc{ma}\xspace}
+\newcommand{\mar}{\textsc{ma}$^\mathcal{R}$\xspace}
+\newcommand{\FA}{\textsc{fa}\xspace}
+\newcommand{\far}{\textsc{fa}$^\mathcal{R}$\xspace}
+\newcommand{\itwoc}{\textsc{i}\oldstylenums{2}\textsc{c}\xspace}
+\newcommand{\SR}{\overline{\mathtt{SR}}}
+\newcommand{\SRtwo}{\mathtt{SR}}
+\newcommand{\G}{\mathcal{G}}
+\newcommand{\train}{\text{train}}
+\newcommand{\test}{\text{test}}
+\newcommand{\CGH}{\textsc{cgh}\xspace}
+
+\newcommand{\SP}{\textsc{sp}\xspace}
+\newcommand{\ood}{\textsc{ood}\xspace}
+\newcommand{\adam}{\textsc{adam}\xspace}
+\newcommand{\relu}{\textsc{r}e\textsc{lu}\xspace}
+\newcommand{\sgd}{\textsc{sgd}\xspace}
+\newcommand{\rl}{\textsc{rl}\xspace}
+\newcommand{\ea}{\textsc{ea}\xspace}
+\newcommand{\eas}{\textsc{ea}s\xspace}
+\newcommand{\drl}{\textsc{drl}\xspace}
+\newcommand{\dnn}{\textsc{dnn}\xspace}
+\newcommand{\dnns}{\textsc{dnn}s\xspace}
+\newcommand{\hrl}{\textsc{hrl}\xspace}
+\newcommand{\gcrl}{\textsc{gc-rl}\xspace}
+\newcommand{\imgcrl}{\textsc{im-gc-rl}\xspace}
+\newcommand{\popimgep}{\textsc{pop-imgep}\xspace}
+\newcommand{\popimgeps}{\textsc{pop-imgep}s\xspace}
+\newcommand{\rlimgep}{\textsc{rl-imgep}\xspace}
+\newcommand{\rlimgeps}{\textsc{rl-imgep}s\xspace}
+\newcommand{\rlemgep}{\textsc{rl-emgep}\xspace}
+\newcommand{\rlemgeps}{\textsc{rl-emgep}s\xspace}
+\newcommand{\imgep}{\textsc{imgep}\xspace}
+\newcommand{\imgeps}{\textsc{imgep}s\xspace}
+\newcommand{\uvfa}{\textsc{uvfa}\xspace}
+\newcommand{\uvfas}{\textsc{uvfa}s\xspace}
+\newcommand{\horde}{\textsc{horde}\xspace}
+\newcommand{\imagine}{\textsc{imagine}\xspace}
+\newcommand{\geppg}{\textsc{gep-pg}\xspace}
+\newcommand{\gep}{\textsc{gep}\xspace}
+\newcommand{\geps}{\textsc{gep}s\xspace}
+\newcommand{\ddpg}{\textsc{ddpg}\xspace}
+\newcommand{\dqn}{\textsc{dqn}\xspace}
+\newcommand{\curious}{\textsc{curious}\xspace}
+\newcommand{\rnn}{\textsc{rnn}\xspace}
+\newcommand{\gnn}{\textsc{gnn}\xspace}
+\newcommand{\gan}{\textsc{gan}\xspace}
+\newcommand{\vae}{\textsc{vae}\xspace}
+\newcommand{\lp}{\textsc{lp}\xspace}
+\newcommand{\acl}{\textsc{acl}\xspace}
+\newcommand{\sr}{\textsc{sr}\xspace}
+\newcommand{\mdp}{\textsc{mdp}\xspace}
+\newcommand{\mdps}{\textsc{mdp}s\xspace}
+\newcommand{\ims}{\textsc{im}s\xspace}
+\newcommand{\im}{\textsc{im}\xspace}
+\newcommand{\cbims}{\textsc{cb-im}s\xspace}
+\newcommand{\kbims}{\textsc{kb-im}s\xspace}
+\newcommand{\cbim}{\textsc{cb-ims}\xspace}
+\newcommand{\kbim}{\textsc{kb-im}\xspace}
+\newcommand{\bcs}{\textsc{bc}s\xspace}
+\newcommand{\bc}{\textsc{bc}\xspace}
+\newcommand{\mega}{\textsc{me-ga}\xspace}
+\newcommand{\me}{\textsc{map-elites}\xspace}
+\newcommand{\qd}{\textsc{qd}\xspace}
+\newcommand{\tdthree}{\textsc{td}\oldstylenums{3}\xspace}
+\newcommand{\sac}{\textsc{sac}\xspace}
+\newcommand{\cmaes}{\textsc{cma-es}\xspace}
+\newcommand{\cmame}{\textsc{cma-me}\xspace}
+\newcommand{\nslc}{\textsc{ns-lc}\xspace}
+\newcommand{\mboa}{\textsc{m-boa}\xspace}
+\newcommand{\ga}{\textsc{ga}\xspace}
+\newcommand{\gas}{\textsc{ga}s\xspace}
+\newcommand{\es}{\textsc{es}\xspace}
+\newcommand{\nes}{\textsc{nes}\xspace}
+\newcommand{\meesexplore}{\textsc{me-es explore}\xspace}
+\newcommand{\meesexploit}{\textsc{me-es exploit}\xspace}
+\newcommand{\meesexex}{\textsc{me-es explore-exploit}\xspace}
+\newcommand{\mees}{\textsc{me-es}\xspace}
+\newcommand{\unicorn}{\textsc{unicorn}\xspace}
+\newcommand{\saggriac}{\textsc{sagg-riac}\xspace}
+\newcommand{\cnn}{\textsc{cnn}\xspace}
+\newcommand{\sacx}{\textsc{sac-x}\xspace}
+\newcommand{\uvfame}{\textsc{uvfa-me}\xspace}
+\newcommand{\uvfamelp}{\textsc{uvfa-me+lp}\xspace}
+\newcommand{\muvfa}{\textsc{m-uvfa}\xspace}
+\newcommand{\muvfas}{\textsc{m-uvfa}s\xspace}
+\newcommand{\her}{\textsc{her}\xspace}
+\newcommand{\goalgan}{\textsc{goal-gan}\xspace}
+\newcommand{\mab}{\textsc{mab}\xspace}
+\newcommand{\macob}{\textsc{macob}\xspace}
+\newcommand{\lArrowg}{\textsc{l$\to$g}\xspace}
+\newcommand{\lArrowb}{\textsc{l$\to$b}\xspace}
+\newcommand{\gArrowb}{\textsc{g$\to$b}\xspace}
+\newcommand{\lArrowgArrowb}{\textsc{l$\to$g$\to$b}\xspace}
+\newcommand{\lb}{\textsc{lb}\xspace}
+%\newcommand{\lg}{\textsc{lg}\xspace}
+\newcommand{\gb}{\textsc{gb}\xspace}
+\newcommand{\lgb}{\textsc{lgb}\xspace}
+\newcommand{\decstr}{\textsc{decstr}\xspace}
+\newcommand{\lgg}{\textsc{lgg}\xspace}
+\newcommand{\lcrl}{\textsc{lc-rl}\xspace}
+\newcommand{\competence}{\textsc{c}\xspace}
+\newcommand{\proba}{\textsc{p}\xspace}
+\newcommand{\cg}{\textsc{cg}\xspace}
+\newcommand{\ai}{\textsc{ai}\xspace}
+\newcommand{\mujoco}{\textsc{mujoco}\xspace}
+\newcommand{\arl}{\textsc{arl}\xspace}
+\newcommand{\cmc}{\textsc{cmc}\xspace}
+\newcommand{\hc}{\textsc{hc}\xspace}
+\newcommand{\ns}{\textsc{ns}\xspace}
+\newcommand{\nses}{\textsc{ns-es}\xspace}
+\newcommand{\nsres}{\textsc{nsr-es}\xspace}
+\newcommand{\nsraes}{\textsc{nsra-es}\xspace}
+\newcommand{\diayn}{\textsc{diayn}\xspace}
+
+% shortcut to have the right spacing (typo craziness)
+\newcommand{\ie}{i.e.\,}
+\newcommand{\eg}{e.g.\,}
+
+
+%%% TABLE OF CONTENTS
+%%%------------------------------------------------------------------------------
+
+\maxtocdepth{subsection} % Only parts, chapters and sections in the table of contents
+\settocdepth{subsection}
+
+%%% INTERNAL HYPERLINKS
+%%%-------------------------------------------------------------------------------
+
+\makeatletter
+\g@addto@macro{\UrlBreaks}{\UrlOrds}
+\makeatother
+
+\usepackage{memhfixc}   % fixes compatibility hyperref and memoir template
+\usepackage{setspace}
+
+%%% THE DOCUMENT
+%%% Where all the important stuff is included!
+%%%-------------------------------------------------------------------------------
+\author{Cédric Colas}
+
+% SUBFILES VODOO
+\usepackage{subfiles}
+
+\newcommand{\onlyinsubfile}[1]{#1}
+\newcommand{\notinsubfile}[1]{}
+\newcommand{\onlyinsubsubfile}[1]{#1}
+\newcommand{\notinsubsubfile}[1]{}
+\newcommand\fauxsc[1]{\fauxschelper#1 \relax\relax}
+\def\fauxschelper#1 #2\relax{%
+  \fauxschelphelp#1\relax\relax%
+  \if\relax#2\relax\else\ \fauxschelper#2\relax\fi%
+}
+\def\Hscale{.85}\def\Vscale{.74}\def\Cscale{1.12}
+\def\fauxschelphelp#1#2\relax{%
+  \ifnum`#1>``\ifnum`#1<`\{\scalebox{\Hscale}[\Vscale]{\uppercase{#1}}\else%
+    \scalebox{\Cscale}[1]{#1}\fi\else\scalebox{\Cscale}[1]{#1}\fi%
+  \ifx\relax#2\relax\else\fauxschelphelp#2\relax\fi}
+
+
+\graphicspath{{figures/}{../figures/}}
