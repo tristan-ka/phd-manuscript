@@ -1,3 +1,10 @@
+%\AddToShipoutPictureBG{%
+%\begin{tikzpicture}[remember picture, overlay]
+%\node[opacity=.9, inner sep=0pt]
+%\vspace{3cm}
+%    at(current page.center){\includegraphics[width=22cm, height=30cm]{cover}};
+%\end{tikzpicture}%
+%}
 
 \makeatletter         
 \def\@maketitle{
@@ -11,29 +18,30 @@
 % \begin{changemargin2}{-0.1cm}{-0.1cm}
 \begin{center}
     {
-    \includegraphics[scale=1, height=2.cm]{figures/logos.png}
+
+    \includegraphics[scale=1, height=1.5cm]{figures/logos.png}
     \DoubleSpacing
-    
     \begin{large}
-        \vspace{1cm}
+        \vspace{.55cm}
 
 
         {\huge \textbf{Towards Interactive Social Artificial Agents}} \\     
         % \vspace{0.15cm}
-        {\Large \textbf{From the Emergence to the Exploitation of Cultural Models for Autonomous Artificial Agents\\}}
+        {\Large \textbf{Formation and Exploitation of Cultural Models in Autonomous Artificial Agents\\}}
         
-        \vspace{0.2cm}
+        \vspace{0.5cm}
+        
+        \includegraphics[width=7cm]{cover}
         
         \rule{0.2\textwidth}{0.6pt}
         
-        \vspace{0.2cm}
         {\Large By \textbf{Tristan Karch} \\}
         
-        \vspace{0.55cm}
+        \vspace{0.5cm}
 
         \begin{normalsize}
             Under the supervision of Pierre-Yves Oudeyer \& Clément Moulin-Frier \\
-            \vspace{0.55cm}
+            \vspace{0.5cm}
             In partial fulfillment of the requirements\\
             for the degree of Doctor of Philosophy \\
             
@@ -44,7 +52,6 @@
             Major in Computer Science \\
         \end{normalsize}
     
-        \vspace{0.2cm}
         \rule{0.2\textwidth}{0.6pt}
         % UNIVERSITY OF BORDEAUX \\
         % GRADUATE SCHOOL OF MATHEMATICS AND COMPUTER SCIENCE\\
@@ -76,4 +83,3 @@
 
 }
 
-\makeatother

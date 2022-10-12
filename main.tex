@@ -1,6 +1,7 @@
 \documentclass[a4paper,11pt,twoside,openany,final,openbib]{memoir} %showtrims
 
 \usepackage{setup}
+\thispagestyle{empty}
 \input{chapters/firstpage.tex}
 % DOC at http://tug.ctan.org/macros/latex/contrib/memoir/memman.pdf
 
@@ -22,19 +23,31 @@
 % \clearpage
 % \input{ubx/abstracts}
 \clearpage
-\tableofcontents*
+\tableofcontents
 
-
-\clearpage
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % MAINMATTER
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
-\mainmatter
-\subfile{chapters/introduction}
 
+\subfile{chapters/acknowledgments}
+\subfile{chapters/abstract}
+\subfile{chapters/introduction}
 \subfile{chapters/background}
 
+\mainmatter
+\part{Formation of Cultural Models}
+\input{chapters/chapter1}
+\input{chapters/chapter2}
+\input{chapters/chapter3}
+
+
+\part{Exploitation of Cultural Models}
+\input{chapters/chapter4}
+\input{chapters/chapter5}
+\input{chapters/chapter6}
+
+\part{Discussion}
 \subfile{chapters/conclusion}
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
