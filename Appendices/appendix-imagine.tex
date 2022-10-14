@@ -1,0 +1,642 @@
+\begin{document}
+\chapter{Imagine}
+
+This supplementary material provides additional methods, results and discussion, as well as implementation details.
+
+\begin{itemize}[nolistsep]
+    \item Section~\ref{sec:suppl_env_descr} gives a complete description of our setup and of the \textit{Playground} environment.
+    \item Section~\ref{sec:supp_focus_gene} presents a focus on generalization and studies different types of generalization.
+    \item Section~\ref{sec:suppl_exploration} presents a focus on exploration and how it is influenced by goal imagination.
+    \item Section~\ref{sec:suppl_goal_imagination} presents a focus on the goal imagination mechanism we use for \imagine.
+    \item Section~\ref{sec:suppl_archi} presents a focus on the \textit{Modular-Attention} architecture.
+    \item Section~\ref{sec:suppl_reward} presents a focus on the benefits of learning the reward function.
+    \item Section~\ref{sec:suppl_visu} provides additional visualization of the goal embeddings and the attention vectors.
+    \item Section~\ref{sec:suppl_discu} discusses the comparison with goal-as-state approaches.
+    \item Section~\ref{sec:supp_impl_details} gives all necessary implementation details.
+\end{itemize}
+
+
+
+% \section{Supplementary Results}
+
+% The supplementary results give zooms into the the different dimensions that support goal imagination in \imagine. 
+
+% \label{sec:supp_results}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Environment and Language 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section{Complete Description of the Playground Environment and Its Language}
+\label{sec:suppl_env_descr}
+
+\paragraph{Environment description.} The environment is a $2$D square: $[-1.2,1.2]^2$. The agent is a disc of diameter $0.05$ with an initial position $(0,0)$. Objects have sizes uniformly sampled from $[0.2, 0.3]$ and their initial positions are randomized so that they are not in contact with each other. The agent has an action space of size $3$ bounded in $[-1,1]$. The first two actions control the agent's continuous $2$D translation (bounded to $0.15$ in any direction). The agent can grasp objects by getting in contact with them and closing its gripper (positive third action), unless it already has an object in hand. Objects include $10$ animals, $10$ plants, $10$ pieces of furniture and $2$ supplies. Admissible categories are \textit{animal, plant, furniture, supply} and \textit{living\_thing} (animal or plant), see Figure~\ref{fig:env_category}. Objects are assigned a color attribute (red, blue or green). Their precise color is a continuous RGB code uniformly sampled from  RGB subspaces associated with their attribute color. Each scene contains $3$ of these procedurally-generated objects (see paragraph about the Social Partner below).
+
+ \begin{figure}[ht]
+    \centering
+        \includegraphics[width=0.9\columnwidth]{imagine/env_category.pdf}
+         \caption{Representation of possible objects types and categories.}  
+    \label{fig:env_category}
+    \end{figure}
+
+\paragraph{Agent perception.} At time step $t$, we can define an observation $\textbf{o}_t$ as the concatenation of body observations ($2$D-position, gripper state) and objects' features. These two types of features form affordances between the agent and the objects around. These affordances are necessary to understand the meaning of object interactions like \textit{grasp}. The state $\textbf{s}_t$ used as input of the models is the concatenation of $\textbf{o}_t$ and $\bDelta\textbf{o}_t = \textbf{o}_t-\textbf{o}_0$ to provide a sense of time. This is required to acquire the understanding and behavior related to the \textit{grow} predicate, as the agent needs to observe and produce a change in the object's size.
+
+\paragraph{Social Partner.} \SP has two roles:
+\begin{itemize}
+    \item \textit{Scene organization}: \SP organize the scene according to the goal selected by the agent. When the agent selects a goal, it communicates it to \SP. If the goal starts by the word \textit{grow}, \SP adds a procedurally-generated supply (water or food for animals, water for plants) of any size and color to the scene. If the goal contains an object (e.g. \textit{red cat}), \SP adds a corresponding object to the scene (with a procedurally generated size and RGB color). Remaining objects are generated procedurally. As a result, the objects required to fulfill a goal are always present and the scene contains between 1 (\textit{grow} goals) and 3 (\textit{go} goals) random objects. Note that all objects are procedurally generated (random initial position, RGB color and size).
+    \item \textit{Scene description}: \SP provides \NL descriptions of interesting outcomes experienced by the agent at the end of episodes. It takes the final state of an episode ($\mathbf{s}_T$) as input and returns matching \NL descriptions: $\mathcal{D}_{\text{\SP}}(\mathbf{s}_T) \subset \mathcal{D}^\text{\SP}$. When \SP provides \textit{descriptions}, the agent considers them as targetable \textit{goals}. This mapping $\mathcal{D}^\text{\SP}\to \G^\train$ simply consists in removing the first \textit{you} token (e.g. turning \textit{you grasp red door} into the goal \textit{grasp red door}). Given the set of previously discovered goals $(\G_\text{known})$ and new descriptions $\mathcal{D}_{\text{\SP}}(\mathbf{s}_T)$, the agent infers the set of goals that were not achieved: $\G_\text{na}(\mathbf{s}_T)~=~\G_\text{known}~\backslash~\mathcal{D}_\text{\SP}(\mathbf{s}_T)$, where $\backslash$ indicates the complement.
+\end{itemize}
+
+\paragraph{Grammar.} We now present the grammar that generates descriptions for the set of goals achievable in the Playground environment $(\G^{A})$. \textbf{Bold} and \{ \} refer to sets of words while \textit{italics} refers to particular words:
+
+\begin{enumerate}[leftmargin=0.6cm, nolistsep]
+    \item Go: \textit{(e.g. go bottom left)} 
+    \begin{itemize}[leftmargin=0.2cm,noitemsep]
+            \itemsep-0.3em 
+            \item \textit{go} + \bi{zone}
+            \end{itemize}
+    \item Grasp: \textit{(e.g. grasp any animal)} 
+        \begin{itemize}[leftmargin=0.2cm,noitemsep]
+            \itemsep-0.3em 
+            \item \textit{grasp} + \bi{color} $\cup$ \{\textit{any}\}  + \textbf{\textit{object type $\cup$ object category}}
+            \item \textit{grasp} + \textit{any} + \bi{color} + \textit{thing}
+        \end{itemize}
+    \item Grow: \textit{(e.g. grow blue lion)}
+        \begin{itemize}[leftmargin=0.2cm,noitemsep]
+            \itemsep-0.3em 
+            \item \textit{grow} + \bi{color} $\cup$ \{\textit{any}\} + \bi{living thing} $\cup$ \{\textit{living\_thing, animal, plant}\}
+            \item \textit{grow} + \textit{any} + \bi{color} + \textit{thing}
+    \end{itemize}
+\end{enumerate} 
+
+Word sets are defined by:
+\begin{itemize}[noitemsep]
+    \item \textbf{\textit{zone}} = \{\textit{center, top, bottom, right, left, top left, top right, bottom left, bottom right}\}
+    \item \textbf{\textit{color}} = \{\textit{red, blue, green}\} 
+    \item  \textbf{\textit{object type}} = \textbf{\textit{living thing}}  $\cup$ \textbf{\textit{furniture}}  $\cup$ \textbf{\textit{supply}}
+    \item  \textbf{\textit{object category}} = \{\textit{living\_thing}, \textit{animal}, \textit{plant}, \textit{furniture}, \textit{supply}\}
+     \item  \textbf{\textit{living thing}} = \textbf{\textit{animal}} $\cup$ \textbf{\textit{plant}}
+    \item \textbf{\textit{animal}} = \{\textit{dog, cat, chameleon, human, fly, parrot, mouse, lion, pig, cow}\}
+    \item \textbf{\textit{plant}} = \{\textit{cactus, carnivorous, flower, tree, bush, grass, algae, tea, rose, bonsai}\}
+    \item \textbf{\textit{furniture}} = \{\textit{door, chair, desk, lamp, table, cupboard, sink, window, sofa, carpet}\} 
+    \item \textbf{\textit{supply}} = \{\textit{water, food}\}
+    \item \textbf{\textit{predicate}} = \{\textit{go, grasp, grow}\}
+\end{itemize}
+We partition this set of achievable goals into a training $(\G^\train)$ and a testing $(\G^\test)$ set. Goals from $\G^\test$ are intended to evaluate the ability of our agent to explore the set of achievable outcomes beyond the set of outcomes described by \SP. The next section introduces this testing set and focuses on generalization. Note that some goals might be syntactically valid but not achievable. This includes all goals of the form \textit{grow} + \bi{color} $\cup$ \{\textit{any}\} + \bi{furniture} $\cup$ \{\textit{furniture}\} (e.g. \textit{grow red lamp}).
+
+\paragraph{IMAGINE Pseudo-Code.}
+Algorithm~\ref{alg:example} outlines the pseudo-code of our learning architecture. See Main Section~\ref{sec:architecture} for high-level descriptions of each module and function.
+
+% \begin{algorithm}[h!]
+%    \caption{\imagine}
+%    \label{alg:example}
+%
+%    \begin{algorithmic}[1]
+%       \STATE \textbf{Input:} env, \SP \hspace{1.cm}%\COMMENT{}
+%       \STATE \textbf{Initialize:} $L_e$, $\mathcal{R}$, $\pi$, $mem(\mathcal{R})$, $mem(\pi)$, $\G_\text{known}$, $\G_\text{im}$ \\  \hspace{1cm} \# Random initializations for networks  \\
+%       \hspace{1cm} \# empty sets for memories and goal sets
+%       
+%      \FOR{$e=1:N_{episodes}$}
+%         \IF{$\G_\text{known} \neq \text{\O}$}
+%            \STATE sample $g_\text{NL}$ from $\G_\text{known} \cup \G_\text{im}$ 
+%            \STATE $g \gets L_e(g_\text{NL})$
+%         \ELSE
+%            \STATE sample $g$ from $\mathcal{N}(0,\mathbf{I})$
+%         \ENDIF
+%         \STATE $s_0 \gets$ env.reset()
+%         \FOR{$t=1:T$}
+%            \STATE $a_t\gets\pi(s_{t-1},g)$
+%            \STATE $s_{t}\gets$ env.step($a_t$)
+%            \STATE $mem_{\pi}$.add($s_{t-1}, a_t, s_t$)
+%         \ENDFOR
+%         \STATE $\G_\text{\SP} \gets$ \SP.get\_descriptions($s_T$)
+%         \STATE $\G_\text{known} \gets \G_\text{known} \: \cup$ $\G_\text{\SP}$
+%         \STATE $mem(\mathcal{R})$.add($s_T$, $g_\text{NL})$ for $g_\text{NL}$ in $\G_\text{\SP}$
+%         \IF{goal imagination allowed}
+%            \STATE $\G_\text{im} \gets$ \textbf{Imagination}$(\G_\text{known})$ \# see Algorithm~\ref{alg:suppl_imagination}
+%         \ENDIF
+%         \STATE Batch$_{\pi} \gets$ \textbf{ModularBatchGenerator}$(mem(\pi))$ 
+%         \hspace{1cm} \# Batch$_{\pi}$=$\{(s,a,s')\}$
+%         \STATE Batch$_{\pi} \gets$ \textbf{Hindsight}$(\text{Batch}_\pi, \mathcal{R}, \G_\text{known}, \G_\text{im})$ 
+%         \hspace{0.2cm} \# Batch$_{\pi}$=$\{(s,a,r,g,s')\}$ where $r=\mathcal{R}(s,g)$
+%         \STATE $\pi \gets $\textbf{RL\_Update}(Batch$_{\pi}$)
+%      \IF{$e \:\%\: $reward\_update\_freq $==0$}
+%      \STATE Batch$_{\mathcal{R}} \gets$ ModularBatchGenerator$(mem(\mathcal{R}))$
+%      \STATE $L_e$, $\mathcal{R} \gets$ \textbf{LE\&RewardFunctionUpdate}$(\text{Batch}_{\mathcal{R}})$
+%      \ENDIF
+%      \ENDFOR 
+%    \end{algorithmic}
+%\end{algorithm}  
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Generalization
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\clearpage
+
+
+\section{Focus on Generalization}
+\label{sec:supp_focus_gene}
+Because scenes are procedurally-generated, $\SR$ computed on $\G^\train$ measures the generalization to new states. When computed on $\G^\test$, however, $\SR$ measures both this state generalization and the generalization to new goal descriptions from $\G^\test$. As $\SR_\train$ is almost perfect, this section focuses solely on generalization in the language space: $\SR_\test$.
+
+
+\paragraph{Different types of generalization.}
+Generalization can occur in two different modules of the \imagine architecture: in the reward function and in the policy. Agents can only benefit from goal imagination when their reward function is able to generalize the meanings of imagined goals from the meanings of known ones. When they do, they can further train on imagined goals, which might, in turn, reinforce the generalization of the policy. This section characterizes different types of generalizations that the reward and policy can both demonstrate.
+
+\begin{itemize}
+    \item Type 1 - \textit{Attribute-object generalization}: This is the ability to accurately associate an attribute and an object that were never seen together before. To interpret the goal \textit{grasp red tree} requires to isolate the \textit{red} and \textit{tree} concepts from other sentences and to combine them to recognize a \textit{red tree}. To measure this ability, we removed from the training set all goals containing the following attribute-object combinations: \textit{\{blue door, red tree, green dog\}} and added them to the testing set (4 goals). 
+    
+    \item Type 2 - \textit{Object identification}: This is the ability to identify a new object from its attribute. We left out of the training set all goals containing the word \textit{flower} (4 goals). To interpret the goal \textit{grasp red flower} requires to isolate the concept of \textit{red} and to transpose it to the unknown object \textit{flower}. Note that in the case of \textit{grasp any flower}, the agent cannot rely on the attribute, and must perform some kind of complement reasoning:``if these are known objects, and that is unknown, then if must be a \textit{flower}".
+    
+    \item Type 3 - \textit{Predicate-category generalization}: 
+    This is the ability to interpret a predicate for a category when they were never seen together before. As explained in Section~\ref{sec:suppl_env_descr}, a category regroups a set of objects and is not encoded in the object state vector. It is only a linguistic concept. We left out all goals with the \textit{grasp} predicate and the \textit{animal} category (4 goals). To correctly interpret \textit{grasp any animal} requires to identify objects that belong to the animal category (acquired from "growing \textit{animal}" and "growing animal objects" goals), to isolate the concept of \textit{grasping} (acquired from grasping non-\textit{animal} objects) and to combine the two.
+    
+    \item Type 4 - \textit{Predicate-object generalization}:  This is the ability to interpret a predicate for an object when they were never seen together before. We leave out all goals with the \textit{grasp} predicate and the \textit{fly} object (4 goals). To correctly interpret \textit{grasp any fly}, the agent should  leverage its knowledge about the \textit{grasp} predicate (acquired from the "grasping non-fly objects" goals) and the \textit{fly} object (acquired from the "growing flies" goals).
+    
+   \item Type 5 - \textit{Predicate dynamics generalization}: This is the ability to generalize the behavior associated with a predicate to another category of objects, for which the dynamics is changed. In the \textit{Playground} environment, the dynamics of \textit{grow} with \bi{animals} and \bi{plants} is a a bit different. \bi{animals} can be grown with \textit{food} and \textit{water} whereas \bi{plants} only grow with \textit{water}. We want to see if \imagine can learn the dynamics of \textit{grow} on \bi{animals} and generalize it to \bi{plants}. We left out all goals with the \textit{grow} predicate and any of the \bi{plant} objects, \textit{plant} and \textit{living thing} categories (48 goals). To interpret, \textit{grow any plant}, the agent should be able to identify the \bi{plant} objects (acquired from the "grasping plants" goals) and that objects need supplies (food or water) to \textit{grow} (acquired from the "growing animals" goals). Type 5 is more complex than Type 4 for two reasons: 1) because the dynamics change and 2) because it mixes objects and categories. Note that, by definition, the zero-shot generalization is tested without additional reward signals (before imagination). As a result, even the best zero-shot generalization possible cannot adapt the \textit{grow} behavior from animals to plant and would bring food and water with equal probability $p=0.5$ for each.
+\end{itemize}
+
+ Table~\ref{tab:test_descriptions} provides the exhaustive list of goals used to test each type of generalization.
+ 
+
+
+
+
+% Goal imagination relies on strong generalization capabilities of the internal models (reward function and policy) of \imagine. We therefore propose to study $5$ different types of \textit{out-of-distribution} generalization in order to have a better grasp of what occurs when the agent starts imagining meaningful goal descriptions. To do so the performances of the internal models are studied for each of the following types.
+
+
+\paragraph{Different ways to generalize.}
+Agent can generalize to out-of-distribution goals (from any of the 5 categories above) in three different ways:
+\begin{enumerate}
+    \item \textit{Policy zero-shot generalization}: The policy can achieve the new goal without any supplementary training.
+    \item \textit{Reward zero-shot generalization}: The reward can tell whether the goal is achieved or not without any supplementary training.
+    \item \textit{Policy n-shot generalization or behavioral adaptation}:
+    When allowed to imagine goals, \imagine agents can use the zero-shot generalization of their reward function to autonomously train their policy to improve on imagined goals. After such training, the policy might show improved generalization performance compared to its zero-shot abilities. We call this performance \textit{n-shot generalization}. The policy received supplementary training, but did not leverage any external supervision, only  the zero-shot generalization of its internal reward function. This is crucial to achieve Type 5 generalization. As we said, zero-shot generalization cannot figure out that plants only grow with water. Fine-tuning the policy based on experience and internal rewards enables agents to perform \textit{behavioral adaptation}: adapting their behavior with respect to imagined goals in an autonomous manner (see Main Figure~\ref{fig:adaptation}).
+\end{enumerate}
+
+
+
+
+\begin{table}[!h]
+    \centering
+    \caption{Testing goals in $\G^\test$, by type.}
+    \label{tab:test_descriptions}
+    \begin{tabular}{c|l}
+        Type 1 & \textit{Grasp blue door}, \textit{Grasp green dog},\textit{Grasp red tree}, \textit{Grow green dog} \\ 
+        \hline
+        \multirow{2}{2.75em}{Type 2} & \textit{Grasp any flower}, \textit{Grasp blue flower}, \textit{Grasp green flower}, \textit{Grasp red flower}, \\
+                                     & \textit{Grow any flower}, \textit{Grow blue flower}, \textit{Grow green flower}, \textit{Grow red flower}\\
+        \hline
+        Type 3 & \textit{Grasp any animal}, \textit{Grasp blue animal}, \textit{Grasp green animal}, \textit{Grasp red animal} \\ 
+        \hline
+       Type 4 & \textit{Grasp any fly}, \textit{Grasp blue fly}, \textit{Grasp green fly}, \textit{Grasp red fly} \\ 
+        \hline
+        \multirow{11}{2.75em}{Type 5} & \textit{Grow any algae}, \textit{Grow any bonsai}, \textit{Grow any bush}, \textit{Grow any cactus}\\
+                                     & \textit{Grow any carnivorous}, \textit{Grow any grass}, \textit{Grow any living\_thing}, \textit{Grow any plant}\\
+                                     & \textit{Grow any rose}, \textit{Grow any tea}, \textit{Grow any tree}, \textit{Grow blue algae}\\
+                                     & \textit{Grow blue bonsai}, \textit{Grow blue bush},\textit{Grow blue cactus}, \textit{Grow blue carnivorous}\\
+                                     & \textit{Grow blue grass}, \textit{Grow blue living\_thing}, \textit{Grow blue plant}, \textit{Grow blue rose}\\
+                                     & \textit{Grow blue tea}, \textit{Grow blue tree},\textit{Grow green algae}, \textit{Grow green bonsai}\\
+                                     & \textit{Grow green bush}, \textit{Grow green cactus},  \textit{Grow green carnivorous}, \textit{Grow green grass}\\
+                                     & \textit{Grow green living\_thing}, \textit{Grow green plant}, \textit{Grow green rose}, \textit{Grow green tea}\\
+                                     & \textit{Grow green tree}, \textit{Grow red algae}, \textit{Grow red bonsai}, \textit{Grow red bush}\\
+                                     & \textit{Grow red cactus}, \textit{Grow red carnivorous}, \textit{Grow red grass}, \textit{Grow red living\_thing}\\
+                                     & \textit{Grow red plant}, \textit{Grow red rose}, \textit{Grow red tea}, \textit{Grow red tree}\\
+    \end{tabular}
+\end{table}
+
+\paragraph{Experiments.}
+Figure~\ref{fig:suppl_gen} presents training and generalization performance of the reward function and policy. We evaluate the generalization of the reward function via its average $F_1$ score on $\G^\test$, the generalization of the policy by $\SR_\test$.
+
+
+\textit{Reward function zero-shot generalization.}
+When the reward function is trained in parallel of the policy, we monitor its zero-shot generalization capabilities by computing the $F_1$-score over a dataset collected separately with a trained policy run on goals from  $\G^\test$ (kept fixed across runs for fair comparisons). As shown in Figure~\ref{fig:reward_func_in_rl}, the reward function exhibits good zero-shot generalization properties over 4 types of generalization after $25 \times 10^3$ episodes. Note that, because we test on data collected with a different RL policy, the $F_1$-scores presented in Figure~\ref{fig:reward_func_in_rl} may not faithfully describe the true generalization of the reward function during co-training. 
+
+\textit{Policy zero-shot generalization.}
+The zero-shot performance of the policy is evaluated in Figure~\ref{fig:gene_no_imagined} (\textit{no imagination} condition) and in the period preceding goal imagination in Figure~\ref{fig:gene10} and \ref{fig:gene80} (before vertical dashed line). The policy shows excellent zero-shot generalization properties for Type 1, 3 and 4, average zero-shot generalization on Type 5 and fails to generalize on Type 2. Type 1, 3 and 4 can be said to have similar levels of difficulty, as they all require to learn two concepts individually before combining them at test time. Type 2 is much more difficult as the meaning of only one word is known. The language encoder indeed receives a new word token which seems to disturb behavior. As said earlier, zero-shot generalization on Type 5 cannot do better than 0.5, as it cannot infer that plants only require water.
+
+\textit{Policy n-shot generalization.} When goal imagination begins (Figures~\ref{fig:gene10} and \ref{fig:gene80} after the vertical line), agents can imagine goals and train on them. This means that $\SR$ evaluates n-shot policy generalization. Agents can now perform \textit{behavior adaptation}. They can learn that plants need water. As they learn this, their generalization performance on goals from Type 5 increases and goes beyond 0.5. Note that this effects fights the zero-shot generalization. By default, policy and reward function apply zero-shot generalization: e.g. they bring water or food equally to plants. Behavioral adaptation attempts to modify that default behavior. Because of the poor zero-shot generalization of the reward on goals of Type 2, agents cannot hope to learn Type 2 behaviors. Moreover, Type 2 goals cannot be imagined, as the word \textit{flower} is unknown to the agent. 
+
+
+\begin{figure*}[!h]
+    \centering
+    \begin{tabular}{cc}
+    \textbf{Reward Function, no imagination} & \textbf{Policy, no imagination} \\
+	\includegraphics[width=0.48\textwidth]{imagine/RL_REWARD_PERF.pdf} & \includegraphics[width=0.48\textwidth]{imagine/GOAL_INVENTION_gene_per_type_no_imagined_goals_compressed.pdf}\\
+    \textbf{Policy, imagination half way} & \textbf{Policy, imagination early} \\
+    \includegraphics[width=0.48\textwidth]{imagine/GOAL_INVENTION_gene_per_type_from_epoch_80_compressed.pdf} &\includegraphics[width=0.48\textwidth]{imagine/GOAL_INVENTION_gene_per_type_from_epoch_10_compressed.pdf}
+    
+    \end{tabular}
+%    \subfigure[\label{fig:reward_func_in_rl}\textbf{Reward Function, no imagination}]{\includegraphics[width=0.48\textwidth]{imagine/RL_REWARD_PERF.pdf}}
+%    \subfigure[\label{fig:gene_no_imagined}\textbf{Policy, no imagination}]{\includegraphics[width=0.48\textwidth]{imagine/GOAL_INVENTION_gene_per_type_no_imagined_goals_compressed.pdf}}
+%    \subfigure[\label{fig:gene10}\textbf{Policy, imagination half way}]{\includegraphics[width=0.48\textwidth]{imagine/GOAL_INVENTION_gene_per_type_from_epoch_80_compressed.pdf}}
+%    \subfigure[\label{fig:gene80}\textbf{Policy, imagination early}]{\includegraphics[width=0.48\textwidth]{imagine/GOAL_INVENTION_gene_per_type_from_epoch_10_compressed.pdf}}
+    
+    \caption{\textbf{Zero-shot and n-shot generalizations of the reward function and policy.} Each figure represents the training and testing performances (split by generalization type) for the reward (a), and the policy (b, c, d). (a) and (b) represent zero-shot performance in the \textit{no imagination} conditions. In (c) and (d), agents start to imagine goals as denoted by the vertical dashed line. Before that line, $\SR$ evaluate zero-shot generalization. After, it evaluates the n-shot generalization, as agent can train autonomously on imagined goals.\label{fig:suppl_gen}}
+\end{figure*} 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Exploration
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+
+\section{Focus on exploration}
+\label{sec:suppl_exploration}
+\paragraph{Interesting Interactions.} \textit{Interesting interactions} are trajectories of the agent that humans could infer as goal-directed. If an agent brings water to a plant and grows it, it makes sense for a human. If it then tries to do this for a lamp, it also feels goal-directed, even though it does not work. This type of behavior characterizes the penchant of agents to interact with objects around them, to try new things and, as a result, is a good measure of exploration. 
+
+\paragraph{Sets of interesting interactions.} We consider three sets of interactions: 1) interactions related to training goals; 2) to testing goals; 3) the extra set. This \textit{extra set} contains interactions where the agent brings water or food to a piece of furniture or to another supply. Although such behaviors do not achieve any of the goals, we consider them as interesting exploratory behaviors. Indeed, they testify that agents try to achieve imagined goals that are meaningful from the point of view of an agent that does not already know that doors cannot be grown, i.e. corresponding to a meaningful form of generalization after discovering that animals or plants can be grown (e.g. \textit{grow any door}). 
+
+\paragraph{The Interesting Interaction Count metric.} 
+We count the number of interesting interactions computed over all final transitions from the last $600$ episodes (1 epoch). Agents do not need to target these interactions, we just report the number of times they are experienced. Indeed, the agent does not have to target a particular interaction for the trajectory to be interesting from an exploratory point of view. The \her mechanism ensures that these trajectories can be replayed to learn about any goal, imagined or not. Computed on the extra set, the \textit{Interesting Interaction Count} (\itwoc) is the number of times the agent was found to bring supplies to a furniture or to other supplies over the last epoch: 
+    \begin{displaymath}
+    \itwoc_{\text{extra}} = \sum_{i\in \mathcal{I}=\G_\text{extra}} \sum_{t=1}^{600} \delta_{i,t},
+    \end{displaymath}
+
+    where $\delta_{i,t} = 1$ if interaction $i$ was achieved in episode $t$, $0$ otherwise and $\mathcal{I}$ is the set of interesting interactions (here from the extra set) performed during an epoch. 
+    
+Agents that are allowed to imagine goals achieve higher scores in the testing and extra sets of interactions, while maintaining similar exploration scores on the training set, see Figures~\ref{fig:sc_train} to \ref{fig:sc_extra}. 
+
+\begin{figure*}[!h]
+  \centering
+  \begin{tabular}{ccc}
+  	\includegraphics[width=0.328\textwidth]{imagine/GOAL_INVENTION_exploration_count_reward_train_set_compressed.pdf} & \includegraphics[width=0.328\textwidth]{imagine/GOAL_INVENTION_exploration_count_reward_test_set_compressed.pdf} &
+  		  \includegraphics[width=0.328\textwidth]{imagine/GOAL_INVENTION_exploration_count_reward_extra_set_compressed.pdf}
+  \end{tabular}
+  \caption{\textbf{Exploration metrics} (a) Interesting interaction count (\itwoc) on training set, (b) \itwoc on testing set, (c) \itwoc on extra set. Goal imagination starts early (vertical blue line), half-way (vertical orange line) or does not start (\textit{no imagination} baseline in green).}
+  \label{fig:explo_metrics}
+\end{figure*}   
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Generalization
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+
+\section{Focus on Goal Imagination}
+\label{sec:suppl_goal_imagination}
+
+Algorithm~\ref{alg:suppl_imagination} presents the algorithm underlying our goal imagination mechanism. This mechanism is inspired from the \textit{Construction Grammar} (CG) literature and generates new sentences by composing known ones \cite{goldberg2003constructions}. It computes sets of equivalent words by searching for sentences with an edit distance of $1$: sentences where only one word differs. These words are then labelled equivalent, and can be substituted in known sentences. Note that the goal imagination process filters goals that are already known. Although all sentences from $\G^\train$ can be imagined, there are filtered out of the imagined goals as they are discovered. Imagining goals from $\G^\train$ before they are discovered drives the exploration of \imagine agents. In our setup, however, this effect remains marginal as all the goals from $\G^\train$ are discovered in the first epochs (see Figure~\ref{fig:suppl_known_goals}). 
+
+
+
+
+%        \captionof{algocf}{Goal Imagination. The edit distance between two sentences refers to the number of words to modify to transform one sentence into the other.\label{alg:suppl_imagination}}
+
+%\begin{algorithmic}[1]
+%   \STATE \textbf{Input:} $\G_\text{known}$ (discovered goals)
+%            \STATE \textbf{Initialize:} \textit{word\_eq} (list of sets of equivalent words, empty) 
+%            \STATE \textbf{Initialize:} \textit{goal\_template} (list of template sentences used for imagining goals, empty)
+%            \STATE \textbf{Initialize:} $\G_\text{im}$ (empty)
+%            \FOR[Computing word equivalences]{$g_\text{NL}$ in $\G_\text{known}$}  
+%                \STATE \textit{new\_goal\_template} = True
+%                \FOR{$g_m$ in \textit{goal\_template}}
+%                    \IF{edit\_distance$(g_\text{NL}, g_m) < 2$}
+%                        \STATE \textit{new\_goal\_template} = False
+%                        \IF{edit\_distance$(g_\text{NL}, g_m) == 1$}
+%                            \STATE $w_1, w_2 \gets $ \textit{get\_non\_matching\_words$(g_\text{NL}, g_m)$}
+%                            \IF{$w_1$ and $w_2$ not in any of \textit{word\_eq} sets}
+%                                 \STATE \textit{word\_eq}.add(\{$w_1,w_2$\})
+%                            \ELSE
+%                                \FOR{\textit{eq\_set} in \textit{word\_eq}}   
+%                                    \IF{$w_1 \in \:$\textit{eq\_set} or $w_2 \in \: $\textit{eq\_set}}
+%                                        \STATE \textit{eq\_set} = \textit{eq\_set} $\cup$ \{$w_1,w_2$\}
+%                                    \ENDIF
+%                                \ENDFOR
+%                            \ENDIF
+%                        \ENDIF
+%                    \ENDIF
+%                \ENDFOR
+%                \IF{\textit{new\_goal\_template}}
+%                    \STATE \textit{goal\_template}.add($g_\text{NL}$)
+%                \ENDIF
+%            \ENDFOR
+%            \FOR[Generating new sentences]{$g$ in \textit{goal\_template}}  
+%                \FOR{$w$ in $g$}
+%                    \FOR{\textit{eq\_set} in \textit{word\_eq}}
+%                        \IF{$w \in\:$ \textit{eq\_set}}
+%                            \FOR{$w'$ in \textit{eq\_set}}
+%                                \STATE $g_{im} \gets$ replace($g$, $w$, $w'$)
+%                                \IF{$g_{im} \notin \G_\text{known}$}
+%                                    \STATE $\G_\text{im} = \G_\text{im} \: \cup $ \{$g_{im}$\}
+%                                \ENDIF
+%                            \ENDFOR
+%                        \ENDIF
+%                    \ENDFOR
+%                \ENDFOR
+%            \ENDFOR
+%            \STATE $\G_\text{im} = \G_\text{im} \setminus \G_\text{known}$ \hspace{1cm}\{filtering known goals.\}
+%\end{algorithmic}
+
+\begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.4\textwidth]{imagine/venn_diagram.pdf}
+        \captionof{figure}{Venn diagram of goal spaces.\label{fig:suppl_venn}}  
+\end{figure}
+
+
+
+\begin{table*}[!htbp]
+    \centering
+    \caption{All imaginable goals $\G^\text{im}$ generated by the Construction Grammar Heuristic.}
+    \label{tab:imaginable_goals}
+    \begin{tabular}{c|l}
+        \multirow{3}{*}{Goals from $\G^\train$}
+        & \\
+
+        &  $\G^\train$. (Note that known goals are filtered from the set of imagined goals.  \\  & However, any goal from $\G^\train$ can be imagined before it is encountered \\ 
+        & in the interaction with \SP.) \\ 
+        & \\
+        \hline
+        \multirow{3}{*}{\shortstack{Goals from  $\G^\test$}} & \multirow{3}{*}{All goals from Type 1, 3, 4 and 5, see Table~\ref{tab:test_descriptions}} \\ & \\ & \\
+        \hline
+        \multirow{4}{*}{\shortstack{Syntactically\\ incorrect goals}} 
+             & \\
+             & \textit{Go bottom top}, \textit{Go left right}, \textit{Grasp red blue thing}, \\
+             & \textit{Grow blue red thing}, \textit{Go right left}, \textit{Go top bottom}, \\
+             & \textit{Grasp green blue thing}, \textit{Grow green red thing}, \textit{Grasp green red thing} \\
+             & \textit{Grasp blue green thing}, \textit{Grasp blue red thing}, \textit{Grasp red green thing}. \\ & \\
+        \hline
+        \multirow{18}{*}{\shortstack{Syntactically\\ correct but\\unachievable goals}} 
+            & \\
+             & \textit{Go center bottom}, \textit{Go center top}, \textit{Go right center},  \textit{Go right bottom}, \\
+             & \textit{Go right top}, \textit{Go left center}, \textit{Go left bottom}, \textit{Go left top}, \\
+             & \textit{Grow green cupboard},  \textit{Grow green sink}, \textit{Grow blue lamp}, \textit{Go center right}, \\
+             & \textit{Grow green window}, \textit{Grow blue carpet}, \textit{Grow red supply}, \textit{Grow any sofa}, \\
+             & \textit{Grow red sink}, \textit{Grow any chair},  \textit{Go top center}, \textit{Grow blue table}, \\
+             & \textit{Grow any door},  \textit{Grow any lamp}, \textit{Grow blue sink}, \textit{Go bottom center}, \\
+             & \textit{Grow blue door}, \textit{Grow blue supply},  \textit{Grow green carpet}, \textit{Grow blue furniture}, \\
+             & \textit{Grow green supply}, \textit{Grow any window},  \textit{Grow any carpet}, \textit{Grow green furniture}, \\
+             & \textit{Grow green chair}, \textit{Grow green food}, \textit{Grow any cupboard}, \textit{Grow red food}, \\
+             & \textit{Grow any table}, \textit{Grow red lamp} , \textit{Grow red door},  \textit{Grow any food}, \\
+             & \textit{Grow blue window}, \textit{Grow green sofa}, \textit{Grow blue sofa},  \textit{Grow blue desk}, \\
+             & \textit{Grow any sink}, \textit{Grow red cupboard}, \textit{Grow green door}, \textit{Grow red furniture}, \\
+             & \textit{Grow blue food}, \textit{Grow red desk} , \textit{Grow red table},  \textit{Grow blue chair}, \\
+             & \textit{Grow red sofa}, \textit{Grow any furniture}, \textit{Grow red window}, \textit{Grow any desk}, \\
+             & \textit{Grow blue cupboard}, \textit{Grow red chair}, \textit{Grow green desk}, \textit{Grow green table}, \\
+             & \textit{Grow red carpet}, \textit{Go center left}, \textit{Grow any supply},  \textit{Grow green lamp}, \\
+             & \textit{Grow blue water}, \textit{Grow red water},  \textit{Grow any water}, \text{Grow green water}, \\
+             & \textit{Grow any water}, \text{Grow green water}. \\
+             & \\
+    \end{tabular}
+
+\end{table*}
+
+\clearpage
+
+\paragraph{Imagined goals.} We run our goal imagination mechanism based on the Construction Grammar Heuristic (\CGH) from $\G^\train$. After filtering goals from $\G^\train$, this produces $136$ new imagined sentences. Table~\ref{tab:imaginable_goals} presents the list of these goals while Figure~\ref{fig:suppl_venn} presents a Venn diagram of the various goal sets. Among these $136$ goals, $56$ belong to the testing set $\G^\test$. This results in a coverage of $87.5\%$ of $\G^\test$, and a precision of $45\%$. In goals that do not belong to $\G^\test$, goals of the form \textit{Grow} + \{\textit{any}\} $\cup$ \textbf{color} + \textbf{furniture} $\cup$ \textbf{supplies} (e.g. \textit{Grow any lamp}) are \textit{meaningful} to humans, but are not achievable in the environment (\textit{impossible}).  
+
+\paragraph{Variants of goal imagination mechanisms.}
+Main Section~\ref{sec:res_im_properties} investigates variants of our goal imagination mechanisms:
+\begin{enumerate}
+    \item \textit{Lower coverage:} To reduce the coverage of \CGH while maintaining the same precision, we simply filter half of the goals that would have been imagined by \CGH. This filtering is probabilistic, resulting in different imagined sets for different runs. It happens online, meaning that the coverage is always half of the coverage that \CGH would have had at the same time of training.
+    \item \textit{Lower precision:} To reduce precision while maintaining the same coverage, we sample a random sentence (random words from the words of $\G^\train$) for each goal imagined by \CGH that does not belong to $\G^\test$. Goals from $\G^\test$ are still imagined via the \CGH mechanism. This variants only doubles the imagination of sentences that do not belong to $\G^\test$.
+    \item \textit{Oracle:} Perfect precision and coverage is achieved by filtering the output of \CGH, keeping only goals from $\G^\test$. Once the $56$ goals that \CGH can imagine are imagined, the oracle variants adds the $8$ remaining goals: those including the word \textit{flower} (Type 2 generalization).
+    \item \textit{Random goals:} Each time \CGH would have imagined a new goal, it is replaced by a randomly generated sentence, using words from the words of $\G^\train$.
+\end{enumerate}
+Note that all variants imagine goals at the same speed as the \CGH algorithm. They simply filter or add noise to its output, see Figure~\ref{fig:suppl_known_goals}.
+
+
+\begin{figure}[!h]
+\centering
+\begin{tabular}{cc}
+
+\textbf{CGH} & \textbf{Low coverage}\\
+\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_from_epoch_10_compressed.pdf} & \includegraphics[width=0.32\textwidth]{imagine/known_goals_content_half_tc_compressed.pdf} \\
+\textbf{Low Precision} & \textbf{Oracle}\\
+\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_double_fpr_compressed.pdf} & \includegraphics[width=0.32\textwidth]{imagine/known_goals_content_oracle_compressed.pdf} \\
+\multicolumn{2}{c}{\textbf{Random Goals}}\\
+\multicolumn{2}{c}{\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_random_language_10_compressed.pdf}}
+
+	
+\end{tabular}
+
+%
+%      \subfigure[\label{fig:suppl_known_earl}\textbf{CGH}]{\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_from_epoch_10_compressed.pdf}}
+%      \subfigure[\label{fig:suppl_known_low_cov}\textbf{Low Coverage}]{\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_half_tc_compressed.pdf}} 
+%      \subfigure[\label{fig:suppl_known_low_prec}\textbf{Low Precision}]{\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_double_fpr_compressed.pdf}} \\
+%      \subfigure[\label{fig:suppl_known_oracle}\textbf{Oracle}]{\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_oracle_compressed.pdf}} 
+%      \subfigure[\label{fig:suppl_known_random}\textbf{Random Goals}]{\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_random_language_10_compressed.pdf}}
+      \caption{\textbf{Evolution of known goals for various goal imagination mechanisms.} All graphs show the evolution of the number of goals from $\G^\train$, $\G^\test$ and others in the list of known goals $\G_\text{known}$. We zoom on the first epochs, as most goals are discovered and invented early. Vertical dashed line indicates the onset of goal imagination. (a) \CGH; (b) Low Coverage; (c) Low precision; (d) Oracle; (e) Random Goals. \label{fig:suppl_known_goals}}
+\end{figure} 
+
+\newpage
+\paragraph{Effect of low coverage on generalization.}
+In Main Section~\ref{sec:res_im_properties}, we compare our goal imagination mechanism to a \textit{Low Coverage} variant that only covers half of the proportion of $\G^\test$ covered by \CGH ($44\%$). Figure~\ref{fig:suppl_halftc} shows that the generalization performance on goals from $\G^\test$ that the agent imagined (n-shot generalization, blue) are not significantly higher than the generalization performance on goals from $\G^\test$ that were not imagined (zero-shot generalization). As they are both significantly higher than the \textit{no imagination} baseline, this implies that training on imagined goals boosts zero-shot generalization on similar goals that were not imagined. 
+
+
+\begin{figure}[!h]
+      \centering
+      \includegraphics[width=0.5\textwidth]{imagine/test_av_compressed.pdf}
+      \caption{\textbf{Zero-shot versus n-shot.} We look at the \textit{Low Coverage} variant of our goal imagination mechanism that only covers $43.7\%$ the test set with a $45\%$ precision. We report success rates on testing goals of Type 5 (\textit{grow + plant}) and compare with the \textit{no imagination} baseline (green). We split in two: goals that were imagined (blue), and goals that were not (orange). \label{fig:suppl_halftc}}
+\end{figure} 
+
+\clearpage
+\paragraph{Details on the impacts of various goal imagination mechanisms on exploration.}
+Figure~\ref{fig:suppl_explo_metrics_goalim} presents the \itwoc exploration scores on the training, testing and extra sets for the different goal imagination mechanisms introduced in Main Section~\ref{sec:res_im_properties}. Let us discuss each of these scores:
+
+\begin{enumerate}
+    \item \textit{Training interactions.} In Figure~\ref{fig:supp_explo_train}, we see that decreasing the precision (Low Precision and Random Goal conditions) affects exploration on interactions from the training set, where it falls below the exploration of the \textit{no imagination} baseline. This is due to the addition of meaningless goals forcing agent to allow less time to meaningful interactions relatively.
+    \item \textit{Testing interactions.}
+    In Figure~\ref{fig:supp_explo_test}, we see that the highest exploration scores on interactions from the test set comes from the oracle. Because it shows high coverage and precision, its spends more time on the diversity of interactions from the testing set. What is more surprising is the exploration score of the low coverage condition, higher than the exploration score of \CGH. With an equal precision, \CGH should show better exploration, as it covers more test goals. However, the \textit{Low Coverage} condition, by spending more time exploring each of its imagined goals (it imagined fewer), probably learned to master them better, increasing the robustness of its behavior towards those. This insight advocates for the use of goal selection methods based on learning progress \cite{forestier2016modular,curious}. Agents could estimate their learning progress on imagined goals using their internal reward function and its zero-shot generalization. Focusing on goals associated to high learning progress might help agents filter goals they can learn about from others.
+    
+    \item \textit{Extra interactions.} Figure~\ref{fig:supp_explo_extra} shows that only the goal imagination mechanisms that invent goals not covered by the testing set manage to boost exploration in this extra set. The oracle perfectly covers the testing set, but does not generate goals related to other objects (e.g. \textit{grow any lamp}). 
+\end{enumerate} 
+
+
+\begin{figure*}[!h]
+  \centering
+    \subfigure[\label{fig:supp_explo_train}\textbf{\itwoc on $\G^\train$}]{\includegraphics[width=0.328\textwidth]{imagine/explo_train.pdf}}
+    \subfigure[\label{fig:supp_explo_test}\textbf{\itwoc on $\G^\test$}]{\includegraphics[width=0.328\textwidth]{imagine/explo_test.pdf}}
+    \subfigure[\label{fig:supp_explo_extra}\textbf{\itwoc on $\G^\text{extra}$}]{\includegraphics[width=0.328\textwidth]{imagine/explo_extra.pdf}}
+  \caption{\textbf{Exploration metrics for different goal imagination mechanisms}: (a) Interesting interaction count (\itwoc) on training set, \itwoc on testing set, (c) \itwoc on extra set.  Goal imagination starts early (vertical line), except for the \textit{no imagination} baseline (green). Standard errors of the mean plotted for clarity (as usual, $10$ seeds).}
+  \label{fig:suppl_explo_metrics_goalim}
+\end{figure*}   
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Architectures 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+
+\section{Focus on Architectures}
+\label{sec:suppl_archi}
+This section compares our proposed object-based modular architecture \MA for the policy and reward function to a flat architecture that does not use inductive biases for efficient skill transfer. We hypothesize that only the object-based modular architectures enable a generalization performance that is sufficient for the goal imagination to have an impact on generalization and exploration. Indeed, when generalization abilities are low, agents cannot evaluate their performance on imagined goals and thus, cannot improve.
+
+\paragraph{Preliminary study of the reward function architecture.} We first compared the use of modular and flat architectures for the reward function (\mar vs \far in Figure~\ref{fig:archi_far_mar}). This experiment was conducted independently from policy learning, in a supervised setting. We use a dataset of 50$\times{10^3}$ trajectories and associated goal descriptions collected using a pre-trained policy. To closely match the training conditions of \imagine, we train the reward function on the final states $s_{T}$ and test it on any states $s_t$, $t=[1,~..,~T]$ of other episodes. Table~\ref{tab:suppl_reward_function_archi_comparison} provides the $F_1$ score computed at convergence on $\mathcal{G}^\text{train}$ and $\mathcal{G}^\text{test}$ for the two architectures.
+
+\begin{table}[h!]
+    \caption{Reward function architectures performance.}
+    \label{tab:suppl_reward_function_archi_comparison}
+    \vspace{0.2cm}
+    \centering
+    \begin{tabular}{l|cc}
+    & ${F_1}_\train$ & ${F_1}_\test$\\
+    \hline    
+    \mar & $0.98 \pm 0.02$ & $0.64 \pm 0.22 $  \\
+    \far &  $0.60 \pm 0.10$&$ 0.22 \pm 0.05$ \\
+    \end{tabular}
+\end{table}
+
+\mar outperforms \far on both the training and testing sets. In addition to its poor generalization performance, \far's performance on the training set are too low to support policy learning. As a result, the remaining experiments in this paper use the \mar architecture for all reward functions. Thereafter, \MA is always used for the reward function and the terms \MA and \FA refer to the architecture of the policy.
+
+\paragraph{Architectures representations.}
+The combination of \MA for the reward function and either \MA or \FA for the policy are represented in Figure~\ref{fig:archi_FA_MA}.  
+
+
+
+\paragraph{Policy architecture comparison.} Table~\ref{tab:suppl_archi_comparison} shows that \MA significantly outperforms \FA on both the training and testing sets at convergence. Figure~\ref{fig:suppl_ma_fa_comparison_gene} clearly shows an important gap between the generalization performance of the modular and the flat architecture. In average, less than 20\% of the testing goals can be achieved with \FA when \MA masters half of them without imagination. Moreover, there is no significant difference between the never and the early imagination conditions for the flat architecture. The generalization boost enabled by the imagination is only observable for the modular architecture (see Main Table~\ref{tab:archi_comparison}). Figure~\ref{fig:suppl_ma_fa_comparison_i2ctest} and \ref{fig:suppl_ma_fa_comparison_i2cextra} support similar conclusions for exploration: only the modular architecture enable goal imagination to drive an exploration boost on the testing and extra sets of interactions.
+
+
+\begin{table}[h!]
+    \caption{Architectures performance. Both p-values$~<~10^{-10}$.}
+    \label{tab:suppl_archi_comparison}
+    \vspace{0.2cm}
+    \centering
+    \begin{tabular}{l|cc}
+    & $\SR_\train$ & $\SR_\test$\\
+    \hline    
+    \MA & $0.95 \pm 0.05$ & $0.76 \pm 0.10 $  \\
+    \FA &  $0.40 \pm 0.13$&$ 0.16 \pm 0.06$ \\
+    \end{tabular}
+\end{table}
+
+
+\begin{figure*}[!h]
+    \label{fig:reward_all_archi}
+    \centering
+    \subfigure[\label{fig:archi_far}\far]{\includegraphics[width=0.42\textwidth]{imagine/archi_far.pdf}}
+    \subfigure[\label{fig:archi_mar}\mar]{\includegraphics[width=0.57\textwidth]{imagine/archi_mar.pdf}}\\
+    \caption{\textbf{Reward function architectures}: (a) \textit{Flat-attention} reward function (\far) and (b) \textit{Modular-attention} reward function (\mar). We use \mar for all experiments except for the experiment in Table~\ref{tab:suppl_reward_function_archi_comparison}
+    \label{fig:archi_far_mar}}
+\end{figure*}
+
+\begin{figure*}[!h]
+    \label{fig:all_archi}
+    \centering
+    \subfigure[\label{fig:archi_FA}]{\includegraphics[width=\textwidth]{imagine/archi_FA.pdf}}
+    \subfigure[\label{fig:archi_MA}]{\includegraphics[width=\textwidth]{imagine/archi_MA.pdf}}\\
+    \caption{\textbf{Policy and reward function architectures:} (a) \textit{Modular-attention} (\MA) reward + \textit{Flat-attention} (\FA) policy. (b) \MA reward + \MA policy. In both figures, the reward function is represented on the right in green, the policy on the left in pink, the language encoder in the bottom in yellow and the attention mechanisms at the center in blue.
+    \label{fig:archi_FA_MA}}
+\end{figure*}
+
+\begin{figure}[!h]
+    \centering
+    \subfigure[\label{fig:suppl_ma_fa_comparison_gene}\textbf{$\SR_\test$}]{\includegraphics[width=0.47\textwidth]{imagine/ARCHITECTURE_sr_train_test_compressed.pdf}}
+    \subfigure[\label{fig:suppl_ma_fa_comparison_i2ctrain}\textbf{$\itwoc_\train$}]{\includegraphics[width=0.47\textwidth]{imagine/GOAL_INVENTION_archi_exploration_count_reward_train_set_compressed.pdf}} \\
+    \subfigure[\label{fig:suppl_ma_fa_comparison_i2ctest}\textbf{$\itwoc_\test$}]{\includegraphics[width=0.47\textwidth]{imagine/GOAL_INVENTION_archi_exploration_count_reward_test_set_compressed.pdf}}
+    \subfigure[\label{fig:suppl_ma_fa_comparison_i2cextra}\textbf{$\itwoc_\text{extra}$}]{\includegraphics[width=0.47\textwidth]{imagine/GOAL_INVENTION_archi_exploration_count_reward_extra_set_compressed.pdf}}
+    \caption{\textbf{Policy architecture comparison: } (a) $\SR$ on $\G^\test$ for the \FA and \MA architectures when the agent starts imagining goals early (plain, after the black vertical dashed line) or never (dashed). (b, c, d) \itwoc on interactions from the training, testing and extra sets respectively. Imagination is performed using \CGH. Stars indicate significant differences between \CGH and the corresponding \textit{no imagination} baseline.
+    \label{fig:suppl_ma_fa_comparison}}
+\end{figure}
+
+
+In preliminary experiments, we tested a \textit{Flat-Concatenation} (\textsc{fc}\xspace) architecture where the gated attention mechanism was replaced by a simple concatenation of goal encoding to the state vector. We did not found signficant difference with respect to \FA. We chose to pursue with the attention mechanism, as it improves model interpretability (see Additional Visualization \ref{sec:suppl_visu}).
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Reward Function 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Focus on Reward Function}
+\label{sec:suppl_reward}
+Our \imagine agent is autonomous and, as such, needs to learn its own reward function. It does so by leveraging a weak supervision from a social partner that provides descriptions in a simplified language. This reward function can be used for many purposes in the architecture. This paper leverages some of these ideas (the first two), while others are left for future work (the last two):
+
+\begin{itemize}
+    \item
+    \textbf{Behavior Adaptation.} As Main Section~\ref{sec:res_imag_exp} showed, the reward function enables agents to adapt their behavior with respect to imagined goals. Whereas the zero-shot generalization pushed agents to grow plants with food and water with equal probability, the reward function helped agents to correct that behavior towards more water.
+    \item 
+    \textbf{Guiding Hindsight Experience Replay (\her).} In multi-goal RL with discrete sets of goals, \her is traditionally used to modify transitions sampled from the replay buffer. It replaces originally targeted goals by others randomly selected from the set of goals \cite{andrychowicz2017hindsight,unicorn}. This enables to transfer knowledge between goals, reinterpreting trajectories in the light of new goals. In that case, a reward function is required to compute the reward associated to that new transition (new goal). To improve on random goal replay, we favor goal substitution towards goals that actually match the state and have higher chance of leading to rewards. In \imagine, we scan a set of $40$ goal candidates for each transition, and select substitute goals that match the scene when possible, with probability $p~=~0.5$.
+    \item 
+    \textbf{Exploring like Go-Explore.} In Go-Explore \cite{ecoffet2019go}, agents first reach a goal state, then start exploring from there. We could reproduce that behavior in our \imagine agents with our internal reward function. The reward function would scan each state during the trajectory. When the targeted goal is found to be reached, the agent could switch to another goal, add noise on its goal embedding, or increase the exploration noise on actions. This might enable agents to explore sequences of goal-directed behaviors. We leave the study of this mechanism for future work.
+    \item 
+    \textbf{Filtering of Imagined Goals.} When generating imagined goals, agents also generate meaningless goals. Ideally, we would like agents to filter these from meaningful goals. Meaningful goals, are goals the agent can interpret with its reward function, goals from which it can learn directed behavior. They are interpreted from known related goals via the generalization of the reward function. If we consider an ensemble of reward functions, chances are that all reward functions in the ensemble will agree on the interpretation of meaningful imagined goals. On the other hand, they might disagree on meaningless goals, as their meanings might not be as easily derived from known related goals. Using an ensemble of reward function may thus help agents filter meaningful goals from meaningless ones. This could be done by labeling a dataset of trajectories with positive or negative rewards and comparing results between reward functions, effectively computing agreement measures for each imagined goals. Having an efficient filtering mechanism would drastically improve the efficiency of goal imagination, as Main Section~\ref{sec:res_im_properties} showed that the ratio of meaningful goals determines generalizations performance. This is also left for future work.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%$ VIZ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Additional Visualizations}
+\label{sec:suppl_visu}
+
+\paragraph{Visualizing Goal Embedding}
+To analyze the goal embeddings learned by the language encoder $L_e$, we perform a t-SNE using $2$ components, perplexity $20$, a learning rate of $10$ for $5000$ iterations. Figure~\ref{fig:suppl_tsne} presents the resulting projection for a particular run. The embedding seems to be organized mainly in terms of motor predicates (\ref{fig:suppl_tsne_predicate}), then in terms of colors (\ref{fig:suppl_tsne_color}). Object types or categories do not seem to be strongly represented (\ref{fig:suppl_tsne_cat}). 
+
+\begin{figure*}[!hb]
+  \centering
+  \subfigure[\label{fig:suppl_tsne_predicate}]{\includegraphics[width=0.323\textwidth]{imagine/TSNE_predicate.pdf}}
+  \subfigure[\label{fig:suppl_tsne_color}]{\includegraphics[width=0.323\textwidth]{imagine/TSNE_colors.pdf}}
+  \subfigure[\label{fig:suppl_tsne_cat}]{\includegraphics[width=0.323\textwidth]{imagine/TSNE_categories.pdf}}
+  \caption{\textbf{t-SNE of Goal Embedding.} The same t-SNE is presented, with different color codes (a) predicates, (b) colors, (c) object categories.}
+  \label{fig:suppl_tsne}
+\end{figure*}   
+
+\paragraph{Visualizing Attention Vectors}
+
+In the \textit{modular-attention} architectures for the reward function and policy, we train attention vectors to be combined with object-specific features using a gated attention mechanism. In each architecture, the attention vector is shared across objects (permutation invariance). Figure~\ref{fig:att} presents examples of attention vectors for the reward function (\ref{fig:att_rew}) and for the policy (\ref{fig:att_pol}) at the end of training. These attention vectors highlight relevant parts of the object-specific sub-state depending on the \NL  goal:
+
+\begin{itemize}
+    \item When the sentence refers to a particular object type (e.g. \textit{dog}) or category (e.g. \textit{living thing}), the attention vector suppresses the corresponding object type(s) and highlights the complement set of object types. If the object does not match the object type or category described in the sentence, the output of the Hadamard product between object types and attention will be close to $1$. Conversely, if the object is of the required type, the attention suppression ensures that the output stays close to zero. Although it might not be intuitive for humans, it efficiently detects whether the considered object is the one the sentence refers to.
+    \item When the sentence refers to a navigation goal (e.g. \textit{go top}, the attention highlights the agent's position (here $y$).
+    \item When the sentence is a \textit{grow} goal, the reward function focuses on the difference in object's size, while the policy further highlights the object's position.
+\end{itemize}
+The attention vectors uses information about the goal to highlight or suppress parts of the input using the different strategies described above depending on the type of input (object categories, agent's position, difference in size etc). This type of gated-attention improves the interpretability of the reward function and policy. 
+
+\begin{figure*}[!htbp]
+  \centering
+   \subfigure[\label{fig:att_rew}]{\includegraphics[width=0.7\textwidth]{imagine/ATTENTION_reward_vizu_complete.pdf}}\\
+   \subfigure[\label{fig:att_pol}]{\includegraphics[width=0.7\textwidth]{imagine/ATTENTION_policy_vizu_complete.pdf}}\\
+  \caption{\textbf{Attention vectors} (a) $\balpha^g$ for the reward function ($1$ seed). (b) $\bbeta^g$ for the policy ($1$ seed).}
+  \label{fig:att}
+\end{figure*}   
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Additional discussion 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Comparing IMAGINE to goal-as-state approaches.}
+\label{sec:suppl_discu}
+In the goal-conditioned RL literature, some works have proposed goal generation mechanisms to facilitate the acquisition of skills over large sets of goals \cite{nair2018visual,pong2019skew,curious,nair2019contextual}. Some of them had a special interest in exploration, and proposed to bias goal sampling towards goals from low density areas \cite{pong2019skew}. One might then think that \imagine should be compared to these approaches. However, there are a few catches: 
+\begin{enumerate}
+    \item 
+    \citet{nair2018visual,nair2019contextual,pong2019skew} use generative models of states to sample state-based goals. However, our environment is procedurally generated. This means that sampling a given state from the generative model has a very low probability to \textit{match} the scene. If the present objects are three red cats, the agent has no chance to reach a goal specifying dogs and lions' positions, colors and sizes. Indeed, most of the state space is made of  object features that cannot be acted upon (colors, types, sizes of most objects). One could imagine using \SP to organize the scene, but we would need to ask \SP to find the three objects specified by the generated goal, in the exact colors (RGB codes) and size. Doing so, there would be no distracting object for agent to discover and learn about. A second option is to condition the goal generation on the scene as it is done in \citet{nair2019contextual}. The question of whether it might work in procedurally-generated environments remains open.
+    \item 
+    Assuming a perfect goal generator that only samples valid goals that do not ask a change of object color or type, the agent would then need to bring each object to its target position and to grow objects to their very specific goal size. These goals are not the same as those targeted by \imagine, they are too specific. These approaches --like most goal-conditioned RL approaches-- represent goals as particular states (e.g. block positions in manipulation tasks, visual states in navigation tasks) \cite{schaul2015universal,andrychowicz2017hindsight,nair2018visual,pong2019skew,curious}. In contrast, language-conditioned agents represent abstract goals, usually defined by specific constraints on states (e.g. \textit{grow any plant} requires the size of at least one plant to increase) \cite{chan2019actrce,Jiang2019,ther}. 
+    For this reason, \textit{goal-as-state} and \textit{abstract goal} approaches do not tackle the same problem. The first targets specific coordinates, and cannot be instructed to reach abstract goals, while the second are not trained to reach specific states.
+\end{enumerate}
+
+For these reasons, we argue that the goal-conditioned approaches that use state-based goals cannot be easily or fairly compared to our approach \imagine.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% IMPLEMENTATION DETAILS 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\clearpage
+\section{Implementation details}
+\label{sec:supp_impl_details}
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+
+\paragraph{Reward function inputs and hyperparameters.} Supplementary Section~\ref{sec:suppl_archi} details the architecture of the reward function. The following provides extra details about the inputs. The object-dependent sub-state $\mathbf{s}_{obj(i)}$ contains information about both the agent's body and the corresponding object $i$:  $\mathbf{s}_{obj(i)}=[\mathbf{o}_{body}, \Delta{\mathbf{o}_{body}}, \mathbf{o}_{obj(i)}, \Delta{\mathbf{o}_{obj(i)}}]$ where $\mathbf{o}_{body}$ and $\mathbf{o}_{obj(i)}$ are body- and $obj_i$-dependent observations, and $\Delta{\mathbf{o}^t_{body}}~=~\mathbf{o}_{body}^t-\mathbf{o}_{body}^0$ and $\Delta{\mathbf{o}^t_{obj(i)}}~=~\mathbf{o}_{obj(i)}^t-\mathbf{o}_{obj(i)}^0$ measure the difference between the initial and current observations. The second input is the attention vector $\balpha^g$ that is integrated with $\mathbf{s}_{obj(i)}$ through an Hadamard product to form the model input: $\mathbf{x}_i^g=\mathbf{s}_{obj(i)} \odot \balpha^g$. This attention vector is a simple mapping from $\textbf{g}$ to a vector of the size of $\mathbf{s}_{obj(i)}$ contained in $[0,1]^{size(\mathbf{s}_{obj(i)})}$. This cast is implemented by a one-layer neural network with sigmoid activations $\texttt{NN}^\text{cast}$ such that $\balpha^g=\texttt{NN}^\text{cast}(\mathbf{g})$.
+
+For the three architectures the number of hidden units of the \texttt{LSTM} and the sizes of the hidden layers of fully connected networks are fixed to $100$. \texttt{NN} parameters are initialized using He initialization \cite{he} and we use one-hot word encodings. The \texttt{LSTM} is implemented using \texttt{rnn.BasicLSTMCell} from tensorflow 1.15 based on \citet{zaremba2014recurrent}. The states are initially set to zero. The \texttt{LSTM}'s weights are initialized uniformly from $[-0.1,0.1]$ and the biases initially set to zero. The \texttt{LSTM} use a $tanh$ activation function whereas the \texttt{NN} are using ReLU activation functions in their hidden layers and sigmoids at there output.
+
+\paragraph{Reward function training schedule.} The architecture are trained via backpropagation using the Adam Optimizer \cite{kingma2014adam}. The data is fed to the model in batches of $512$ examples. Each batch is constructed so that it contains at least one instance of each goal description $g_\text{NL}$ (goals discovered so far). We also use a modular buffer to impose a ratio of positive rewards of $0.2$ for each description in each batch. When trained in parallel of the policy, the reward function is updated once every $1200$ episodes. Each update corresponds to up to $100$ training epochs ($100$ batches). We implement a stopping criterion based on the $F_1$-score computed from a held-out test set uniformly sampled from the last episodes ($20\%$ of the last $1200$ episodes (2 epochs)). The update is stopped when the $F_1$-score on the held-out set does not improve for $10$ consecutive training epochs.
+
+\paragraph{RL implementation and hyperparameters.} In the policy and critic architectures, we use hidden layers of size $256$ and ReLU activations. Attention vectors are cast from goal embeddings using single-layer neural networks with sigmoid activations. We use the He initialization scheme for \cite{he} and train them via backpropagation using the Adam optimizer ($\beta_1=0.9, \beta_2=0.999$) \cite{kingma2014adam}.
+
+Our learning algorithm is built on top of the OpenAI Baselines implementation of \her-\ddpg.\footnote{ The OpenAI Baselines implementation of \her-\ddpg can be found at https://github.com/openai/baselines, our implementation can be found at \url{https://sites.google.com/view/imagine-drl}.\footnote{Link to our Github repository will be added in the final version.}} We leverage a parallel implementation with $6$ actors. Actors share the same policy and critic parameters but maintain their own memory and conduct their own updates independently. Updates are then summed to compute the next set of parameters broadcast to all actors. Each actor is updated for $50$ epochs with batches of size $256$ every $2$ episodes of environment interactions. Using hindsight replay, we enforce a ratio $p=0.5$ of transitions associated with positive rewards in each batch. We use the same hyperparameters as \citet{plappert2018multi}. 
+
+
+
+\paragraph{Computing resources.}
+The RL experiments contain $8$ conditions of $10$ seeds each, and $4$ conditions with $5$ seeds (\SP study). Each run leverages $6$ cpus ($6$ actors) for about $36$h for a total of $2.5$ cpu years. Experiments presented in this paper requires machines with at least $6$ cpu cores.
+
+
+\end{document}
