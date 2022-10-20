@@ -6,6 +6,12 @@
 
 \usepackage[english]{babel} % English please
 \usepackage{natbib}
+
+\makeatletter
+\let\c@lofdepth\relax
+\let\c@lotdepth\relax
+\makeatother
+\usepackage{subfig}
 \usepackage{subfiles}
 
 \usepackage{amsmath,amssymb,mathtools} % Math
@@ -22,8 +28,6 @@ pdfborder={0 0 0},      % No borders around internal hyperlinks
     urlcolor=black,       % color of url links
     allcolors=mybluetwo
 }
-
-
 
 % TRIM MARKS HERE
 
@@ -129,10 +133,21 @@ pdfborder={0 0 0},      % No borders around internal hyperlinks
 \setlength{\intextsep}{0.8cm} % change separation between float and text
 \usepackage{xspace}
 \usepackage{subfig}
-\usepackage[noend]{algpseudocode} 
-\usepackage{algorithm}
-\newfloat{architecture}{t}{lop}  % Create an architecture float
-\floatname{architecture}{Architecture}
+
+
+%algorithms
+\usepackage{algorithmic}
+\usepackage[ruled]{algorithm2e}
+\newlength\myindent
+\setlength\myindent{2em}
+\newcommand\bindent{%
+  \begingroup
+  \setlength{\itemindent}{\myindent}
+  \addtolength{\algorithmicindent}{\myindent}
+}
+\newcommand\eindent{\endgroup}
+\usepackage{amsmath}
+
 % nice tables
 \usepackage{booktabs}
 \renewcommand{\arraystretch}{1.2}  % increase space between rows
@@ -148,7 +163,7 @@ pdfborder={0 0 0},      % No borders around internal hyperlinks
 \usepackage{lscape}  % package to define a landscape page
 
 % colors
-\usepackage[dvipsnames]{xcolor}
+%\usepackage[dvipsnames]{xcolor}
 \definecolor{myred}{rgb}{0.8,0,0}
 \definecolor{mygreen}{rgb}{0,0.6,0}
 \definecolor{myblue}{rgb}{0,0,0.7}
@@ -178,25 +193,20 @@ pdfborder={0 0 0},      % No borders around internal hyperlinks
 \usepackage{stmaryrd}
 \usepackage{bbold} % alternative mathbb symbols (i think they are cooler)
 
-% algorithm voodoo
-\newlength{\whilewidth}
-\settowidth{\whilewidth}{\algorithmicwhile\ }
-\algnewcommand{\parState}[1]{\State%
-  \parbox[t]{\dimexpr\linewidth-\algmargin}{\strut #1\strut}}
- 
-% Define function to enable line comments for algorithms, starting with a little triangle
-\makeatletter
-\newlength{\trianglerightwidth}
-\settowidth{\trianglerightwidth}{$\triangleright$~}
-\algnewcommand{\LineComment}[1]{\Statex \hskip\ALG@thistlm $\triangleright$ #1}
-\algnewcommand{\LineCommentCont}[1]{\Statex \hskip\ALG@thistlm%
-  \parbox[t]{\dimexpr\linewidth-\ALG@thistlm}{\hangindent=\trianglerightwidth \hangafter=1 \strut$~~~\triangleright$ #1\strut}}
-\algnewcommand{\LineCommentConttwo}[1]{\Statex \hskip\ALG@thistlm%
-  \parbox[t]{\dimexpr\linewidth-\ALG@thistlm}{\hangindent=\trianglerightwidth \hangafter=1 \strut$~~~~~\nobreak\hspace{.16667em plus .08333em}~~\triangleright$ #1\strut}}
-\makeatother
+
 
 %%% NEW COMMANDS
 %%%------------------------------------------------------------------------------
+
+\input{math_commands.tex}
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+\newcommand{\abim}{\textsc{abig}\xspace}
+\newcommand{\abig}{\textsc{abig}\xspace}
+\newcommand{\abp}{\textsc{abp}\xspace}
+\newcommand{\supp}[1]{\text{Sup. Section~\ref{#1}}}
+\newcommand{\ap}{Suppl. Section~}
 
 % to do
 % you can comment the renew commands to make them disappear
@@ -204,6 +214,10 @@ pdfborder={0 0 0},      % No borders around internal hyperlinks
 \renewcommand{\todo}[1]{\textcolor{myred}{\textbf{Todo:}\textit{#1}}}
 \newcommand{\tocite}[1]{}
 \renewcommand{\tocite}[1]{\textcolor{myred}{\textbf{Tocite:}\textit{#1}}}
+
+% Math commands
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator*{\argmin}{argmin}
 
 % shortcuts for algorithm names and maths stuff
 \newcommand{\bi}[1]{\textbf{\textit{#1}}}

@@ -1,6 +1,231 @@
 \chapter{Learning to Guide and to Be Guided in the Architect-Builder Problem}
 
+\begin{abstract}
+We are interested in interactive agents that learn to coordinate, namely, a \emph{builder} -- which performs actions but ignores the goal of the task, i.e. has no access to rewards -- and an \emph{architect} which guides the builder towards the goal of the task. 
+We define and explore a formal setting where artificial agents are equipped with mechanisms that allow them to simultaneously learn a task while at the same time evolving a shared communication protocol.  
+Ideally, such learning should only rely on high-level communication priors and be able to handle a large variety of tasks and meanings while deriving communication protocols that can be reused across tasks.
+The field of Experimental Semiotics has shown the extent of human proficiency at learning from a priori unknown instructions meanings. Therefore, we take inspiration from it and present the Architect-Builder Problem (\abp): an asymmetrical setting in which an architect must learn to guide a builder towards constructing a specific structure. The architect knows the target structure but cannot act in the environment and can only send arbitrary messages to the builder. The builder on the other hand can act in the environment, but receives no rewards nor has any knowledge about the task, and must learn to solve it relying only on the messages sent by the architect. Crucially, the meaning of messages is initially not defined nor shared between the agents but must be negotiated throughout learning.
+Under these constraints, we propose Architect-Builder Iterated Guiding (\abig), a solution to the Architect-Builder Problem where the architect leverages a learned model of the builder to guide it while the builder uses self-imitation learning to reinforce its guided behavior. To palliate to the non-stationarity induced by the two agents concurrently learning, \abig structures the sequence of interactions between the agents into interaction frames. We analyze the key learning mechanisms of \abig and test it in a 2-dimensional instantiation of the \abp where tasks involve grasping cubes, placing them at a given location, or building various shapes. In this environment, \abig results in a low-level, high-frequency, guiding communication protocol that not only enables an architect-builder pair to solve the task at hand, but that can also generalize to unseen tasks.
+\end{abstract}
+
 \section{Motivations}
+
+Humans are notoriously successful at teaching -- and learning from -- each others. This enables skills and knowledge to be shared and passed along generations, being progressively refined towards mankind's current state of proficiency. People can teach and be taught in situations where there is no shared language and very little common ground, such as a parent teaching a baby how to stack blocks during play. Experimental Semiotics \cite{galantucci2011experimental}, a line of work that studies the forms of communication that people develop when they cannot use pre-established ones, reveals that humans can even teach and learn without direct reinforcement signal, demonstrations or a shared communication protocol. \cite{vollmer2014studying} for example investigate a co-construction (CoCo) game experiment where an architect must rely only on arbitrary instructions to guide a builder toward constructing a structure. In this experiment, both the task of building the structure and the meanings of the instructions -- through which the architect guides the builder -- are simultaneously learned throughout interactions. Such flexible teaching -- and learning -- capabilities are essential to autonomous artificial agents if they are to master an increasing number of skills without extensive human supervision.
+As a first step toward this research direction, we draw inspiration from the CoCo game and propose the \textit{Architect-Builder Problem} (\abp): an interactive learning setting that models agents' interactions with \textit{Markov Decision Processes} \cite{puterman2014markov} (MDPs). 
+In the \abp learning has to occur in a social context through observations and communication, in the absence of direct imitation or reinforcement \cite{bandura1977social}. Specifically, the constraints of the \abp are: (1) the builder has absolutely no knowledge about the task at hand (no reward and no prior on the set of possible tasks), (2) the architect can only interact with the builder through communication signals (cannot interact with the environment or provide demonstrations), and (3) the communication signals have no pre-defined meanings (nor belong to a set of known possible meanings). 
+(1) sets this work apart from Reinforcement Learning (RL) and even Multi-Agent RL (MARL) where explicit rewards are available to all  agents. (2) implies the absence of tele-operation or third-person demonstrations and thus distinguishes the \abp from Imitation and Inverse Reinforcement Learning (IRL)% on expert demonstrations
+. Finally, (3) prevents the architect from relying on a fixed communication protocol since the meanings of instructions must be negotiated.
+
+These constraints make \abp an appealing setting to investigate \textit{Human-Robot Interaction} (HRI) \cite{goodrich2008human} problems where ``a learner tries to figure out what a teacher wants them to do'' \cite{grizou2013robot,cederborg2014social}. Specifically, the challenge of \textit{Brain Computer Interfaces} (BCI), where users use brain signals to control virtual and robotic agents in sequential tasks \cite{Katyal2014,deBettencourt2015ClosedloopTO,Mishra2015ClosedloopCT,MUNOZMOLDES2020681,Chiang2021Closed}, is well captured by the \abp.
+%interactive learning setting.
+In BCIs, (3) is identified as the calibration problem and is usually tackled with supervised learning to learn a mapping between signals and meanings. As this calibration phase is often laborious and impractical for users, current approaches investigate calibration-free solutions where the mapping is learned interactively \cite{grizou:hal-00984068,xie2021interaction}.
+Yet, these works consider that the user (i.e. the architect) is fixed, in the sense that it does not adapt to the agent (i.e. the builder) and uses a set  of pre-defined instructions (or feedback) meanings that the agent must learn to map to signals. In our \abp formulation however, the architect is dynamic and, as interactions unfold, must learn to best guide a learning builder by tuning the meanings of instructions according to the builder's reactions. In that sense, \abp provides a
+more complete computational model of agent-agent or human-agent interaction. 
+
+With all these constraints in mind, we propose Architect Builder Iterated Guiding (\abig), an algorithmic solution to \abp when both agents are AIs. \abig is inspired by the field of experimental semiotics and relies on two high-level interaction priors: \emph{shared intent} and \emph{interaction frames}. Shared intent refers to the fact that, although the builder ignores the objective of the task to fulfill, it will assume that its objective is aligned with the architect's. This assumption is characteristic of cooperative tasks and shown to be a necessary condition for the emergence of communication both in practice \cite{foerster2016learning, cao2018emergent} and in theory \cite{crawford1982strategic}. Specifically, the builder should assume that the architect is guiding it towards a shared objective. Knowing this, the builder must reinforce the behavior it displays when guided by the architect. We show that the builder can efficiently implement this by using imitation learning on its own guided behavior. Because the builder imitates itself, we call it self-imitation.  The notion of \emph{interaction frames} (also called \emph{pragmatic frames}) states that agents that interact in sequence can more easily interpret the interaction history \cite{bruner1985child,vollmer2016pragmatic}. In \abig, we consider two distinct interaction frames. These are stationary which means that when one agent learns, the other agent’s behavior is fixed. During the first frame (the modelling frame), the builder is fixed and the architect learns a model of the builder's message-conditioned behavior. During the second frame (the guiding frame), the architect is fixed and the builder learns to be guided via self-imitation learning. 
+
+We show that \abig results in a low-level, high-frequency, guiding communication protocol that not only enables an architect-builder pair to solve the task at hand, but can also be used to solve unseen tasks.
+\textbf{Our contributions are:} 
+\begin{itemize}[noitemsep]
+    \item The %formulation of the 
+    Architect-Builder Problem (\abp), an interactive learning setting to study how %the mechanisms by which 
+    artificial agents can simultaneously learn to solve a task and derive a communication protocol. 
+    \item Architect-Builder Iterated Guiding (\abig), an algorithmic solution to the \abp. 
+    \item An analysis of \abig's key learning mechanisms. 
+    \item An evaluation of \abig on a construction environment where we show that \abig agents evolve communication protocols that generalize to unseen harder tasks.
+    \item A detailed analysis of \abig's learning dynamics and impact on the mutual information between messages and actions (in the Supplementary Material). 
+\end{itemize}
+
+
 \section{The Architect-Builder Problem}
-\section{ABIG: Architect-Builder Iterated Guiding}
+
+\label{sec:prob_def}
+\textbf{The Architect-Builder Problem. } We consider a multi-agent setup composed of two agents: an architect and a builder. Both agents observe the environment state $s$ but only the architect knows the goal at hand. The architect cannot take actions in the environment but receives the environmental reward $r$ whereas the builder does not receive any reward and has thus no knowledge about the task at hand. In this asymmetrical setup, the architect can only interact with the builder through a communication signal $m$ sampled from its policy $\pia(m|s)$. These messages, that have no a priori meanings, are received by the builder which acts according to its policy $\pib(a|s,m)$. This makes the environment transition to a new state $s'$ sampled from $\Pe(s'|s,a)$ and the architect receives reward $r'$. Messages are sent at every time-step. The CoCo game that inspired \abp is sketched in Figure~\ref{fig:agent-diagram}(a) while the overall architect-builder-environment interaction diagram is given in Figure~\ref{fig:agent-diagram}(b). The differences between the \abp setting and the MARL and IRL settings are illustrated in Figure~\ref{fig:sup_mdp_diag}.
+
+\begin{figure}[!h]
+    \centering
+    \begin{tabular}{cc}
+    \includegraphics[width=0.465\textwidth]{abig/cocogame_horizontal.pdf} &\includegraphics[width=0.325\textwidth]{abig/agent_diagram_v2} \\
+    % \includegraphics[width=0.3\textwidth]{abig/high_level_figure}    &   \\
+    \small(a) & \small (b) 
+    \end{tabular}
+    \caption{(a) \textbf{Schematic view of the CoCo Game (the inspiration for \abp).} The architect and the builder should collaborate in order to build the construction target while located in different rooms. The architecture has a picture of the target while the builder has access to the blocks. The architect monitors the builder workspace via a camera (video stream) and can communicate with the builder only through the use of 10 symbols (button events). (b) \textbf{Interaction diagram between the agents and the environment in our proposed \abp.} The architect communicates messages ($m$) to the builder.  Only the builder can act ($a$) in the environment. The builder conditions its action on the message sent by the builder ($\pib(a|s,m)$). The builder never perceives any reward from the environment. A schematic view of the equivalent \abp problem is provided in Figure~\ref{fig:sup_diagram}(b).}
+    \label{fig:agent-diagram}
+\end{figure}
+
+
+\textbf{BuildWorld. }
+We conduct our experiments in \textit{BuildWorld}. BuildWorld is a 2D construction grid-world of size $(w\times h)$. At the beginning of an episode, the agent and $N_b$ blocks are spawned at different random locations. The agent can navigate in this world and grasp blocks by activating its gripper while on a block. The action space $\mathcal{A}$ is discrete and include a ``do nothing'' action ($|\mathcal{A}|=6$).
+%More specifically, the agent has a discrete action  space $\mathcal{A}$ of size 6: the first four actions control the direction of navigation (North, South, East, West); the fifth action toggles the gripper (grasp/drop) and the last one is a ``do nothing'' action.
+At each time step, the agent observes its position in the grid, its gripper state as well as the position of all the blocks and if they are grasped ($|\mathcal{S}|=3+3N_{b}$). 
+
+\textbf{Tasks. } BuildWorld contains 4 different training tasks: 1) `Grasp': The agent must grasp any of the blocks; 2) `Place': The agent must place any block at a specified location in the grid; 3/4) `H-Line/V-line': The agent must place all the blocks in a horizontal/vertical line configuration. BuildWorld also has a harder fifth testing task, `6-blocks-shapes', that consists of more complex configurations and that is used to challenge an algorithm's transfer abilities. For all tasks, rewards are sparse and only given when the task is completed. 
+
+This environment encapsulates the interactive learning challenge of \abp while removing the need for complex perception or locomotion. 
+In the RL setting, where the same agent acts and receives rewards%the agent that acts in the environment is also the one that receives the ground-truth reward
+, this environment would not be very impressive. However, it remains to be shown that the tasks can be solved in the % challenging learning
+setting of \abp (with a reward-less builder and an action-less architect).
+
+\textbf{Communication. } The architect guides the builder by sending messages $m$ which are one-hot vectors of size $|\gV|$ ranging from 2 to 72, see \ap\ref{sup:sec_res_dict_size} for the impact of this parameter.
+
+\textbf{Additional Assumptions. }  In order to focus on the architect-builder interactions and the learning of a shared communication protocol, the architect has access to $\Pe(s'|s,a)$ and to the reward function $r(s,a)$ of the goal at hand. This assumes that, if the architect were to act in the environment instead of the builder, it would be able to quickly figure out how to solve the task. This assumption is compatible with the CoCo game experiment \cite{vollmer2014studying} where humans participants, and in particular the architects, are known to have such world models.
+
+
+\section{\abig: Architect-Builder Iterated Guiding}
+
+\section{\abig: Architect-Builder Iterated Guiding}
+\subsection{Analytical description}
+\begin{figure}[!h]
+    \centering
+    \begin{tabular}{cc}
+         \includegraphics[width=0.315\textwidth]{abig/architect-MDP.pdf} & \includegraphics[width=0.315\textwidth]{abig/architect-MDP-condensed.pdf}  \\
+        \small (a) Architect MDP & \small (b) Implicit Architect MDP\\
+        \includegraphics[width=0.315\textwidth]{abig/builder-MDP-factored.pdf} & \includegraphics[width=0.315\textwidth]{abig/builder-MDP.pdf} \\
+        \small (c) Builder MDP & \small (d) Implicit Builder MDP
+    \end{tabular}
+    \caption{\textbf{Agent's Markov Decision Processes.} Highlighted regions refer to MDP coupling. (a) The architect's transitions and rewards are conditioned by the builder's policy $\pib$. (b) Architect's MDP where transition and reward models implicitly account for builder's behavior. (c-d) The builder's transition model depends on the architect's message policy $\pia$. The builder's learning signal $r$ is unknown.}
+    \label{fig:mdp-graphs}
+\end{figure}
+\textbf{Agents-MDPs. } In the Architect-Builder Problem, agents are operating in different, yet coupled, MDPs. Those MDPs depend on their respective point of view (see Figure \ref{fig:mdp-graphs}).
+\label{ap:pb-definition}
+From the point of view of the architect, messages are actions that influence the next state as well as the reward (see Figure~\ref{fig:mdp-graphs} (a)). The architect knows the environment transition function $\Pe(s'|s,a)$ and $r(s,a)$, the true reward function associated with the task that does not depend explicitly on messages. It can thus derive the effect of its messages on the builder's actions that drive the reward and the next states (see Figure~\ref{fig:mdp-graphs} (b)). On the other hand, the builder's state is composed of the environment state and the message, which makes estimating state transitions challenging as one must also capture the message dynamics (see Figure~\ref{fig:mdp-graphs} (c)). Yet, the builder can leverage  its knowledge of the architect picking messages based on the current environment state. The equivalent transition and reward models, when available, are given below (see derivations in \ap\ref{ap:method}). 
+\begin{equation}
+\label{eq:mdp-models}
+\left.\begin{split}
+    \Pa(s'|s,m) &= \sum_{a\in\gA} \tildepib(a|s,m) \Pe(s'|a,s) \\ 
+    \ra(s,m) &= \sum_{a\in\gA}\tildepib(a|s,m)r(s,a) 
+\end{split}\right\} \quad \text{ with } \quad \tildepib(a|s,m) \triangleq P(a|s,m)
+\end{equation}
+\begin{equation}
+\label{eq:mdp-models2}
+\Pb(s',m'|s,m,a)= \tildepia(m'|s') \Pe(s'|s,a) \quad \text{ with } \quad \tildepia(m'|s') \triangleq P(m'|s')
+\end{equation}
+where subscripts $A$ and $B$ refer to the architect and the builder, respectively. $\tilde{x}$ denotes that $x$ is unknown and must be approximated. From the builder's point of view, the reward -- denoted $\tilder$ -- is unknown. This prevents the use of classical RL algorithms.
+
+\textbf{Shared Intent and Interaction Frames. } 
+It follows from Eq.~(\ref{eq:mdp-models}) that, provided that it can approximate the builder's behavior, the architect can compute the reward and transition models of its MDP. It can then use these to derive an optimal message policy $\pia^*$ that would maximize its objective:
+\begin{equation}
+\pia^* = \argmax_{\pia}\Ga = \argmax_{\pia}\E[\sum_t \gamma^t r_{\!_A ,t}]\
+\label{eq:pistar}
+\end{equation}
+$\gamma \in$ [0,1] is a discount factor and the expectation can be thought of in terms of $\pia$, $\Pa$ and the initial state distribution. However, the expectation can also be though in terms of the corresponding trajectories $\tau \triangleq \{(s,m,a,r)_t\}$ generated by the architect-builder interactions. In other words, when using $\pia^*$ to guide the builder, the architect-builder pair generates trajectories that maximizes $\Ga$.  The builder has no reward signal to maximize, yet, it relies on a shared intent prior and assumes that its objective is the same as the architect's one:
+\begin{equation}
+   \Gb = \Ga = \E_\tau[\sum_t \gamma^t r_{\!_A ,t}] = \E_\tau[\sum_t \gamma^t \tilder_{t}] 
+\end{equation}
+where the expectations are taken with respect to trajectories $\tau$ of architect-builder interactions. Therefore, under the shared intent prior, architect-builder interactions where the architect uses $\pia^*$ to maximize $\Ga$ also maximize $\Gb$. This means that the builder can interpret these interaction trajectories as demonstrations that maximize its unknown reward function $\tilder$. Consequently, the builder can reinforce the desired behavior -- towards which the architect guides it -- by performing self-Imitation Learning\footnote{not to be confused with \cite{Oh2018SIL} which is an off-policy actor-critic algorithm promoting exploration in single-agent RL. } on the interaction trajectories $\tau$. 
+
+Note that in Eq.~(\ref{eq:mdp-models}), the architect's models can be interpreted as expectations with respect to the builder's behavior. Similarly, the builder's objective depends on the architect's guiding behavior. This makes one agent's MDP highly non-stationary and the agent must adapts its behavior if the other agent's policy changes. To palliate to this, agents rely on interaction frames which means that, when one agent learns, the other agent's policy is fixed to restore stationarity. The equivalent MDPs for the architect and the builder are respectively $\Ma = \langle \gS, \gV, \Pa, \ra, \gamma \rangle$ and $\Mb = \langle \gS \times \gV, \gA, \Pb, \emptyset, \gamma \rangle$. Finally, $\pia:\gS \mapsto \gV$, $\Pa:\gS\times\gV\mapsto[0,1]$, $\ra:\gS\times\gV\mapsto[0,1]$, $\pib:\gS\times\gV\mapsto\gA$ and $\Pb:\gS\times\gV\times\gA\mapsto[0,1]$ where $\gS, \gA$ and $\gV$ are respectively the sets of states, actions and messages. 
+
+\subsection{Practical Algorithm}
+\label{subsec:practical_algo}
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{abig/interaction_phases_v4.pdf}
+    \caption{\textbf{Architect-Builder Iterated Guiding.} Agents iteratively interact through the modelling and guiding frames. In each frame, one agent collects data and improves its policy while the other agent's behavior is fixed.}
+    \label{fig:agent-interact}
+\end{figure}
+
+\abig iteratively structures the interactions between a builder-architect pair into interaction frames. Each iteration starts with a \textit{modelling frame} during which the architect learns a model of the builder. Directly after, during the \textit{guiding frame}, the architect leverages this model to produce messages that guide the builder. On its side, the builder stores the guiding interactions to train and refine its policy $\pib$. The interaction frames are described below. The algorithm is illustrated in Figure~\ref{fig:agent-interact} and the pseudo-code is reported in \textbf{Algorithm~\ref{alg:comem} in \ap\ref{ap:algo}}.
+
+\textbf{Modelling Frame. } The architect records a data-set of interactions $\Da \triangleq \{(s,m,a,s')_t\}$ by sending random messages $m$ to the builder and observing its reaction. After collecting enough interactions, the architect learns a model of the builder $\tildepib$ using \textit{Behavioral Cloning} (BC) \cite{pomerleau1991efficient}.
+
+\textbf{Guiding Frame. } During the guiding frame, the architect observes the environment states $s$ and produces messages so as to maximize its return (see Eq.~\ref{eq:pistar}). The policy of the architect is a Monte Carlo Tree Search Algorithm (MCTS) \cite{kocsis2006bandit} that searches for the best message by simulating the reaction of the builder using $\tilde{a} \sim \tildepib(\cdot|m,s)$ alongside the dynamics and reward models. During this frame, the builder stores the interactions in a buffer $\Db \triangleq\{(s,m,a,s')_t\}$. At the end of the guiding frame, the builder self-imitates by updating its policy $\pib$ with BC on $\Db$.
+%
+
+\textbf{Practical Considerations. } All models are parametrized by two-hidden layer 126-units feedforward ReLu networks. BC minimizes the cross-entropy loss with Adam optimizer \cite{kingma2014adam}. Networks are re-initialized before each BC training. The architect's MCTS uses Upper-Confidence bound for Trees and relies on heuristics rather than Monte-Carlo rollouts to estimate the value of states. For more details about training, MCTS and hyper-parameters please see \ap\ref{ap:algo}.
+
+The resulting method (\abig) is general and can handle a variety of tasks while not restricting the kind of communication protocol that can emerge. Indeed, it only relies on a few high-level priors, namely, the architect's access to environment models, shared intent and interaction frames. 
+
+In addition to \abig we also investigate two control settings: 
+ \abig~\textit{-no-intent} -- the builder interacts with an architect that disregards the goal and therefore sends random messages during training. At evaluation, the architect has access to the exact model of the builder $(\tildepib= \pib)$ and leverages it to guide it towards the evaluation goal (the architect no longer disregards the goal). And \textit{random} -- the builder takes random actions.
+The comparison between \abig and \abig-no-intent measures the impact of doing self-imitation on guiding versus on non-guiding trajectories. The random baseline is used to provide a performance lower bound that indicates the task's difficulty.
+
+\subsection{Understanding the Learning Dynamics}
+\label{sec:intuition}
+Architect-Builder Iterated Guiding relies on two steps. First, the architect selects \emph{favorable} messages, i.e. messages that maximize the likelihood of the builder picking optimal actions with respect to the architect's reward. Then, the builder does self-imitation and reinforces the guided behavior by maximizing the likelihood of the corresponding messages-actions sequence under its policy. The message-to-action associations (or preferences) are encoded in the builder's policy $\pib(a|s,m)$. Maximum likelihood assumes that actions are initially equiprobable for a given message. Therefore, actions under a message that is not present in the data-set ($\Db$) remains so. In other words, if the builder never observes a message, it assumes that this message is equally associated with all the possible actions. This enables the builder to \emph{forget} past message-to-action associations that are not used -- and thus not reinforced -- by the architect. In practice, initial uniform likelihood is ensured by resetting the builder's policy network before each self-imitation. The architect can leverage the forget mechanism to erase unfavorable associations until a favorable one emerges. Such favorable associations can then be reinforced by the architect-builder pair until it is made deterministic. The \emph{reinforcement} process of favorable associations is also enabled by the self-imitation phase. Indeed, for a given message $m$, the self-imitation objective for $\pi$ on a data-set $\gD$ collected using $\pi$ is: 
+\begin{equation}
+\begin{aligned}
+    J(m, \pi) &= -\sum_{a\sim \mathcal{D}} \log\pi(a|m)\approx \E_{a\sim\pi(\cdot|m)}[-\log\pi(a|m)]\approx H[\pi(\cdot|m)]
+    \label{eq:bc_entropy}
+\end{aligned}
+\end{equation}
+where $H$ stands for the entropy of a distribution. Therefore, maximizing the likelihood in this case results in minimizing the entropy of $\pi(\cdot|m)$ and thus reinforces the associations between messages and actions. Using these mechanisms the architect can adjust the policy of the builder until it becomes \emph{controllable}, i.e. deterministic (strong preferences over actions for a given message) and flexible (varied preferences across messages). Conversely, in the case of \abig-no-intent, the architect does not guide the builder and simply sends messages at random. Favorable and unfavorable messages are thus sampled alike which prevents the forget mechanism to undo unfavorable message-to-action associations. Consequently in that case, self-imitation tends to simply reinforce initial builder's preferences over actions making the controllability of the builder policy depend heavily on the initial preferences. We illustrate the above learning mechanisms in \ap\ref{sup:sec_res_toy} by applying \abig to a simple instantiation of the \abp. Figure \ref{fig:bd_optim} and Figure~\ref{sup:fig_res_toy} confirm that \abig uses the forget and reinforcement mechanisms to circumvent the unfavorable initial conditions while \abig-no-intent simply reinforces them. Eventually, Figure~\ref{sup:fig_res_toy} reports that \abig always reaches 100\% success rate regardless of the initial conditions while \abig-no-intent success rate depends on the initial preferences (only 3\% when they are unfavorable). 
+
+Interestingly, the emergent learning mechanisms discussed here are reminiscent of the amplification and self-enforcement of random fluctuations in naming games \cite{steels1995self}. In naming games however, the self-organisation of vocabularies are driven by each agent maximizing its communicative success whereas in our case the builder has no external learning signal and simply self-imitates.
+
+\subsection{Related Work}
+%This work is inspired by experimental semiotics \cite{galantucci2011experimental} and more specifically \cite{vollmer2014studying} that studied the Architect-Builder Problem (\abp) with human subjects as a key step towards Human-Robot Interaction (HRI). Here we take a complementary approach by defining and investigating the learning mechanisms involved to solve the \abp where both agents are AIs. 
+This work is inspired by experimental semiotics \cite{galantucci2011experimental} and in particular \cite{vollmer2014studying} that studied the CoCo game with human subjects as a key step towards understanding the underlying mechanisms of the emergence of communication. Here we take a complementary approach by defining and investigating solutions to the \abp, a general formulation of the CoCo game where both agents are AIs. 
+
+Recent MARL work \cite{lowe2017multi,woodward2020learning, roy2020promoting, ndousse2021emergent}, investigate how RL agents trained in the presence of other agents leverage the behaviors they observe to improve learning. In these settings, the other agents are used to build useful representation or gain information but the main learning signal of every agent remains a ground truth reward. 
+
+Feudal Learning \cite{dayan1992feudal, kulkarni2016hierarchical, vezhnevets2017feudal, nachum2018data,  ahilan2019feudal} investigate a setting where a manager sets the rewards of workers to maximize its own return. In this Hierarchical setting, the manager interacts by directly tweaking the workers' learning signal. This would be unfeasible for physically distinct agents, hence those methods are restricted to single-agent learning. On the other hand, \abp considers separate agents, that must hence communicate by influencing each other's observations instead of rewards signals. 
+
+Inverse Reinforcement Learning (IRL) \cite{ng2000algorithms} and Imitation Learning (IL) \cite{pomerleau1991efficient} have been investigated for HRI when it is challenging to specify a reward function. Instead of defining rewards, IRL and IL rely on expert demonstrations. \cite{hadfield2016cooperative} argue that learning from expert demonstrations is not always optimal and investigate how to produce instructive demonstrations to best teach an apprentice. Crucially, the expert is aware of the mechanisms by which the apprentice learns, namely RL on top of IRL. This allows the expert to assess how its demonstrations influence the apprentice policy, effectively reducing the problem to a single agent POMDP. In our case however, the architect and the builder do not share the same action space which prevents the architect from producing demonstrations. In addition, the architect ignores the builder's learning process which makes the simplification to a single agent teacher problem impossible. 
+
+In essence, the \abp is closest to works tackling the calibration-free BCI control problem \cite{grizou:hal-00984068, xie2021interaction}. Yet, these works both consider that the architect sends messages after the builder's actions and thus enforce that the feedback conveys a reward. Crucially, the architect does not learn and communicates with a fixed mapping between feedback and pre-defined meanings ("correct" vs. "wrong"). Those meanings are known to the builder and it simply has to learn the mapping between feedback and meaning. In our case however, the architect communicates before the builder's action and thus rather gives instructions than feedback. Additionally, the builder has no a priori knowledge of the set of possible meanings and the architect adapts those to the builder's reaction. Finally, \cite{grizou2013robot} handles both feedback and instruction communications but relies on known task distribution and set of possible meanings. In terms of motivations, previous works are interested in one robot figuring out a fixed communication protocol while we train two agents to collectively emerge one.
+
+Our BuildWorld resembles GridLU proposed by \cite{bahdanau2019learning} to analyze reward modelling in language-conditioned learning. However, their setting is fundamentally different to ours as it investigates single agent goal-conditioned IL where goals are predefined episodic linguistic instructions labelling expert demonstrations. \cite{nguyen2021interactive} alleviate the need for expert demonstrations by introducing an interactive teacher that provides descriptions of the learning agent's trajectories. In this HRI setting, the teacher still follows a fixed pre-defined communication protocol known by the learner: messages are activity descriptions.
+%Eventually, 
+Our \abp formulation relates to the Minecraft Collaborative Building Task \cite{narayan2019collaborative} and the IGLU competition \cite{kiseleva2021neurips}; 
+however, they do not consider emergent communication. Rather, they focus on %the problem of
+generating architect utterances by leveraging a human-human dialogues corpus to learn pre-established meanings expressed in natural language. Conversely, in \abp both agents learn and must evolve the meanings of messages while solving the task without relying on any form of demonstration. 
+
+
+
 \section{Experiments}
+
+In the following sections, success rates (sometimes referred as scores) are averaged over 10 random seeds and error bars are $\pm2$SEM with SEM the Standard Error of the Mean. If not stated otherwise, the grid size is $(5\times 6)$, contains three blocks ($N_b=3$) and the vocabulary size is $|\gV|=18$.
+
+\textbf{\abig's learning performances.} We apply \abig to the four learning tasks of BuildWorld and compare it with the two control settings: \abig-no-intent (no guiding during training) and random (builder takes random actions). Figure~\ref{fig:methods_performance} reports the mean success rate on the four tasks defined in Section~\ref{sec:prob_def}. First, we observe that \abim significantly outperforms the control conditions on all tasks. Second, we notice that on the simpler `grasp' task \abim-no-intent achieves a satisfactory mean score of 0.77$\pm0.03$. This is consistent with the learning dynamic analysis provided in \ap\ref{sup:sec_res_toy} that shows that, in favorable settings, a self-imitating builder can develop a reasonably controllable policy (defined in Section~\ref{sec:intuition}) even if it learns on non-guiding trajectories.
+Nevertheless, when the tasks get more complicated and involve placing objects or drawing lines, the performances of \abim-no-intent drop significantly whereas \abim continues to achieve high success rates ($>0.8$). 
+This demonstrates that \abim enables a builder-architect pair to successfully agree on a communication protocol that makes the builder's policy controllable and enables the architect to efficiently guide it. 
+%
+\begin{figure}[!h]
+    \centering
+    \vspace{-.2cm}
+    \includegraphics[width=.8\textwidth]{abig/performance_methods_dict_size18.png}
+    \vspace{-.3cm}
+    \caption{Methods performances (stars indicate significance with respect to \abim model according to Welch's $t$-test with null hypothesis $\mu_1=\mu_2$, at level $\alpha=0.05$). \abig outperforms control baselines on all goals.}
+    \label{fig:methods_performance}
+\end{figure}
+%
+\paragraph{\abim's transfer performances.}
+Building upon previous results, we propose to study whether a learned communication protocol can transfer to new tasks. The architect-builder pairs are trained on a single task and then evaluated without retraining on the four tasks. In addition, we include `all-goals': a control setting in which the builder learns a single policy by being guided on all four goals during training. Figure~\ref{fig:tranfert_performance} shows that, on all training tasks except `grasp', \abig enables a transfer performance above 0.65 on all testing tasks. Notably, training on `place' results in a robust communication protocol that can be used to solve the other tasks with a success rate above 0.85, being effectively equivalent as training on `all-goals' directly. This might be explained by the fact that placing blocks at specified locations is an atomic operation required to build lines.
+%
+\begin{figure}[!h]
+    \centering
+    \vspace{-.2cm}
+    \includegraphics[width=.8\textwidth]{abig/transfer_perfos_dict_size18.png}
+    \vspace{-.3cm}
+    \caption{\abim transfer performances without retraining depending on the training goal. \abim agents learn a communication protocol that transfers to new tasks. Highest performances reached when training on `place'.}
+    \label{fig:tranfert_performance} 
+\end{figure}
+%
+
+\textbf{Challenging \abim's transfer abilities. } Motivated by \abig's transfer performances, we propose to train it on the `place' task in a bigger grid $(6\times6)$ with $N_b=6$ and $|\gV|=72$. Then, without retraining, we evaluate it on the `6-block-shapes` task\footnote{For rollouts see \small{\url{ https://sites.google.com/view/architect-builder-problem/}}} that consists in constructing the shapes given in Figure~\ref{fig:more_shapes}. The training performance on `place' is $0.96 \pm 0.02$ and the transfer performance on the `6-block-shapes' is $0.85\pm0.03$. This further demonstrates \abig's ability to derive robust communication protocols that can solve more challenging unseen tasks.   
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=.95\textwidth]{abig/shapes.pdf}
+    \caption{6-block-shapes that \abim can construct in transfer mode when trained on the `place' task.}
+    \label{fig:more_shapes}
+\end{figure}
+\vspace{-.1cm}
+\textbf{Additional experiments.} The Supplementary Materials contains the following experiments:
+\vspace{-.1cm}
+\begin{itemize}[noitemsep]
+    \item Figures~\ref{fig:bd_optim}, \ref{sup:fig_bd_radom} and \ref{sup:fig_res_toy}  analyse the builder’s message-to-action preferences. They illustrate \abim's learning mechanisms (forget and reinforce) and compare them to \abim-no-intent's.
+    \item Figure~\ref{sup:fig_learning_metrics} %displays the evolution of the builder policy's properties during learning. It 
+    shows that, as the communication protocol settles, the message-action mutual information becomes greater than the state-action mutual information which is a desirable feature for the emergence of communication.
+    \item Figure~\ref{fig:baseline_performance} reports \abim outperforming complementary baselines. 
+    \item Figure~\ref{fig:dict_size_performance} shows \abim's performance increasing with the vocabulary size, suggesting that with more messages available, the architect can more efficiently refer to the desired action.
+\end{itemize}
+
+\section{Discussion and future work}
+This work formalizes the \abp as an interactive setting where learning must occur without explicit reinforcement, demonstrations or a shared language. To tackle \abp, we propose \abig: an algorithm allowing to learn how to guide and to be guided. \abim is based only on two high-level priors to communication emergence (shared intent and interactions frames). \abp's general formulation allows us to formally enforce those priors during learning. We study their influence through ablation studies, highlighting the importance of shared intent achieved by doing self-imitation on guiding trajectories. When performed in interaction frames, this mechanism enables agents to %efficiently
+evolve a communication protocol that allows them to solve all the tasks defined in BuildWorld. More impressively, we find that communication protocols derived on a simple task can be used to solve harder, never-seen goals.
+
+Our approach has several limitations which open up different opportunities for further work. First, \abim trains agents in a stationary configuration which implies doing several interaction frames. Each interaction frame involves collecting numerous transitions. Thus, \abim is not data efficient.  A challenging avenue would be to relax this stationarity constraint and have agents learn from buffers containing non-stationary data with obsolete agent behaviors. Second, the builder remains dependent on the architect's messages even at convergence. Using a Vygotskian approach \cite{colas2020language,colas:hal-03159786}, the builder could internalize the guidance from the architect to become autonomous in the task. This could, for instance, be achieved by having the builder learn a model of the architect's message policy once the communication protocol has converged. 
+
+Because we present the first step towards interactive agents that learn in the \abp, our method uses simple tools (feed-forward networks and self-imitation learning). It is however important to note that our proposed formulation of the \abp can support many different research directions. Experimenting with agents' models could allow for the investigation of other forms of communication. One could, for instance, include memory mechanisms in the models of agents in order to facilitate the emergence of retrospective feedback, a form of emergent communication observed in \cite{vollmer2014studying}. \abp is also compatible with low-frequency feedback. As a further experiment in this direction, one could penalize the architect for sending messages and assess whether a pair can converge to higher-level meanings. Messages could also be composed of several tokens in order to allow for the emergence of compositionality. Finally, our proposed framework can serve as a testbed to study the fundamental mechanisms of emergent communication by investigating the impact of high level communication priors from experimental semiotics. 
+

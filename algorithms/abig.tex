@@ -1,0 +1,31 @@
+
+\begin{algorithm}[H]
+    \begin{algorithmic}
+        \caption{\label{alg:comem}Architect-Builder Iterated Guiding (\abig)}
+      
+        \REQUIRE randomly initialized builder policy $\pib$, reward function $r$, transition function $\Pe$, BC algorithm, MCTS algorithm 
+        \FOR{$i$ in range($N_{iterations}$)}
+        \STATE\underline{MODELLING FRAME:}
+        \bindent
+            \FOR {$e$ in range($N_{collect}/2$)}
+                \STATE Architect populates $\Da$ using $m \sim$ Uniform() and observing $a\sim \pib(\cdot|s,m)$\\
+            \ENDFOR
+            \STATE Architect learns $\tildepib(a|s,m)$ on $\Da$ with BC
+            \STATE
+            Architect sets $\pia(m|s) \triangleq \text{MCTS}(r, \tildepib, \Pe)$
+            \STATE
+            Architect flushes $\Da$
+            \eindent\\
+            \underline{GUIDING FRAME:}
+            \bindent
+            \FOR {$e$ in range($N_{collect}/2$)}
+                \STATE Builder populates $\Db$ using $\pib$ while guided by Architect, i.e.  $m \sim \pia(\cdot|s)$\\
+            \ENDFOR
+            \STATE Builder learns $\pib(a|s,m)$ on $\Db$ with BC
+            \STATE Builder flushes $\Db$
+            \eindent
+        \ENDFOR
+        \STATE Architect runs one last Modelling Frame\\
+    \KwResult{$\pia$, $\pib$}
+    \end{algorithmic}
+\end{algorithm}

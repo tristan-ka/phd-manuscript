@@ -88,46 +88,46 @@ We partition this set of achievable goals into a training $(\G^\train)$ and a te
 \paragraph{IMAGINE Pseudo-Code.}
 Algorithm~\ref{alg:example} outlines the pseudo-code of our learning architecture. See Main Section~\ref{sec:architecture} for high-level descriptions of each module and function.
 
-% \begin{algorithm}[h!]
-%    \caption{\imagine}
-%    \label{alg:example}
-%
-%    \begin{algorithmic}[1]
-%       \STATE \textbf{Input:} env, \SP \hspace{1.cm}%\COMMENT{}
-%       \STATE \textbf{Initialize:} $L_e$, $\mathcal{R}$, $\pi$, $mem(\mathcal{R})$, $mem(\pi)$, $\G_\text{known}$, $\G_\text{im}$ \\  \hspace{1cm} \# Random initializations for networks  \\
-%       \hspace{1cm} \# empty sets for memories and goal sets
-%       
-%      \FOR{$e=1:N_{episodes}$}
-%         \IF{$\G_\text{known} \neq \text{\O}$}
-%            \STATE sample $g_\text{NL}$ from $\G_\text{known} \cup \G_\text{im}$ 
-%            \STATE $g \gets L_e(g_\text{NL})$
-%         \ELSE
-%            \STATE sample $g$ from $\mathcal{N}(0,\mathbf{I})$
-%         \ENDIF
-%         \STATE $s_0 \gets$ env.reset()
-%         \FOR{$t=1:T$}
-%            \STATE $a_t\gets\pi(s_{t-1},g)$
-%            \STATE $s_{t}\gets$ env.step($a_t$)
-%            \STATE $mem_{\pi}$.add($s_{t-1}, a_t, s_t$)
-%         \ENDFOR
-%         \STATE $\G_\text{\SP} \gets$ \SP.get\_descriptions($s_T$)
-%         \STATE $\G_\text{known} \gets \G_\text{known} \: \cup$ $\G_\text{\SP}$
-%         \STATE $mem(\mathcal{R})$.add($s_T$, $g_\text{NL})$ for $g_\text{NL}$ in $\G_\text{\SP}$
-%         \IF{goal imagination allowed}
-%            \STATE $\G_\text{im} \gets$ \textbf{Imagination}$(\G_\text{known})$ \# see Algorithm~\ref{alg:suppl_imagination}
-%         \ENDIF
-%         \STATE Batch$_{\pi} \gets$ \textbf{ModularBatchGenerator}$(mem(\pi))$ 
-%         \hspace{1cm} \# Batch$_{\pi}$=$\{(s,a,s')\}$
-%         \STATE Batch$_{\pi} \gets$ \textbf{Hindsight}$(\text{Batch}_\pi, \mathcal{R}, \G_\text{known}, \G_\text{im})$ 
-%         \hspace{0.2cm} \# Batch$_{\pi}$=$\{(s,a,r,g,s')\}$ where $r=\mathcal{R}(s,g)$
-%         \STATE $\pi \gets $\textbf{RL\_Update}(Batch$_{\pi}$)
-%      \IF{$e \:\%\: $reward\_update\_freq $==0$}
-%      \STATE Batch$_{\mathcal{R}} \gets$ ModularBatchGenerator$(mem(\mathcal{R}))$
-%      \STATE $L_e$, $\mathcal{R} \gets$ \textbf{LE\&RewardFunctionUpdate}$(\text{Batch}_{\mathcal{R}})$
-%      \ENDIF
-%      \ENDFOR 
-%    \end{algorithmic}
-%\end{algorithm}  
+ \begin{algorithm}[h!]
+    \caption{\imagine}
+    \label{alg:example}
+
+    \begin{algorithmic}[1]
+       \STATE \textbf{Input:} env, \SP \hspace{1.cm}%\COMMENT{} 
+       \STATE \textbf{Initialize:} $L_e$, $\mathcal{R}$, $\pi$, $mem(\mathcal{R})$, $mem(\pi)$, $\G_\text{known}$, $\G_\text{im}$ \\  \hspace{1cm} \# Random initializations for networks  \\
+       \hspace{1cm} \# empty sets for memories and goal sets
+       
+      \FOR{$e=1:N_{episodes}$}
+         \IF{$\G_\text{known} \neq \text{\O}$}
+            \STATE sample $g_\text{NL}$ from $\G_\text{known} \cup \G_\text{im}$ 
+            \STATE $g \gets L_e(g_\text{NL})$
+         \ELSE
+            \STATE sample $g$ from $\mathcal{N}(0,\mathbf{I})$
+         \ENDIF
+         \STATE $s_0 \gets$ env.reset()
+         \FOR{$t=1:T$}
+            \STATE $a_t\gets\pi(s_{t-1},g)$
+            \STATE $s_{t}\gets$ env.step($a_t$)
+            \STATE $mem_{\pi}$.add($s_{t-1}, a_t, s_t$)
+         \ENDFOR
+         \STATE $\G_\text{\SP} \gets$ \SP.get\_descriptions($s_T$)
+         \STATE $\G_\text{known} \gets \G_\text{known} \: \cup$ $\G_\text{\SP}$
+         \STATE $mem(\mathcal{R})$.add($s_T$, $g_\text{NL})$ for $g_\text{NL}$ in $\G_\text{\SP}$
+         \IF{goal imagination allowed}
+            \STATE $\G_\text{im} \gets$ \textbf{Imagination}$(\G_\text{known})$ \# see Algorithm~\ref{alg:suppl_imagination}
+         \ENDIF
+         \STATE Batch$_{\pi} \gets$ \textbf{ModularBatchGenerator}$(mem(\pi))$ 
+         \hspace{1cm} \# Batch$_{\pi}$=$\{(s,a,s')\}$
+         \STATE Batch$_{\pi} \gets$ \textbf{Hindsight}$(\text{Batch}_\pi, \mathcal{R}, \G_\text{known}, \G_\text{im})$ 
+         \hspace{0.2cm} \# Batch$_{\pi}$=$\{(s,a,r,g,s')\}$ where $r=\mathcal{R}(s,g)$
+         \STATE $\pi \gets $\textbf{RL\_Update}(Batch$_{\pi}$)
+      \IF{$e \:\%\: $reward\_update\_freq $==0$}
+      \STATE Batch$_{\mathcal{R}} \gets$ ModularBatchGenerator$(mem(\mathcal{R}))$
+      \STATE $L_e$, $\mathcal{R} \gets$ \textbf{LE\&RewardFunctionUpdate}$(\text{Batch}_{\mathcal{R}})$
+      \ENDIF
+      \ENDFOR 
+    \end{algorithmic}
+\end{algorithm}  
 
 
 
@@ -223,17 +223,10 @@ The zero-shot performance of the policy is evaluated in Figure~\ref{fig:gene_no_
 
 \begin{figure*}[!h]
     \centering
-    \begin{tabular}{cc}
-    \textbf{Reward Function, no imagination} & \textbf{Policy, no imagination} \\
-	\includegraphics[width=0.48\textwidth]{imagine/RL_REWARD_PERF.pdf} & \includegraphics[width=0.48\textwidth]{imagine/GOAL_INVENTION_gene_per_type_no_imagined_goals_compressed.pdf}\\
-    \textbf{Policy, imagination half way} & \textbf{Policy, imagination early} \\
-    \includegraphics[width=0.48\textwidth]{imagine/GOAL_INVENTION_gene_per_type_from_epoch_80_compressed.pdf} &\includegraphics[width=0.48\textwidth]{imagine/GOAL_INVENTION_gene_per_type_from_epoch_10_compressed.pdf}
-    
-    \end{tabular}
-%    \subfigure[\label{fig:reward_func_in_rl}\textbf{Reward Function, no imagination}]{\includegraphics[width=0.48\textwidth]{imagine/RL_REWARD_PERF.pdf}}
-%    \subfigure[\label{fig:gene_no_imagined}\textbf{Policy, no imagination}]{\includegraphics[width=0.48\textwidth]{imagine/GOAL_INVENTION_gene_per_type_no_imagined_goals_compressed.pdf}}
-%    \subfigure[\label{fig:gene10}\textbf{Policy, imagination half way}]{\includegraphics[width=0.48\textwidth]{imagine/GOAL_INVENTION_gene_per_type_from_epoch_80_compressed.pdf}}
-%    \subfigure[\label{fig:gene80}\textbf{Policy, imagination early}]{\includegraphics[width=0.48\textwidth]{imagine/GOAL_INVENTION_gene_per_type_from_epoch_10_compressed.pdf}}
+    \subfloat[\label{fig:reward_func_in_rl}\textbf{Reward Function, no imagination}]{\includegraphics[width=0.48\textwidth]{imagine/RL_REWARD_PERF.pdf}}
+    \subfloat[\label{fig:gene_no_imagined}\textbf{Policy, no imagination}]{\includegraphics[width=0.48\textwidth]{imagine/GOAL_INVENTION_gene_per_type_no_imagined_goals_compressed.pdf}}\\
+    \subfloat[\label{fig:gene10}\textbf{Policy, imagination half way}]{\includegraphics[width=0.48\textwidth]{imagine/GOAL_INVENTION_gene_per_type_from_epoch_80_compressed.pdf}}
+    \subfloat[\label{fig:gene80}\textbf{Policy, imagination early}]{\includegraphics[width=0.48\textwidth]{imagine/GOAL_INVENTION_gene_per_type_from_epoch_10_compressed.pdf}}
     
     \caption{\textbf{Zero-shot and n-shot generalizations of the reward function and policy.} Each figure represents the training and testing performances (split by generalization type) for the reward (a), and the policy (b, c, d). (a) and (b) represent zero-shot performance in the \textit{no imagination} conditions. In (c) and (d), agents start to imagine goals as denoted by the vertical dashed line. Before that line, $\SR$ evaluate zero-shot generalization. After, it evaluates the n-shot generalization, as agent can train autonomously on imagined goals.\label{fig:suppl_gen}}
 \end{figure*} 
@@ -262,10 +255,9 @@ Agents that are allowed to imagine goals achieve higher scores in the testing an
 
 \begin{figure*}[!h]
   \centering
-  \begin{tabular}{ccc}
-  	\includegraphics[width=0.328\textwidth]{imagine/GOAL_INVENTION_exploration_count_reward_train_set_compressed.pdf} & \includegraphics[width=0.328\textwidth]{imagine/GOAL_INVENTION_exploration_count_reward_test_set_compressed.pdf} &
-  		  \includegraphics[width=0.328\textwidth]{imagine/GOAL_INVENTION_exploration_count_reward_extra_set_compressed.pdf}
-  \end{tabular}
+    \subfloat[\label{fig:sc_train}]{\includegraphics[width=0.328\textwidth]{imagine/GOAL_INVENTION_exploration_count_reward_train_set_compressed.pdf}}
+    \subfloat[\label{fig:sc_test}]{\includegraphics[width=0.328\textwidth]{imagine/GOAL_INVENTION_exploration_count_reward_test_set_compressed.pdf}}
+    \subfloat[\label{fig:sc_extra}]{\includegraphics[width=0.328\textwidth]{imagine/GOAL_INVENTION_exploration_count_reward_extra_set_compressed.pdf}}
   \caption{\textbf{Exploration metrics} (a) Interesting interaction count (\itwoc) on training set, (b) \itwoc on testing set, (c) \itwoc on extra set. Goal imagination starts early (vertical blue line), half-way (vertical orange line) or does not start (\textit{no imagination} baseline in green).}
   \label{fig:explo_metrics}
 \end{figure*}   
@@ -282,60 +274,59 @@ Agents that are allowed to imagine goals achieve higher scores in the testing an
 Algorithm~\ref{alg:suppl_imagination} presents the algorithm underlying our goal imagination mechanism. This mechanism is inspired from the \textit{Construction Grammar} (CG) literature and generates new sentences by composing known ones \cite{goldberg2003constructions}. It computes sets of equivalent words by searching for sentences with an edit distance of $1$: sentences where only one word differs. These words are then labelled equivalent, and can be substituted in known sentences. Note that the goal imagination process filters goals that are already known. Although all sentences from $\G^\train$ can be imagined, there are filtered out of the imagined goals as they are discovered. Imagining goals from $\G^\train$ before they are discovered drives the exploration of \imagine agents. In our setup, however, this effect remains marginal as all the goals from $\G^\train$ are discovered in the first epochs (see Figure~\ref{fig:suppl_known_goals}). 
 
 
-
-
-%        \captionof{algocf}{Goal Imagination. The edit distance between two sentences refers to the number of words to modify to transform one sentence into the other.\label{alg:suppl_imagination}}
-
-%\begin{algorithmic}[1]
-%   \STATE \textbf{Input:} $\G_\text{known}$ (discovered goals)
-%            \STATE \textbf{Initialize:} \textit{word\_eq} (list of sets of equivalent words, empty) 
-%            \STATE \textbf{Initialize:} \textit{goal\_template} (list of template sentences used for imagining goals, empty)
-%            \STATE \textbf{Initialize:} $\G_\text{im}$ (empty)
-%            \FOR[Computing word equivalences]{$g_\text{NL}$ in $\G_\text{known}$}  
-%                \STATE \textit{new\_goal\_template} = True
-%                \FOR{$g_m$ in \textit{goal\_template}}
-%                    \IF{edit\_distance$(g_\text{NL}, g_m) < 2$}
-%                        \STATE \textit{new\_goal\_template} = False
-%                        \IF{edit\_distance$(g_\text{NL}, g_m) == 1$}
-%                            \STATE $w_1, w_2 \gets $ \textit{get\_non\_matching\_words$(g_\text{NL}, g_m)$}
-%                            \IF{$w_1$ and $w_2$ not in any of \textit{word\_eq} sets}
-%                                 \STATE \textit{word\_eq}.add(\{$w_1,w_2$\})
-%                            \ELSE
-%                                \FOR{\textit{eq\_set} in \textit{word\_eq}}   
-%                                    \IF{$w_1 \in \:$\textit{eq\_set} or $w_2 \in \: $\textit{eq\_set}}
-%                                        \STATE \textit{eq\_set} = \textit{eq\_set} $\cup$ \{$w_1,w_2$\}
-%                                    \ENDIF
-%                                \ENDFOR
-%                            \ENDIF
-%                        \ENDIF
-%                    \ENDIF
-%                \ENDFOR
-%                \IF{\textit{new\_goal\_template}}
-%                    \STATE \textit{goal\_template}.add($g_\text{NL}$)
-%                \ENDIF
-%            \ENDFOR
-%            \FOR[Generating new sentences]{$g$ in \textit{goal\_template}}  
-%                \FOR{$w$ in $g$}
-%                    \FOR{\textit{eq\_set} in \textit{word\_eq}}
-%                        \IF{$w \in\:$ \textit{eq\_set}}
-%                            \FOR{$w'$ in \textit{eq\_set}}
-%                                \STATE $g_{im} \gets$ replace($g$, $w$, $w'$)
-%                                \IF{$g_{im} \notin \G_\text{known}$}
-%                                    \STATE $\G_\text{im} = \G_\text{im} \: \cup $ \{$g_{im}$\}
-%                                \ENDIF
-%                            \ENDFOR
-%                        \ENDIF
-%                    \ENDFOR
-%                \ENDFOR
-%            \ENDFOR
-%            \STATE $\G_\text{im} = \G_\text{im} \setminus \G_\text{known}$ \hspace{1cm}\{filtering known goals.\}
-%\end{algorithmic}
-
-\begin{figure}[!h]
+\begin{minipage}{.6\textwidth} %
+        \vspace{0.5cm}
+        \captionof{algocf}{Goal Imagination. The edit distance between two sentences refers to the number of words to modify to transform one sentence into the other.\label{alg:suppl_imagination}}
+        \begin{algorithmic}[1]
+            \STATE \textbf{Input:} $\G_\text{known}$ (discovered goals)
+            \STATE \textbf{Initialize:} \textit{word\_eq} (list of sets of equivalent words, empty) 
+            \STATE \textbf{Initialize:} \textit{goal\_template} (list of template sentences used for imagining goals, empty)
+            \STATE \textbf{Initialize:} $\G_\text{im}$ (empty)
+            \FOR[Computing word equivalences]{$g_\text{NL}$ in $\G_\text{known}$}  
+                \STATE \textit{new\_goal\_template} = True
+                \FOR{$g_m$ in \textit{goal\_template}}
+                    \IF{edit\_distance$(g_\text{NL}, g_m) < 2$}
+                        \STATE \textit{new\_goal\_template} = False
+                        \IF{edit\_distance$(g_\text{NL}, g_m) == 1$}
+                            \STATE $w_1, w_2 \gets $ \textit{get\_non\_matching\_words$(g_\text{NL}, g_m)$}
+                            \IF{$w_1$ and $w_2$ not in any of \textit{word\_eq} sets}
+                                 \STATE \textit{word\_eq}.add(\{$w_1,w_2$\})
+                            \ELSE
+                                \FOR{\textit{eq\_set} in \textit{word\_eq}}   
+                                    \IF{$w_1 \in \:$\textit{eq\_set} or $w_2 \in \: $\textit{eq\_set}}
+                                        \STATE \textit{eq\_set} = \textit{eq\_set} $\cup$ \{$w_1,w_2$\}
+                                    \ENDIF
+                                \ENDFOR
+                            \ENDIF
+                        \ENDIF
+                    \ENDIF
+                \ENDFOR
+                \IF{\textit{new\_goal\_template}}
+                    \STATE \textit{goal\_template}.add($g_\text{NL}$)
+                \ENDIF
+            \ENDFOR
+            \FOR[Generating new sentences]{$g$ in \textit{goal\_template}}  
+                \FOR{$w$ in $g$}
+                    \FOR{\textit{eq\_set} in \textit{word\_eq}}
+                        \IF{$w \in\:$ \textit{eq\_set}}
+                            \FOR{$w'$ in \textit{eq\_set}}
+                                \STATE $g_{im} \gets$ replace($g$, $w$, $w'$)
+                                \IF{$g_{im} \notin \G_\text{known}$}
+                                    \STATE $\G_\text{im} = \G_\text{im} \: \cup $ \{$g_{im}$\}
+                                \ENDIF
+                            \ENDFOR
+                        \ENDIF
+                    \ENDFOR
+                \ENDFOR
+            \ENDFOR
+            \STATE $\G_\text{im} = \G_\text{im} \setminus \G_\text{known}$ \hspace{1cm}\{filtering known goals.\}
+        \end{algorithmic}
+\end{minipage} %
+\begin{minipage}{.4\textwidth} %
         \centering
-        \includegraphics[width=0.4\textwidth]{imagine/venn_diagram.pdf}
+        \includegraphics[width=0.9\textwidth]{imagine/venn_diagram.pdf}
         \captionof{figure}{Venn diagram of goal spaces.\label{fig:suppl_venn}}  
-\end{figure}
+\end{minipage}
 
 
 
@@ -401,25 +392,12 @@ Note that all variants imagine goals at the same speed as the \CGH algorithm. Th
 
 
 \begin{figure}[!h]
-\centering
-\begin{tabular}{cc}
-
-\textbf{CGH} & \textbf{Low coverage}\\
-\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_from_epoch_10_compressed.pdf} & \includegraphics[width=0.32\textwidth]{imagine/known_goals_content_half_tc_compressed.pdf} \\
-\textbf{Low Precision} & \textbf{Oracle}\\
-\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_double_fpr_compressed.pdf} & \includegraphics[width=0.32\textwidth]{imagine/known_goals_content_oracle_compressed.pdf} \\
-\multicolumn{2}{c}{\textbf{Random Goals}}\\
-\multicolumn{2}{c}{\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_random_language_10_compressed.pdf}}
-
-	
-\end{tabular}
-
-%
-%      \subfigure[\label{fig:suppl_known_earl}\textbf{CGH}]{\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_from_epoch_10_compressed.pdf}}
-%      \subfigure[\label{fig:suppl_known_low_cov}\textbf{Low Coverage}]{\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_half_tc_compressed.pdf}} 
-%      \subfigure[\label{fig:suppl_known_low_prec}\textbf{Low Precision}]{\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_double_fpr_compressed.pdf}} \\
-%      \subfigure[\label{fig:suppl_known_oracle}\textbf{Oracle}]{\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_oracle_compressed.pdf}} 
-%      \subfigure[\label{fig:suppl_known_random}\textbf{Random Goals}]{\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_random_language_10_compressed.pdf}}
+      \centering
+      \subfloat[\label{fig:suppl_known_earl}\textbf{CGH}]{\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_from_epoch_10_compressed.pdf}}
+      \subfloat[\label{fig:suppl_known_low_cov}\textbf{Low Coverage}]{\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_half_tc_compressed.pdf}} 
+      \subfloat[\label{fig:suppl_known_low_prec}\textbf{Low Precision}]{\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_double_fpr_compressed.pdf}} \\
+      \subfloat[\label{fig:suppl_known_oracle}\textbf{Oracle}]{\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_oracle_compressed.pdf}} 
+      \subfloat[\label{fig:suppl_known_random}\textbf{Random Goals}]{\includegraphics[width=0.32\textwidth]{imagine/known_goals_content_random_language_10_compressed.pdf}}
       \caption{\textbf{Evolution of known goals for various goal imagination mechanisms.} All graphs show the evolution of the number of goals from $\G^\train$, $\G^\test$ and others in the list of known goals $\G_\text{known}$. We zoom on the first epochs, as most goals are discovered and invented early. Vertical dashed line indicates the onset of goal imagination. (a) \CGH; (b) Low Coverage; (c) Low precision; (d) Oracle; (e) Random Goals. \label{fig:suppl_known_goals}}
 \end{figure} 
 
@@ -449,9 +427,9 @@ Figure~\ref{fig:suppl_explo_metrics_goalim} presents the \itwoc exploration scor
 
 \begin{figure*}[!h]
   \centering
-    \subfigure[\label{fig:supp_explo_train}\textbf{\itwoc on $\G^\train$}]{\includegraphics[width=0.328\textwidth]{imagine/explo_train.pdf}}
-    \subfigure[\label{fig:supp_explo_test}\textbf{\itwoc on $\G^\test$}]{\includegraphics[width=0.328\textwidth]{imagine/explo_test.pdf}}
-    \subfigure[\label{fig:supp_explo_extra}\textbf{\itwoc on $\G^\text{extra}$}]{\includegraphics[width=0.328\textwidth]{imagine/explo_extra.pdf}}
+    \subfloat[\label{fig:supp_explo_train}\textbf{\itwoc on $\G^\train$}]{\includegraphics[width=0.328\textwidth]{imagine/explo_train.pdf}}
+    \subfloat[\label{fig:supp_explo_test}\textbf{\itwoc on $\G^\test$}]{\includegraphics[width=0.328\textwidth]{imagine/explo_test.pdf}}
+    \subfloat[\label{fig:supp_explo_extra}\textbf{\itwoc on $\G^\text{extra}$}]{\includegraphics[width=0.328\textwidth]{imagine/explo_extra.pdf}}
   \caption{\textbf{Exploration metrics for different goal imagination mechanisms}: (a) Interesting interaction count (\itwoc) on training set, \itwoc on testing set, (c) \itwoc on extra set.  Goal imagination starts early (vertical line), except for the \textit{no imagination} baseline (green). Standard errors of the mean plotted for clarity (as usual, $10$ seeds).}
   \label{fig:suppl_explo_metrics_goalim}
 \end{figure*}   
@@ -507,8 +485,8 @@ The combination of \MA for the reward function and either \MA or \FA for the pol
 \begin{figure*}[!h]
     \label{fig:reward_all_archi}
     \centering
-    \subfigure[\label{fig:archi_far}\far]{\includegraphics[width=0.42\textwidth]{imagine/archi_far.pdf}}
-    \subfigure[\label{fig:archi_mar}\mar]{\includegraphics[width=0.57\textwidth]{imagine/archi_mar.pdf}}\\
+    \subfloat[\label{fig:archi_far}\far]{\includegraphics[width=0.42\textwidth]{imagine/archi_far.pdf}}
+    \subfloat[\label{fig:archi_mar}\mar]{\includegraphics[width=0.57\textwidth]{imagine/archi_mar.pdf}}\\
     \caption{\textbf{Reward function architectures}: (a) \textit{Flat-attention} reward function (\far) and (b) \textit{Modular-attention} reward function (\mar). We use \mar for all experiments except for the experiment in Table~\ref{tab:suppl_reward_function_archi_comparison}
     \label{fig:archi_far_mar}}
 \end{figure*}
@@ -516,18 +494,18 @@ The combination of \MA for the reward function and either \MA or \FA for the pol
 \begin{figure*}[!h]
     \label{fig:all_archi}
     \centering
-    \subfigure[\label{fig:archi_FA}]{\includegraphics[width=\textwidth]{imagine/archi_FA.pdf}}
-    \subfigure[\label{fig:archi_MA}]{\includegraphics[width=\textwidth]{imagine/archi_MA.pdf}}\\
+    \subfloat[\label{fig:archi_FA}]{\includegraphics[width=\textwidth]{imagine/archi_FA.pdf}}\\
+    \subfloat[\label{fig:archi_MA}]{\includegraphics[width=\textwidth]{imagine/archi_MA.pdf}}\\
     \caption{\textbf{Policy and reward function architectures:} (a) \textit{Modular-attention} (\MA) reward + \textit{Flat-attention} (\FA) policy. (b) \MA reward + \MA policy. In both figures, the reward function is represented on the right in green, the policy on the left in pink, the language encoder in the bottom in yellow and the attention mechanisms at the center in blue.
     \label{fig:archi_FA_MA}}
 \end{figure*}
 
 \begin{figure}[!h]
     \centering
-    \subfigure[\label{fig:suppl_ma_fa_comparison_gene}\textbf{$\SR_\test$}]{\includegraphics[width=0.47\textwidth]{imagine/ARCHITECTURE_sr_train_test_compressed.pdf}}
-    \subfigure[\label{fig:suppl_ma_fa_comparison_i2ctrain}\textbf{$\itwoc_\train$}]{\includegraphics[width=0.47\textwidth]{imagine/GOAL_INVENTION_archi_exploration_count_reward_train_set_compressed.pdf}} \\
-    \subfigure[\label{fig:suppl_ma_fa_comparison_i2ctest}\textbf{$\itwoc_\test$}]{\includegraphics[width=0.47\textwidth]{imagine/GOAL_INVENTION_archi_exploration_count_reward_test_set_compressed.pdf}}
-    \subfigure[\label{fig:suppl_ma_fa_comparison_i2cextra}\textbf{$\itwoc_\text{extra}$}]{\includegraphics[width=0.47\textwidth]{imagine/GOAL_INVENTION_archi_exploration_count_reward_extra_set_compressed.pdf}}
+    \subfloat[\label{fig:suppl_ma_fa_comparison_gene}\textbf{$\SR_\test$}]{\includegraphics[width=0.47\textwidth]{imagine/ARCHITECTURE_sr_train_test_compressed.pdf}}
+    \subfloat[\label{fig:suppl_ma_fa_comparison_i2ctrain}\textbf{$\itwoc_\train$}]{\includegraphics[width=0.47\textwidth]{imagine/GOAL_INVENTION_archi_exploration_count_reward_train_set_compressed.pdf}} \\
+    \subfloat[\label{fig:suppl_ma_fa_comparison_i2ctest}\textbf{$\itwoc_\test$}]{\includegraphics[width=0.47\textwidth]{imagine/GOAL_INVENTION_archi_exploration_count_reward_test_set_compressed.pdf}}
+    \subfloat[\label{fig:suppl_ma_fa_comparison_i2cextra}\textbf{$\itwoc_\text{extra}$}]{\includegraphics[width=0.47\textwidth]{imagine/GOAL_INVENTION_archi_exploration_count_reward_extra_set_compressed.pdf}}
     \caption{\textbf{Policy architecture comparison: } (a) $\SR$ on $\G^\test$ for the \FA and \MA architectures when the agent starts imagining goals early (plain, after the black vertical dashed line) or never (dashed). (b, c, d) \itwoc on interactions from the training, testing and extra sets respectively. Imagination is performed using \CGH. Stars indicate significant differences between \CGH and the corresponding \textit{no imagination} baseline.
     \label{fig:suppl_ma_fa_comparison}}
 \end{figure}
@@ -568,9 +546,9 @@ To analyze the goal embeddings learned by the language encoder $L_e$, we perform
 
 \begin{figure*}[!hb]
   \centering
-  \subfigure[\label{fig:suppl_tsne_predicate}]{\includegraphics[width=0.323\textwidth]{imagine/TSNE_predicate.pdf}}
-  \subfigure[\label{fig:suppl_tsne_color}]{\includegraphics[width=0.323\textwidth]{imagine/TSNE_colors.pdf}}
-  \subfigure[\label{fig:suppl_tsne_cat}]{\includegraphics[width=0.323\textwidth]{imagine/TSNE_categories.pdf}}
+  \subfloat[\label{fig:suppl_tsne_predicate}]{\includegraphics[width=0.323\textwidth]{imagine/TSNE_predicate.pdf}}
+  \subfloat[\label{fig:suppl_tsne_color}]{\includegraphics[width=0.323\textwidth]{imagine/TSNE_colors.pdf}}
+  \subfloat[\label{fig:suppl_tsne_cat}]{\includegraphics[width=0.323\textwidth]{imagine/TSNE_categories.pdf}}
   \caption{\textbf{t-SNE of Goal Embedding.} The same t-SNE is presented, with different color codes (a) predicates, (b) colors, (c) object categories.}
   \label{fig:suppl_tsne}
 \end{figure*}   
@@ -588,8 +566,8 @@ The attention vectors uses information about the goal to highlight or suppress p
 
 \begin{figure*}[!htbp]
   \centering
-   \subfigure[\label{fig:att_rew}]{\includegraphics[width=0.7\textwidth]{imagine/ATTENTION_reward_vizu_complete.pdf}}\\
-   \subfigure[\label{fig:att_pol}]{\includegraphics[width=0.7\textwidth]{imagine/ATTENTION_policy_vizu_complete.pdf}}\\
+   \subfloat[\label{fig:att_rew}]{\includegraphics[width=0.7\textwidth]{imagine/ATTENTION_reward_vizu_complete.pdf}}\\
+   \subfloat[\label{fig:att_pol}]{\includegraphics[width=0.7\textwidth]{imagine/ATTENTION_policy_vizu_complete.pdf}}\\
   \caption{\textbf{Attention vectors} (a) $\balpha^g$ for the reward function ($1$ seed). (b) $\bbeta^g$ for the policy ($1$ seed).}
   \label{fig:att}
 \end{figure*}   
@@ -637,6 +615,4 @@ Our learning algorithm is built on top of the OpenAI Baselines implementation of
 
 \paragraph{Computing resources.}
 The RL experiments contain $8$ conditions of $10$ seeds each, and $4$ conditions with $5$ seeds (\SP study). Each run leverages $6$ cpus ($6$ actors) for about $36$h for a total of $2.5$ cpu years. Experiments presented in this paper requires machines with at least $6$ cpu cores.
-
-
 \end{document}
