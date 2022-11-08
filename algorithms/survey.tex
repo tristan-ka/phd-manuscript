@@ -1,0 +1,43 @@
+\noindent\begin{minipage}{\textwidth}
+   \centering
+   \begin{minipage}{.6\textwidth}
+        \begin{algorithm}[H]
+            \small
+        	\caption{~ Autotelic Agent with RL-IMGEP}
+        	\label{algo:IMGEP}
+        	\begin{algorithmic}[1]
+            	\REQUIRE environment $\m{E}$
+            	\STATE \textbf{Initialize} empty memory $\m{M}$,goal-conditioned policy $\Pi_\m{G}$, goal-conditioned reward $R_\m{G}$,goal space $\m{Z}_\m{G}$, goal sampling policy $GS$.
+            	
+            	\LOOP
+            	
+%                \LineCommentConttwo{\textit{Observe context}}
+                \STATE Get initial state: $s_0 \leftarrow \m{E}$.reset()
+%            	\LineCommentCont{\textit{Sample goal}}
+            	\STATE Sample goal embedding $z_g=GS(s_0, \m{Z}_\m{G})$.
+%            	\LineCommentCont{\textit{Roll-out goal-conditioned policy}}
+            	\STATE Execute a roll-out with $\Pi_g=\Pi_\m{G}(\cdot \mid z_g)$
+            	\STATE Store collected transitions $\tau=(s,a,s')$ in $\m{M}$.
+%            	\LineCommentCont{\textit{Update internal models}}
+                \STATE Sample a batch of $B$ transitions: $\m{M}\sim \{(s,a,s')\}_B$.
+                \STATE Perform Hindsight Relabelling $\{(s,a,s',z_g)\}_B$.
+                \STATE Compute internal rewards $r=R_\m{G}(s,a,s'\mid z_g)$.
+            	\STATE Update policy $\Pi_\m{G}$ via \rl on $\{(s,a,s',z_g,r)\}_B$.
+            	\STATE Update goal representations  $\m{Z}_\m{G}$. 
+            	\STATE Update goal-conditioned reward function $R_\m{G}$. 
+            	\STATE Update goal sampling policy $GS$.
+            	\ENDLOOP
+            	\STATE \Return $\Pi_\m{G}, R_\m{G}, \m{Z}_\m{G}$
+        	\end{algorithmic}
+        \end{algorithm}
+   \end{minipage}
+   \hspace{0.2cm}
+   \begin{minipage}{.37\textwidth}
+  \textbf{ } \\
+  \\
+        \centering
+        \includegraphics[width=0.9\textwidth]{survey/loop-algo.pdf}
+    \end{minipage}
+   \label{fig:test}
+\end{minipage}
+    

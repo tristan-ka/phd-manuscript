@@ -1,0 +1,52 @@
+\begin{landscape}
+\begin{table*}[t!]
+\tiny
+\centering
+
+\begin{tabular}{l|cccc}
+\hline
+\multirow{2}{*}{\textbf{Approach}} & \multirow{2}{*}{\textbf{Goal Type}} & \multirow{2}{*}{\textbf{\shortstack{Goal \\ Rep.}}} & \multirow{2}{*}{\textbf{\shortstack{Reward\\ Function}}} & \multirow{2}{*}{\textbf{\shortstack{Goal sampling \\ strategy}}} \\
+\\
+\hline
+\multicolumn{5}{l}{\textbf{RL-IMGEPs that assume goal embeddings and reward functions}}\\
+\hline
+\cite{fournier2018accuracy} & Target features (+tolerance) & Pre-def & Pre-def & \lp-Based\\
+\textsc{hac} \cite{levy2018hierarchical} & Target features & Pre-def & Pre-def & \hrl \\
+\textsc{hiro} \cite{nachum2018data} & Target features & Pre-def & Pre-def & \hrl \\
+\textbf{CURIOUS} \cite{curious} & Target features & Pre-def & Pre-def & \lp-based\\
+\textbf{CLIC} \cite{fournier2019clic} & Target features & Pre-def & Pre-def & \lp-based\\
+\textbf{CWYC} \cite{blaes2019control} & Target features & Pre-def & Pre-def & \lp-based + surprise\\
+\textsc{go-explore} \cite{ecoffet2020first} & Target features & Pre-def & Pre-def & Novelty \\
+\textsc{ngu} \cite{badia2020never} & Objectives balance & Pre-def & Pre-def & Uniform \\
+\textsc{agent} 57 \cite{badia2020agent57} & Objectives balance & Pre-def & Pre-def & Meta-learned \\ 
+\textbf{DECSTR} \cite{akakzia2020decstr} & Binary problem & Pre-def & Pre-def & \lp-based \\
+\textsc{slide} \cite{Fang-RSS-21} & Skill index & Pre-def & Pre-def & Novelty (PCG)\\
+\textsc{XLand OEL} \cite{team2021open} & Binary problem & Pre-def & Pre-def & Intermediate difficulty \\
+\hline
+\multicolumn{5}{l}{\textbf{RL-IMGEPs that learn their goal embedding and assume reward functions}}\\
+\hline
+%\cite{sutton2011horde} & & & & \\
+\textsc{rig} \cite{nair2018visual} & Target features (images) & Learned (\vae) & Pre-def & From \vae prior \\
+\textsc{goalgan} \cite{goalgan} & Target features & Pre-def + GAN & Pre-def & Intermediate difficulty\\
+\cite{florensa2019selfsupervised} & Target features (images) & Learned (\vae) & Pre-def & From \vae prior \\
+\textsc{skew-fit} \cite{pong2019skew} & Target features (images) & Learned (\vae) & Pre-def & Diversity \\
+\textsc{setter-solver} \cite{settersolver} & Target features (images) & Learned (Gen. model) & Pre-def & Uniform difficulty \\
+\textsc{mega} \cite{pitis2020maximum} & Target features (images) & Learned (\vae) & Pre-def & Novelty \\
+\textsc{cc-rig} \cite{nair2020contextual} & Target features (images) & Learned (\vae)  & Pre-def & From \vae prior \\
+\textsc{amigo} \cite{campero2020learning} & Target features (images) & Learned (with policy) & Pre-def  & Adversarial \\ 
+\textbf{GRIMGEP} \cite{kovac2020grimgep} & Target features (images) & Learned (with policy) & Pre-def & Diversity and ALP \\
+\hline
+\multicolumn{5}{l}{\textbf{Full RL-IMGEPs}}\\
+\hline
+\textsc{discern} \cite{warde2018unsupervised} & Target features (images) & Learned (with policy) & Learned (similarity) & Diversity \\
+\textsc{diayn} \cite{eysenbach2018diversity} & Discrete skills & Learned (with policy) & Learned (discriminability) & Uniform \\
+\cite{hartikainen2019dynamical} & Target features (images) & Learned (with policy) & Learned (distance) & Intermediate difficulty  \\
+\cite{venkattaramanujam2019self} & Target features (images) & Learned (with policy) & Learned (distance) & Intermediate difficulty \\
+\textbf{IMAGINE} \cite{imagine} & Binary problem (language) & Learned (with reward) & Learned & Uniform + Diversity \\
+\textsc{vgcrl} \cite{choi_variational_2021} & Target features & Learned  & Learned & Empowerment \\
+\end{tabular}
+\caption{
+\small \textbf{A classification of autotelic RL-IMGEP approaches.} \small Autotelic approaches require agents to sample their own goals. The proposed classification groups algorithms depending on their degree of autonomy: 1) \rlimgeps that rely on pre-defined goal representations (embeddings and reward functions); 2) \rlimgeps that rely on pre-defined reward functions but learn goal embeddings and 3) \rlimgeps that learn complete goal representations (embeddings and reward functions). For each algorithm, we report the type of goals being pursued (see Section~\ref{sec:survey_goal_rep}), whether goal embeddings are learned (Section~\ref{sec:survey_learning_goal_rep}), whether reward functions are learned (Section~\ref{sec:survey_learning_goal_rep_rew}) and how goals are sampled (Section~\ref{sec:survey_generation}). We mark in bold algorithms that use a developmental approaches and explicitly pursue the intrinsically motivated skills acquisition problem.}
+\label{tab:bigtable}
+\end{table*}
+\end{landscape}

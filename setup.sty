@@ -13,15 +13,16 @@
 \makeatother
 \usepackage{subfig}
 \usepackage{subfiles}
-
+\usepackage{tcolorbox}
 \usepackage{amsmath,amssymb,mathtools} % Math
+\usepackage{dsfont}
 \usepackage{graphicx} % Include figures
 
 \usepackage{xr-hyper}
 \PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}   % Internal hyperlinks
 \hypersetup{
 pdfborder={0 0 0},      % No borders around internal hyperlinks
-    pdfauthor={Cédric Colas}, % author,
+    pdfauthor={Tristan Karch}, % author,
     colorlinks = True,
     citecolor=mybluetwo,  % color of citations
     linkcolor=mybluetwo,  % color of href links
@@ -147,6 +148,7 @@ pdfborder={0 0 0},      % No borders around internal hyperlinks
 }
 \newcommand\eindent{\endgroup}
 \usepackage{amsmath}
+\usepackage{bbm}
 
 % nice tables
 \usepackage{booktabs}
@@ -200,6 +202,7 @@ pdfborder={0 0 0},      % No borders around internal hyperlinks
 
 \input{math_commands.tex}
 
+% ABIG names
 \newcommand{\fix}{\marginpar{FIX}}
 \newcommand{\new}{\marginpar{NEW}}
 \newcommand{\abim}{\textsc{abig}\xspace}
@@ -207,6 +210,23 @@ pdfborder={0 0 0},      % No borders around internal hyperlinks
 \newcommand{\abp}{\textsc{abp}\xspace}
 \newcommand{\supp}[1]{\text{Sup. Section~\ref{#1}}}
 \newcommand{\ap}{Suppl. Section~}
+
+%curves
+\newcommand{\curves}{\textsc{curves}\xspace}
+\newcommand{\greg}{\textsc{greg}\xspace}
+\newcommand{\simcos}{\text{sim}_{\text{cos}}}
+
+% Grounding spatio-temporal language architecures:
+\newcommand{\utm}{\textsc{ut}\xspace}
+\newcommand{\stm}{\textsc{sft}\xspace}
+\newcommand{\ttm}{\textsc{tft}\xspace}
+\newcommand{\lstm}{\textsc{lstm}\xspace}
+\newcommand{\utwam}{\textsc{ut-wa}\xspace}
+\newcommand{\stwam}{\textsc{sft-wa}\xspace}
+\newcommand{\ttwam}{\textsc{tft-wa}\xspace}
+\newcommand{\lstmfl}{\textsc{lstm-flat}\xspace}
+\newcommand{\lstmfa}{\textsc{lstm-factored}\xspace}
+\newcommand{\wa}{\textsc{-wa}\xspace}
 
 % to do
 % you can comment the renew commands to make them disappear
@@ -238,6 +258,12 @@ pdfborder={0 0 0},      % No borders around internal hyperlinks
 \newcommand{\train}{\text{train}}
 \newcommand{\test}{\text{test}}
 \newcommand{\CGH}{\textsc{cgh}\xspace}
+
+
+\newcommand{\dalle}{\textsc{dall-e}\xspace}
+\newcommand{\nlp}{\textsc{nlp}\xspace}
+\newcommand{\llm}{\textsc{llm}\xspace}
+\newcommand{\llms}{\textsc{llm}s\xspace}
 
 \newcommand{\SP}{\textsc{sp}\xspace}
 \newcommand{\ood}{\textsc{ood}\xspace}
@@ -366,7 +392,7 @@ pdfborder={0 0 0},      % No borders around internal hyperlinks
 %%% THE DOCUMENT
 %%% Where all the important stuff is included!
 %%%-------------------------------------------------------------------------------
-\author{Cédric Colas}
+\author{Tristan Karch}
 
 % SUBFILES VODOO
 \usepackage{subfiles}

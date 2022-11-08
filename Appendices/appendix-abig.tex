@@ -97,6 +97,7 @@ The data-set is split into training (70\%) and validation (30\%) sets. If the va
 \end{equation}
 \paragraph{Monte-Carlo Tree Search }
 In the architect's MCTS, nodes are labeled by environment's states and they are expanded by selecting messages. Selecting message $m$ from a node with label $s$ yields a builder action according to the architect's builder model $a\sim \tildepib(a|s,m)$, this sampled action in turn yields the label of the child node according to the environment's transition model $s'\sim \Pe(s'|s,a)$. We repeat this process until we select a message that was never selected from the current node  or we sample a next state that does not correspond to a child node yet. In both of these cases a new node has to be created. We estimate the value of the new node using an engineered heuristic that estimates the return of an optimal policy $\pi^*(a|s)$ from state $s$. This value is scaled down by a factor 2 to avoid overestimation: the builder's policy may not allow the architect to have it follow $\pi^*$. This estimated value for a newly created node at depth $l$ is back-propagated as a return to parents node at depth $k$ according to:
+
 \begin{equation}
     G^k=\sum_{\tau=0}^{l-1-k}\gamma^\tau r_{k+1+\tau} + \gamma^{l-k}v^l \qquad k=l,...,0
 \end{equation}

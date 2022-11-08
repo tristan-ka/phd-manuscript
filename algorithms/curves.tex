@@ -1,0 +1,58 @@
+\begin{algorithm}
+\caption{Speaker's Utterances}\label{alg:sp}
+\begin{algorithmic}
+
+\REQUIRE perceived referents $\tilde{R}_S$, speaker's referent encoder $f_S$, speaker's utterance encoder $g_S$, sensory-motor system $M$
+
+\STATE $Z_r \gets f_S(\tilde{R}_S) $
+\STATE $c \sim \textrm{Uniform}()$
+\FOR{$i \textrm{ in range} (N_{\textrm{production}})$}
+    \STATE $U_S \gets M(c)$
+    \STATE $Z_u \gets g_S(U)$
+    \STATE $S \gets \textrm{sim}_{\textrm{cos}}(Z_r,Z_u)$
+    \STATE $\mathcal{L} \gets \textrm{mean(diag(S))} * (-1)$
+    \STATE GD step on $c$ to minimize $\mathcal{L}$
+\ENDFOR
+\STATE \textrm{\textbf{Return} }$M(c)$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Listener's Selections \& Binary Outcomes}\label{alg:ls}
+\begin{algorithmic}
+
+\REQUIRE perceived referents $\tilde{R}_L$, produced utterances $U_S$, listener's referent encoder $f_L$, listener's utterance encoder $g_L$
+
+\STATE $Z_r \gets f_L(\tilde{R}_L) $
+\STATE $Z_u \gets g_L(U_S) $
+\STATE $S\gets \textrm{sim}_{\textrm{cos}}(Z_r,Z_u)$
+\STATE $t \gets \textrm{argmax}(S, \textrm{axis=}1)$
+\STATE $o \gets \textbf{0}$
+\FOR{$i \textrm{ in range} (N_{\textrm{referents}})$}
+    \STATE $o_i \gets \mathds{1}_{[t_i = i]}$
+\ENDFOR
+\STATE \textrm{\textbf{Return} }$o$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Agents's Association Losses}\label{alg:al}
+\begin{algorithmic}
+
+\REQUIRE perceived referents $\tilde{R}_A$, produced utterances $U_A$, outcomes $o$, agent's referent encoder $f_A$, agent's utterance encoder $g_A$
+
+\STATE $Z_r \gets f_A(\tilde{R}_A) $
+\STATE $Z_u \gets g_A(U_A) $
+\STATE $S\gets \textrm{sim}_{\textrm{cos}}(Z_r,Z_u)$
+\STATE $\mathcal{L}_0 \gets CE(S, \textrm{reduction=False})$
+\STATE $\mathcal{L}_1 \gets CE(S^{\top},\textrm{reduction=False})$
+\STATE $\mathcal{L} \gets (\mathcal{L}_0 + \mathcal{L}_1)/2$
+\IF{$A = \textrm{"S"}$} 
+    \STATE $\mathcal{L} \gets (\mathcal{L} \cdot o) / N_{\textrm{referents}}$
+\\ENDIFELSE 
+    \STATE $\mathcal{L} \gets (\mathcal{L} \cdot \textbf{1}) / N_{\textrm{referents}}$
+\ENDIF 
+
+\STATE $\textrm{\textbf{Return} } \mathcal{L}$
+\end{algorithmic}
+\end{algorithm}

@@ -1,0 +1,185 @@
+\begin{document}
+\chapter{Grounding Spatio-Temporal Language with Transformers}
+
+\section{Playground}
+\todo{Merge with playground from imagine supplementary}
+\subsection{Environment} \label{sup:env}
+Temporal Playground is a procedurally generated environment consisting of 3 objects and an agent's body. There are 32 types of objects, listed in Fig. \ref{fig:env-categories} along with 5 object categories. Each object has a continuous 2D position, a size, a continuous color code specified by a 3D vector in RGB space, a type specified by a one-hot vector, and a boolean unit specifying whether it is grasped. Note that categories are not encoded in the objects' features. The agent's body has its 2D position in the environment and its gripper state (grasping or non-grasping) as features. The size of the body feature vector is 3 while the object feature vector has a size of $39$. This environment is a spatio-temporal extension of the one used in this work \cite{imagine}.
+
+
+All positions are constrained within $[-1,1]^2$. The initial position of the agent is $(0,0)$ while the initial object positions are randomized so that they are not in contact $(d(obj_1,obj_2)>0.3)$. Object sizes are sampled uniformly in $[0.2, 0.3]$, the size of the agent is $0.05$. Objects can be grasped when the agent has nothing in hand, when it is close enough to the object center $(d(\text{agent},obj)<(size(\text{agent}) + size(obj)) / 2)$ and the gripper is closed ($1$, $-1$ when open). When a supply is on an animal or water is on a plant (contact define as distance between object being equal to the mean size of the two objects $d=(size(obj_1)+size(obj_2))/2$), the object will grow over time with a constant growth rate until it reaches the maximum size allowed for objects or until contact is lost.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.85\textwidth]{grounding/appendix/env_categories.pdf}
+\caption{\textbf{Representation of possible objects types and categories}. Information about the possible interactions between objects are also given.}
+\label{fig:env-categories}
+\end{figure}
+
+\newpage
+\subsection{Language} \label{sup:grammar}
+
+\paragraph{Grammar. }
+The synthetic language we use can be decomposed into two components: the instantaneous grammar and the temporal logic. Both are specified through the BNF given in Figure~\ref{fig:insta-gram}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{grounding/main/bnf.pdf}
+\caption{\textbf{BNF of the grammar used in Temporal Playground}. The instantaneous grammar allows generating true sentences about predicates, spatial relations (one-to-one and one to all). These sentences are then processed by the temporal logic to produce the linguistic descriptions of our observations; this step is illustrated in the Temporal Aspect rules. See the main text for information on how these sentences are generated.}
+\label{fig:insta-gram}
+\end{figure}
+
+\paragraph{Concept Definition. } We split the set of all possible descriptions output by our grammar into four conceptual categories according to the rules given in Table~\ref{tab:concept_catego}.
+
+\begin{table}[h]
+    \centering
+    \small
+    \begin{tabular}{c|rl|r}
+    \textbf{Concept} & \multicolumn{2}{c}{\textbf{BNF}} & \textbf{Size}\\
+    \hline
+    \multirow{3}{*}{\textbf{1. Basic}} & \texttt{<S> ::=} & \texttt{<pred> <thing\_A>} &\multirow{3}{*}{152}\\
+    &\texttt{<pred> ::=} & \texttt{\textit{grasp}}&\\
+    &\texttt{<thing\_A> ::=} & \texttt{<thing\_B> | <attr> <thing\_B}&\\
+    \hline
+    \multirow{3}{*}{\textbf{2. Spatial}} & \texttt{<S> ::=} & \texttt{<pred> <thing\_A>}&\multirow{3}{*}{156}\\
+    &\texttt{<pred> ::=} & \texttt{\textit{grasp}}\\
+    &\texttt{<thing\_A> ::=} & \texttt{<\textit{thing} <localizer> | \textit{thing} <localizer\_all>}&\\
+    \hline
+    \multirow{4}{*}{\textbf{3. Temporal}}& \texttt{<S> ::=} &\texttt{<pred\_A> <thing\_A> | \textit{was} <pred\_B> <thing\_A>} & \multirow{4}{*}{648}\\
+    
+    &\texttt{<pred\_A> ::=} & \texttt{\textit{grow} | \textit{shake}}& \\
+    &\texttt{<pred\_B> ::=} & \texttt{\textit{grasp} | \textit{grow} | \textit{shake}}& \\
+    &\texttt{<thing\_A> ::=} & \texttt{<thing\_B> | <attr> <thing\_B>} &\\
+    \hline
+
+     \multirow{10}{*}{\shortstack[c]{\textbf{4. Spatio-}\\ \textbf{Temporal}}}& \texttt{<S> ::=} & \texttt{<pred\_A> <thing\_A> | \textit{was} <pred\_B> <thing\_A>} & \multirow{10}{*}{1716}\\
+     & & \texttt{<pred\_C> <thing\_C}>&\\
+    &\texttt{<pred\_A> ::=} & \texttt{\textit{grow} | \textit{shake}} &\\
+    &\texttt{<pred\_B> ::=} &\texttt{\textit{grasp} | \textit{grow} | \textit{shake}} &\\
+    &\texttt{<pred\_C> ::=} &\texttt{\textit{grasp}} &\\
+    &\texttt{<thing\_A> ::=} &\texttt{\textit{thing} <localizer> | \textit{thing} <localizer\_all> |  }&\\
+    &  &\texttt{\textit{thing was} <localizer> |} &\\
+    & & \texttt{\textit{thing was} <localizer\_all> |} &\\
+    & \texttt{<thing\_C> ::=} &\texttt{\textit{thing was} <localizer> |} &\\
+    & & \texttt{\textit{thing was} <localizer\_all>}&\\
+    \hline
+    \end{tabular}
+    \vspace{0.5cm}
+    \caption{\textbf{Concept categories with their associated BNF.} \texttt{<thing\_B>}, \texttt{<attr>},  \texttt{<localizer>} and \texttt{<localizer\_all>} are given in Fig.~\ref{fig:insta-gram}}
+    \label{tab:concept_catego}
+\end{table}
+
+
+\newpage
+\section{Supplementary Methods}
+
+\subsection{Data Generation} \label{sup:data_gen}
+\paragraph{Scripted bot.} To generate the traces matching the descriptions of our grammar we define a set of scenarii that correspond to sequences of actions required to fulfill the predicates of our grammar, namely \textit{grasp}, \textit{grow} and \textit{shake}. Those scenarii are then conditioned on a boolean that modulates them to obtain a mix of predicates in the present and the past tenses. For instance, if a \textit{grasp} scenario is sampled, there will be a 50\% chance that the scenario will end with the object being grasped, leading to a present-tense description; and a 50\% chance that the agent releases the object, yielding a past tense description.
+
+\paragraph{Description generation from behavioral traces of the agent.} For each time step, the instantaneous grammar generates the set of all true instantaneous sentences using a set of filtering operations similar to the one used in CLEVR \cite{johnson2016clevr}, without the past predicates and past spatial relations. Then the temporal logic component uses these linguistic traces in the following way: if a given sentence for a predicate is true in a past time step and false in the present time step, the prefix token \textit{'was'} is prepended to the sentence; similarly, if a given spatial relation is observed in a previous time step and unobserved in the present, the prefix token \textit{'was'} is prepended to the spatial relation.
+
+\subsection{Input Encoding} \label{sup:input_encoding}
+
+We present the input processing in Fig.~\ref{fig:input_encoding}. At each time step $t$, the body feature vector $b_t$ and the object features vector $o_{i,t}$, $i=1,2,3$ are encoded using two single-layer neural networks whose output are of size $h$. Similarly, each of the words of the sentence describing the trace (represented as one-hot vectors) is encoded and projected in the dimension of size $h$.  We concatenate to the vector obtained a modality token $m$ that defines if the output belongs to the scene $(1,0)$ or to the description $(0,1)$. We then feed the resulting vectors to a positional encoding that modulates the vectors according to the time step in the trace for $b_t$ and $o_{i,t}$, $i=1,2,3$ and according to the position of the word in the description for $w_l$. 
+
+We call the encoded body features $\hat{b}_t$ and it corresponds to $\hat{S}_{0,t}$ of the input tensor of our model (see Fig.~\ref{fig:archs} in the Main document). Similarly, $\hat{o}_{i,t}$, $i=1,2,3$ are the encoded object features corresponding to $\hat{S}_{i,t}$, $i=1,2,3$. Finally $\hat{w}_l$ are the encoded words and the components of tensor $\hat{W}$.
+
+We call $h$ the hidden size of our models and recall that $|\hat{b}_t|=|\hat{o}_{i,t}|=|\hat{w}_l|=h+2$. This parameter is varied during the hyper-parameter search.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{grounding/appendix/input_encoding.pdf}
+    \caption{\textbf{Diagram representing the projection of the inputs into the same dimension}}
+    \label{fig:input_encoding}
+\end{figure}
+
+\subsection{Details on LSTM models}\label{sup:lstm_details}
+
+To provide baseline models on our tasks we consider two LSTM variants. They are interesting baselines because they do not perform any relational computation except for relations between inputs at successive time steps. We consider the inputs as they were defined in Section \ref{section:archs} of the main paper. We consider two LSTM variants:
+
+\begin{enumerate}
+    \item \lstmfl: This variant has two internal \lstm: one that processes the language and one that processes the scenes as concatenations of all the body and object features. This produces two vectors that are concatenated into one, which is then run through an MLP and a final softmax to produce the final output.
+    \item \lstmfa: This variant independently processes the different body and object traces, which have previously been projected to the same dimension using a separate linear projection for the object and for the body. The language is processed by a separate \lstm. These body, object and language vectors are finally concatenated and fed to a final MLP and a softmax to produce the output.
+\end{enumerate}
+
+\subsection{Details on Training Schedule} \label{sup:hparam}
+
+\paragraph{Implementation Details. }The architectures are trained via backpropagation using the Adam Optimizer\cite{kingma2017adam}. The data is fed to the model in batches of 512 examples for 150 000 steps.  We use a modular buffer to sample an important variety of different descriptions in each batch and to impose a ratio of positive samples of 0.1 for each description in each batch. 
+
+\paragraph{Model implementations.}
+% \todo{add layers init and ref to function in pytorch we used for transformer and lstms}
+
+We used the standard implementations of TransformerEncoderLayer and TransformerEncoder from pytorch version 1.7.1, as well as the default LSTM implementation. For initialization, we also use pytorch defaults.
+
+\paragraph{Hyper-parameter search. } To pick the best set of parameters for each of our eight models, we train them on 18 conditions and select the best models. Note that each condition is run for 3 seeds and best models are selected according to their averaged $F_1$ score on randomly held-out descriptions (15\% of the sentences in each category given in Table~\ref{tab:concept_catego}). 
+
+\paragraph{Best models. } Best models obtained thanks to the parameter search are given in Table~\ref{tab:best_models}.
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{c|c|cccc}
+    \textbf{Model} & \textbf{Learning rate} &\multicolumn{4}{c}{\textbf{Model hyperparams}}\\
+    \hline
+        & & hidden size & layer count & head count & param count \\
+         \hline
+    \utm & 1e-4 & $ 256 $ & $4$ & $8$ & $1.3$M \\
+    \utwam & 1e-5 & $ 512 $ & $4$ & $8$ & $14.0$M \\
+    \ttm & 1e-4 & $ 256 $ & $4$ & $4$ & $3.5$M\\
+    \ttwam & 1e-5 & $ 512 $ & $ 4 $ & $ 8 $ & $20.3$M \\
+    \stm & 1e-4 & $ 256 $ & $4$ & $4$ & $3.5$M\\
+    \stwam & 1e-4 & $256$ & $2$ & $8$ & $2.7$M \\
+    \lstmfl & 1e-4 & $ 512 $ & $ 4 $ & N/A & $15.6$M\\
+    \lstmfa & 1e-4 & $ 512 $ & $ 4 $ & N/A & $17.6$M \\
+    
+    \end{tabular}
+    \vspace{5pt}
+    \caption{Hyperparameters for all models}
+    \label{tab:best_models}
+\end{table}
+
+\paragraph{Robustness to hyperparameters} For some models, we have observed a lack of robustness to hyperparameters during our search. This translated to models learning to predict all observation-sentence tuples as false since the dataset is imbalanced (the proportion of true samples is 0.1). This behavior was systematically observed with a series of models whose hyperparameters are listed in Table \ref{tab:worst_models}. This happens with the biggest models with high learning rates, especially with the \wa variants.
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{c|c|ccc}
+    \textbf{Model} & \textbf{Learning rate} &\multicolumn{3}{c}{\textbf{Model hyperparams}}\\
+    \hline
+        & & hidden size & layer count & head count \\
+         \hline
+    \utwam & 1e-4 & $ 512 $ & $4$ & $4$\\
+    \utwam & 1e-4 & $ 512 $ & $4$ & $8$\\
+    \stm & 1e-4 & $ 512 $ & $4$ & $4$ \\
+    \stwam & 1e-4 & $ 512 $ & $4$ & $8$\\
+    \stwam & 1e-4 & $ 512 $ & $2$ & $4$\\
+    \stwam & 1e-4 & $ 512 $ & $4$ & $4$\\
+    \ttm & 1e-4 & $ 512 $ & $4$ & $4$ \\
+    \ttwam & 1e-4 & $ 512 $ & $4$ & $8$\\
+    \ttwam & 1e-4 & $ 512 $ & $2$ & $4$\\
+    \ttwam & 1e-4 & $ 512 $ & $4$ & $4$\\
+    \end{tabular}
+    \vspace{5pt}
+    \caption{Models and hyperparameters collapsing into uniform false prediction.}
+    \label{tab:worst_models}
+\end{table}
+
+\newpage
+\section{Supplementary Results} \label{sup:test_obs}
+
+\subsection{Generalization to new observations from known sentences}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{grounding/main/results/res_random_split_obs_test.png}
+\caption{F1 scores of all models on the train sentences with new observations.}
+\label{fig:res_obs_test}
+\end{figure}
+
+In this section we shortly describe an additional evaluation setup we considered. We evaluate the model's f1-scores on sets of sentences that are seen as train sentences, but on newly generated observations. The results are plotted in Figure \ref{fig:res_obs_test}.
+
+\subsection{Computing Resources} \label{sup:compute}
+
+This work was performed using HPC resources from GENCI-IDRIS (Grant 2020-101594). We used 22k GPU-hours on nvidia-V100 GPUs for the development phase, hyperparameter search, and the main experiments.
+
+
+
+\end{document}
