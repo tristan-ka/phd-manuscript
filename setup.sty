@@ -18,16 +18,20 @@
 \usepackage{dsfont}
 \usepackage{graphicx} % Include figures
 
+
+\usepackage{titlesec}
+\titleformat{\paragraph}[block]{\bfseries\filcenter\color{main_color}}{}{0pt}{}
+
 \usepackage{xr-hyper}
 \PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}   % Internal hyperlinks
 \hypersetup{
 pdfborder={0 0 0},      % No borders around internal hyperlinks
     pdfauthor={Tristan Karch}, % author,
     colorlinks = True,
-    citecolor=mybluetwo,  % color of citations
-    linkcolor=mybluetwo,  % color of href links
+    citecolor=secondary_color,  % color of citations
+    linkcolor=secondary_color,  % color of href links
     urlcolor=black,       % color of url links
-    allcolors=mybluetwo
+    allcolors=secondary_color
 }
 
 % TRIM MARKS HERE
@@ -67,7 +71,7 @@ pdfborder={0 0 0},      % No borders around internal hyperlinks
   \renewcommand{\printchapternum}{\chapnumfont \thechapter}
   \renewcommand{\afterchapternum}{\par\nobreak\vskip \midchapskip}
   \renewcommand{\printchapternonum}{\vspace*{\midchapskip}\vspace*{5mm}}
-  \renewcommand{\chaptitlefont}{\color{mybluethree}\centering\bfseries\huge}
+  \renewcommand{\chaptitlefont}{\color{main_color}\centering\bfseries\huge}
   \renewcommand{\printchaptertitle}[1]{\chaptitlefont ##1}
   \renewcommand{\afterchaptertitle}{\par\nobreak\vskip \afterchapskip}
 }
@@ -78,16 +82,16 @@ pdfborder={0 0 0},      % No borders around internal hyperlinks
 % modify skip before and after section titles
 \setbeforesecskip{0.8cm}%
 \setaftersecskip{0.5cm}%
-\setsecheadstyle{\color{mybluethree}\normalfont\Large\bfseries}
+\setsecheadstyle{\color{main_color}\normalfont\Large\bfseries}
 % \setsubsecheadstyle{\normalfont\normalsize\bfseries}
 
 \setbeforesubsubsecskip{0.8cm}
 \setaftersubsubsecskip{0.5cm}%
-\setsubsecheadstyle{\color{mybluethree}\large\bfseries\raggedright}
+\setsubsecheadstyle{\color{main_color}\large\bfseries\raggedright}
 
 \setbeforesubsecskip{0.8cm}%
 \setaftersubsecskip{0.5cm}%
-\setsubsubsecheadstyle{\color{mybluethree}\shortcenter}
+\setsubsubsecheadstyle{\color{main_color}\shortcenter}
 
 \setparaheadstyle{\normalfont\normalsize\bfseries}
 \setparaindent{0pt}\setafterparaskip{0pt}
@@ -134,7 +138,7 @@ pdfborder={0 0 0},      % No borders around internal hyperlinks
 \setlength{\intextsep}{0.8cm} % change separation between float and text
 \usepackage{xspace}
 \usepackage{subfig}
-
+\usepackage{minitoc}
 
 %algorithms
 \usepackage{algorithmic}
@@ -171,6 +175,9 @@ pdfborder={0 0 0},      % No borders around internal hyperlinks
 \definecolor{myblue}{rgb}{0,0,0.7}
 \definecolor{mybluetwo}{rgb}{0,0.25,0.55}
 \definecolor{mybluethree}{rgb}{0,0.2,0.45}
+
+\definecolor{main_color}{HTML}{26597E}
+\definecolor{secondary_color}{HTML}{347AAD}
 
 % hack to change margin temporarily (used for the abstract page)
 \newenvironment{changemargin}[2]{%

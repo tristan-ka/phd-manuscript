@@ -1,5 +1,7 @@
 \chapter{Learning to Guide and to Be Guided in the Architect-Builder Problem}
 
+\minitoc
+
 \begin{abstract}
 We are interested in interactive agents that learn to coordinate, namely, a \emph{builder} -- which performs actions but ignores the goal of the task, i.e. has no access to rewards -- and an \emph{architect} which guides the builder towards the goal of the task. 
 We define and explore a formal setting where artificial agents are equipped with mechanisms that allow them to simultaneously learn a task while at the same time evolving a shared communication protocol.  
@@ -70,8 +72,6 @@ setting of \abp (with a reward-less builder and an action-less architect).
 
 \textbf{Additional Assumptions. }  In order to focus on the architect-builder interactions and the learning of a shared communication protocol, the architect has access to $\Pe(s'|s,a)$ and to the reward function $r(s,a)$ of the goal at hand. This assumes that, if the architect were to act in the environment instead of the builder, it would be able to quickly figure out how to solve the task. This assumption is compatible with the CoCo game experiment \cite{vollmer2014studying} where humans participants, and in particular the architects, are known to have such world models.
 
-
-\section{\abig: Architect-Builder Iterated Guiding}
 
 \section{\abig: Architect-Builder Iterated Guiding}
 \subsection{Analytical description}
