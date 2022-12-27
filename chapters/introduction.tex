@@ -1,6 +1,7 @@
 
 \chapter{Introduction}
 %\addcontentsline{toc}{chapter}{Introduction}
+%\adjustmtc
 
 
 \minitoc
@@ -100,32 +101,38 @@ The present research aims at bridging developmental psychology with recent \ai m
 \label{fig:intro_language_paradigms}
 \end{figure}
 
-The immersion of artificial agents in social worlds does not require starting from fresh grounds. In fact, numerous works already include social elements in pre-existing \ai paradigms. In a recent survey, \citet{Luketina2019} review several approaches instructing Reinforcement Learning agents with language, either to condition them or to assist them as displayed in figure~\ref{fig:intro_language_paradigms}~(a). Similarly, recent imitation learning settings have had their training datasets augmented with linguistic descriptions of expert trajectories~\citep{ALFRED20,pashevich2021episodic} as displayed in figure~\ref{fig:intro_language_paradigms}~(b). In the present research, we will demonstrate that agents can use language as a cognitive tool to imagine creative goals~\citep{colas2022language} as illustrated in figure~\ref{fig:intro_language_paradigms}~(c). Finally, \citet{jaques2019social} recently presented a \marl framework where agents use social motivations to solve collaborative tasks such as the one depicted in figure~\ref{fig:intro_language_paradigms}(d). 
+The immersion of artificial agents in social worlds does not require starting from fresh grounds. In fact, numerous works already include social elements in pre-existing \ai paradigms. In a recent survey, \citet{Luketina2019} review several approaches instructing \rl agents with language, either to condition them or to assist them as displayed in figure~\ref{fig:intro_language_paradigms}~(a). Similarly, recent \il settings have had their training datasets augmented with linguistic descriptions of expert trajectories~\citep{ALFRED20,pashevich2021episodic} as displayed in figure~\ref{fig:intro_language_paradigms}~(b). In the present research, we will demonstrate that agents can use language as a cognitive tool to imagine creative goals~\citep{colas2022language} as illustrated in figure~\ref{fig:intro_language_paradigms}~(c). Finally, \citet{jaques2019social} recently presented a \marl framework where agents use social motivations to solve collaborative tasks such as the one depicted in figure~\ref{fig:intro_language_paradigms}(d). 
 
 \paragraph{Objectives}
 
 The general objective of the present research is to investigate the two following questions: 
 \begin{itemize}
-	\item \textbf{How can cultural conventions self-organize when artificial agents interact?} The objective of the first part of this research is to investigate the key mechanisms required for the \textbf{formation} of cultural conventions between artificial agents. In part~\ref{part:formation}, we will specifically consider social interactions between two artificial agents that both integrate learning dynamics. We, therefore, place ourselves in a multi-agent context.
-	\item \textbf{How can artificial agents benefit from pre-existing cultural conventions?} Conversely, part~\ref{part:exploitation} aims at exploring the \textbf{exploitation} of pre-existing cultural conventions by autonomous agents. As such, we will consider interactions between a single artificial agent and a simulated social partner.
+	\item \textbf{How can cultural conventions self-organize when artificial agents interact?} The objective of the first part of this research is to investigate the key mechanisms required for the \textbf{formation} of cultural conventions between artificial agents. In part~\ref{part:formation}, we place ourselves in a multi-agent setup and consider social interactions between two artificial agents that both integrate learning dynamics. 
+	\item \textbf{How can artificial agents benefit from pre-existing cultural conventions?} Conversely, part~\ref{part:exploitation} aims at exploring the \textbf{exploitation} of pre-existing cultural conventions by autonomous agents. As such, we will consider a single artificial agent interacting with a simulated social partner.
 \end{itemize}
 
 
 \paragraph{Contributions}
 
-This manuscript starts with some preliminary technical background on \rl, \il, and \marl. We will then discuss social \marl in the foundations of part~\ref{part:formation} (chapter~\ref{chap:foundation_formation}) while autotelic and Vygotskian artificial agents will be defined in the foundation of part~\ref{part:exploitation} (chapter~\ref{chap:foundation_vaai}). 
+This manuscript starts with some preliminary technical background on \rl, \il, and \marl (chapter~\ref{chap:backgroud}). We will then discuss social \marl in the foundations of part~\ref{part:formation} (chapter~\ref{chap:foundation_formation}) while autotelic and Vygotskian artificial agents will be defined in the foundation of part~\ref{part:exploitation} (chapter~\ref{chap:foundation_vaai}). \todo{Reorganisation: first background then problem definition: 1) self-organisation of cultural convention, 2) self-organisation of trajectories from existing cultural conventions}
+
+Our first experimental contribution (chapter~\ref{chap:abig}) studies the collaboration between two artificial agents in the \textit{Architect-Builder Problem}: a new interactive setting in which agents have asymmetrical roles and must cooperate to build structures. More specifically, the architect knows the structure that needs to be assembled but cannot act on the blocks of the environment while the builder does not know the task at hand but can manipulate the objects. Our proposed algorithmic solution builds on the shared intentionality and pragmatic frame concepts to enable the architect and the builder to agree on a cultural convention enabling them to solve the task. 
+
+Our second experimental contribution (chapter~\ref{chap:curves}) investigates the role of sensorimotor constraints in the formation of a graphical language. For this experiment, we place ourselves in the context of Language Games~\citep{steels2001language} and consider speaker and listener agents exchanging utterances to refer to visual objects. In our setup,  utterances are graphical signs produced by a robotic arm and objects are combinations of MNIST digits. We propose a new multi-modal contrastive learning algorithm to enable agents to self-organize a shared communication system in such a sensorimotor setting.
+
+Our next contribution (chapter~\ref{chap:foundation_vaai}) introduces the Vyogtksian Autotelic \ai framework (\vaai). Inspired by the pioneering work of the developmental psychologist \citet{vygotsky_thought_1934}, we draw the contour of a more human-like \ai where agents are immersed in rich socio-cultural worlds. By exposing agents to our culture, and enabling them to internalize pre-existing cultural conventions they can use language as a cognitive tool to become better learners. 
+
+The \vaai framework is the foundation of two other experimental contributions. Our fourth contribution (chapter~\ref{chap:grounding}) explores how embodied artificial agents can align their trajectories with linguistic descriptions provided by a social partner. This alignment is known as the Language Grounding Problem~\citep{glenberg_grounding_2002,zwaan_madden_2005}. We consider the grounding of descriptions involving spatio-temporal concepts and study the impact of architectural biases by testing different variants of multi-modal transformers.
+
+Finally, in our fifth and last contribution (chapter~\ref{chap:imagine}), we implement an autotelic agent that converts linguistic descriptions given by a social partner into targetable goals. We coined this agent \imagine. \imagine operates in two phases. First, the agent learns to represent, detect and achieve goals by interacting with a social partner. Once it has discovered a variety of interesting interactions doing so, \imagine then switches to an autonomous phase and uses language as a cognitive tool to imagine new goal constructs leveraging language compositionality. We show that this algorithm enables agents to discover a greater variety of skills paving the way to more open-ended learning learners.
 
 
-
-
-
-\clearpage
-
-\section{Colalborations and Publications}
 
 \subsection{Collaborations}
 
-The present research is the fruit of multiple collaborations involving several research institutions. My two supervisors, Clément Moulin-Frier and Pierre-Yves Oudeyer were involved in all of them.
+The present research is the result of multiple collaborations involving several research institutions including INRIA in France, Mila in Canada, and Microsoft Research at Cambridge (UK). My two amazing supervisors, Clément Moulin-Frier and Pierre-Yves Oudeyer from the Flowers Lab (INRIA) were involved in all these collaborations. Our first contribution (chapter~\ref{chap:abig}) was led by the great Paul Barde (Mila) and myself, under the joint supervision of my and Paul Barde's supervisors, namely Derek Nowrouzezahrai (McGill University) and Chris Pal (Polytechnique Montreal \& Mila, CIFAR AI Chair). Our second contribution (chapter~\ref{chap:curves}) was developed during the brilliant internship of Yoann Lemesle (Paris-Dauphine-PSL University) that I had the chance to supervise. Most of the work on Vygotskian Autotelic Agents presented in chapter~\ref{chap:foundation_vaai} and \ref{chap:imagine} was conducted in close collaboration with C\'edric Colas (INRIA) who acted as a mentor at the beginning of my thesis, providing me all the tools to carry out efficient research. More specifically, the \imagine approach was developed in collaboration with Nicolas Lair (INSERM, Cloud Temple), Peter-Ford Dominey (INSERM), and Jean-Michel Dussoux (Cloud Temple). Finally, our work on grounding spatio-temporal language with transformers (chapter~\ref{chap:grounding}) is the result of a project with Laetitia Teodorescu (INRIA) and her supervisor Katja Hofman (Microsoft Research).  
+
+\newpage
 
 \subsection{Publications}
 
@@ -153,7 +160,7 @@ The present research is the fruit of multiple collaborations involving several r
 \paragraph{Pre-print}
 
 \begin{itemize}
-	\item Emergence of Shared Sensory-motor Graphical Language from Visual Input (2022).
+	\item Emergence of Shared Sensory-motor Graphical Language from Visual Input (2022). \cite{lemesle2022emergence} (Co-first-author)
 \end{itemize}
 
 
