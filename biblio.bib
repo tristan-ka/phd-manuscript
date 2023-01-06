@@ -4479,7 +4479,6 @@ Lapata, Mirella},
 }
 
 
-
 @article{Glenberg2002,
  author = {Glenberg, Arthur M. and Kaschak, Michael P.},
  issn = {1069-9384},
@@ -4490,6 +4489,187 @@ Lapata, Mirella},
  title = {{Grounding language in action}},
  volume = {9},
  year = {2002}
+}
+
+@inproceedings{abbeel2004apprenticeship,
+author = {Abbeel, Pieter and Ng, Andrew Y.},
+title = {Apprenticeship Learning via Inverse Reinforcement Learning},
+year = {2004},
+isbn = {1581138385},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1015330.1015430},
+doi = {10.1145/1015330.1015430},
+abstract = {We consider learning in a Markov decision process where we are not explicitly given a reward function, but where instead we can observe an expert demonstrating the task that we want to learn to perform. This setting is useful in applications (such as the task of driving) where it may be difficult to write down an explicit reward function specifying exactly how different desiderata should be traded off. We think of the expert as trying to maximize a reward function that is expressible as a linear combination of known features, and give an algorithm for learning the task demonstrated by the expert. Our algorithm is based on using "inverse reinforcement learning" to try to recover the unknown reward function. We show that our algorithm terminates in a small number of iterations, and that even though we may never recover the expert's reward function, the policy output by the algorithm will attain performance close to that of the expert, where here performance is measured with respect to the expert's unknown reward function.},
+booktitle = {Proceedings of the Twenty-First International Conference on Machine Learning},
+pages = {1},
+location = {Banff, Alberta, Canada},
+series = {ICML '04}
+}
+
+@article{osa2018algorithmic,
+  title={An algorithmic perspective on imitation learning},
+  author={Osa, Takayuki and Pajarinen, Joni and Neumann, Gerhard and Bagnell, J Andrew and Abbeel, Pieter and Peters, Jan and others},
+  journal={Foundations and Trends{\textregistered} in Robotics},
+  volume={7},
+  number={1-2},
+  pages={1--179},
+  year={2018},
+  publisher={Now Publishers, Inc.}
+}
+
+
+
+@article{polyak1992,
+author = {Polyak, B. T. and Juditsky, A. B.},
+title = {Acceleration of Stochastic Approximation by Averaging},
+journal = {SIAM Journal on Control and Optimization},
+volume = {30},
+number = {4},
+pages = {838-855},
+year = {1992},
+doi = {10.1137/0330046},
+}
+
+
+@InProceedings{pmlr-v80-haarnoja18b,
+  title = 	 {Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor},
+  author =       {Haarnoja, Tuomas and Zhou, Aurick and Abbeel, Pieter and Levine, Sergey},
+  booktitle = 	 {Proceedings of the 35th International Conference on Machine Learning},
+  pages = 	 {1861--1870},
+  year = 	 {2018},
+  editor = 	 {Dy, Jennifer and Krause, Andreas},
+  volume = 	 {80},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {10--15 Jul},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v80/haarnoja18b/haarnoja18b.pdf},
+  url = 	 {https://proceedings.mlr.press/v80/haarnoja18b.html},
+  abstract = 	 {Model-free deep reinforcement learning (RL) algorithms have been demonstrated on a range of challenging decision making and control tasks. However, these methods typically suffer from two major challenges: very high sample complexity and brittle convergence properties, which necessitate meticulous hyperparameter tuning. Both of these challenges severely limit the applicability of such methods to complex, real-world domains. In this paper, we propose soft actor-critic, an off-policy actor-critic deep RL algorithm based on the maximum entropy reinforcement learning framework. In this framework, the actor aims to maximize expected reward while also maximizing entropy. That is, to succeed at the task while acting as randomly as possible. Prior deep RL methods based on this framework have been formulated as Q-learning methods. By combining off-policy updates with a stable stochastic actor-critic formulation, our method achieves state-of-the-art performance on a range of continuous control benchmark tasks, outperforming prior on-policy and off-policy methods. Furthermore, we demonstrate that, in contrast to other off-policy algorithms, our approach is very stable, achieving very similar performance across different random seeds.}
+}
+
+
+@misc{ppo2017,
+  doi = {10.48550/ARXIV.1707.06347},
+  
+  url = {https://arxiv.org/abs/1707.06347},
+  
+  author = {Schulman, John and Wolski, Filip and Dhariwal, Prafulla and Radford, Alec and Klimov, Oleg},
+  
+  keywords = {Machine Learning (cs.LG), FOS: Computer and information sciences, FOS: Computer and information sciences},
+  
+  title = {Proximal Policy Optimization Algorithms},
+  
+  publisher = {arXiv},
+  
+  year = {2017},
+  
+  copyright = {arXiv.org perpetual, non-exclusive license}
+}
+
+
+@InProceedings{pmlr-v80-fujimoto18a,
+  title = 	 {Addressing Function Approximation Error in Actor-Critic Methods},
+  author =       {Fujimoto, Scott and van Hoof, Herke and Meger, David},
+  booktitle = 	 {Proceedings of the 35th International Conference on Machine Learning},
+  pages = 	 {1587--1596},
+  year = 	 {2018},
+  editor = 	 {Dy, Jennifer and Krause, Andreas},
+  volume = 	 {80},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {10--15 Jul},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v80/fujimoto18a/fujimoto18a.pdf},
+  url = 	 {https://proceedings.mlr.press/v80/fujimoto18a.html},
+  abstract = 	 {In value-based reinforcement learning methods such as deep Q-learning, function approximation errors are known to lead to overestimated value estimates and suboptimal policies. We show that this problem persists in an actor-critic setting and propose novel mechanisms to minimize its effects on both the actor and the critic. Our algorithm builds on Double Q-learning, by taking the minimum value between a pair of critics to limit overestimation. We draw the connection between target networks and overestimation bias, and suggest delaying policy updates to reduce per-update error and further improve performance. We evaluate our method on the suite of OpenAI gym tasks, outperforming the state of the art in every environment tested.}
+}
+
+
+
+
+@InProceedings{pmlr-v37-schulman15,
+  title = 	 {Trust Region Policy Optimization},
+  author = 	 {Schulman, John and Levine, Sergey and Abbeel, Pieter and Jordan, Michael and Moritz, Philipp},
+  booktitle = 	 {Proceedings of the 32nd International Conference on Machine Learning},
+  pages = 	 {1889--1897},
+  year = 	 {2015},
+  editor = 	 {Bach, Francis and Blei, David},
+  volume = 	 {37},
+  series = 	 {Proceedings of Machine Learning Research},
+  address = 	 {Lille, France},
+  month = 	 {07--09 Jul},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v37/schulman15.pdf},
+  url = 	 {https://proceedings.mlr.press/v37/schulman15.html},
+  abstract = 	 {In this article, we describe a method for optimizing control policies, with guaranteed monotonic improvement. By making several approximations to the theoretically-justified scheme, we develop a practical algorithm, called Trust Region Policy Optimization (TRPO). This algorithm is effective for optimizing large nonlinear policies such as neural networks. Our experiments demonstrate its robust performance on a wide variety of tasks: learning simulated robotic swimming, hopping, and walking gaits; and playing Atari games using images of the screen as input. Despite its approximations that deviate from the theory, TRPO tends to give monotonic improvement, with little tuning of hyperparameters.}
+}
+
+
+
+
+@article{watkins_q-learning_1992,
+	title = {Q-learning},
+	volume = {8},
+	year={1992},
+	issn = {1573-0565},
+	url = {https://doi.org/10.1007/BF00992698},
+	doi = {10.1007/BF00992698},
+	abstract = {Q-learning (Watkins, 1989) is a simple way for agents to learn how to act optimally in controlled Markovian domains. It amounts to an incremental method for dynamic programming which imposes limited computational demands. It works by successively improving its evaluations of the quality of particular actions at particular states.},
+	pages = {279--292},
+	number = {3},
+	journaltitle = {Machine Learning},
+	shortjournal = {Machine Learning},
+	author = {Watkins, Christopher J. C. H. and Dayan, Peter},
+	date = {1992-05-01},
+}
+
+
+@article{auer_finite-time_2002,
+	title = {Finite-time Analysis of the Multiarmed Bandit Problem},
+	volume = {47},
+	issn = {1573-0565},
+	url = {https://doi.org/10.1023/A:1013689704352},
+	doi = {10.1023/A:1013689704352},
+	abstract = {Reinforcement learning policies face the exploration versus exploitation dilemma, i.e. the search for a balance between exploring the environment to find profitable actions while taking the empirically best action as often as possible. A popular measure of a policy's success in addressing this dilemma is the regret, that is the loss due to the fact that the globally optimal policy is not followed all the times. One of the simplest examples of the exploration/exploitation dilemma is the multi-armed bandit problem. Lai and Robbins were the first ones to show that the regret for this problem has to grow at least logarithmically in the number of plays. Since then, policies which asymptotically achieve this regret have been devised by Lai and Robbins and many others. In this work we show that the optimal logarithmic regret is also achievable uniformly over time, with simple and efficient policies, and for all reward distributions with bounded support.},
+	pages = {235--256},
+	year={2002},
+	number = {2},
+	journaltitle = {Machine Learning},
+	shortjournal = {Machine Learning},
+	author = {Auer, Peter and Cesa-Bianchi, Nicolò and Fischer, Paul},
+}
+
+
+@ARTICLE{browne2012mcts,
+  author={Browne, Cameron B. and Powley, Edward and Whitehouse, Daniel and Lucas, Simon M. and Cowling, Peter I. and Rohlfshagen, Philipp and Tavener, Stephen and Perez, Diego and Samothrakis, Spyridon and Colton, Simon},
+  journal={IEEE Transactions on Computational Intelligence and AI in Games}, 
+  title={A Survey of Monte Carlo Tree Search Methods}, 
+  year={2012},
+  volume={4},
+  number={1},
+  pages={1-43},
+  doi={10.1109/TCIAIG.2012.2186810}}
+
+@article{steels1997evolution,
+author = {Steels, Luc},
+year = {1997},
+month = {10},
+pages = {},
+title = {The Synthetic Modeling of Language Origins},
+volume = {1},
+journal = {Evolution of Communication Journal},
+doi = {10.1075/eoc.1.1.02ste}
+}
+
+@article{bellman1966dynamic,
+  title={Dynamic programming},
+  author={Bellman, Richard},
+  journal={Science},
+  volume={153},
+  number={3731},
+  pages={34--37},
+  year={1966},
+  publisher={American Association for the Advancement of Science}
 }
 
 
