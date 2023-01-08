@@ -34,6 +34,7 @@ The transition function $\m{T}$ gives the distribution of the following states f
 In a \rl problem, the behavior of the agent is expressed as a \textit{policy} $\pi : \m{S} \rightarrow \m{A}$ that predicts the next action $a$ based on the current state $s$. This policy can be stochastic ${a_t\sim\pi(.|s_t)}$ or deterministic $a_t=\bar{\pi}(s_t)$. When agents interact in an environment, they produce \textit{trajectories}. A trajectory is a sequence of states and actions $\tau=(s_0,a_0,\dots,s_T,a_T)$. When both the dynamics of the environment and the policy of the agent is stochastic, the probability of a trajectory is:
 \begin{equation}
 P(\tau|\pi)=\rho_0(s_0)\prod_{t=0}^{T-1} P_E(s_{t+1}|s_t,a_t)\pi(a_t|s_t)	
+\label{eq:traj_dist}
 \end{equation}
 The objective of the agent is to maximize the cumulative reward computed over trajectories ($R^{tot}$). When computing the aggregation of rewards,  we often introduce discounting and give smaller weights to delayed rewards. The return of a trajectory is therefore:
 \begin{equation}
@@ -41,7 +42,7 @@ R^{tot}(\tau) = \sum_{t=0}^{T} \gamma^{t}R(s_t,a_t)
 \end{equation}
 with $\gamma \in ]0,1]$ being a constant discount factor. We call the optimal policy $\pi^*$, the behavior that maximizes the expected return:
 \begin{equation}
-	\pi^*=\argmax_\pi \underset{\tau\sim\pi}{\mathbb{E}}[R^{tot}(\tau)] = \argmax_\pi \underset{{(a_t\sim\pi, s_t\sim P_E)}}{\mathbb{E}}\left[\sum_{t=0}^{T} \gamma^{t}R(s_t,a_t)\right]
+	\pi^*=\argmax_\pi \expect{\tau\sim\pi}[R^{tot}(\tau)] = \argmax_\pi \expect{(a_t\sim\pi, s_t\sim P_E)}\left[\sum_{t=0}^{T} \gamma^{t}R(s_t,a_t)\right]
 \end{equation}
 The reward function plays therefore a crucial role in a \rl problem as its maximization will directly shape the behavior of the agent.
 
@@ -119,15 +120,15 @@ Q_{i+1}[s,a] \leftarrow Q_i[s,a] + \alpha \left(r + \gamma\max_{a'}Q_i[s',a'] - 
 During differentiation, one has to pay particular attention to freezing the weights of the network when evaluating $y_i$. Deep neural networks are known to exhibit training instabilities. In order to stabilize learning, \citet{mnih2015human} proposed two main innovations: 
 \begin{itemize}[noitemsep]
 \item \textit{Experience Replay}: The agent uses a replay buffer to store transitions during interactions. During learning, the transitions are then sampled uniformly to perform updates. This enables breaking the correlation between successive transitions and reusing them.
-\item \textit{Target network}: A target network is used to compute target $y$. This network is initialized with the actual Q-network ($Q_{targ}(s,a;\theta_{targ})=Q(s,a;\theta$) but updated less frequently than the actual Q-network. Updates are often performed using Polyak averaging~\citep{polyak1992}: $\theta_{targ} \leftarrow \rho\theta_{targ} + (1-\rho)\theta$
+\item \textit{Target network}: A target network is used to compute target $y$. This network is initialized with the actual Q-network ($Q_{targ}(s,a;\theta_{targ})=Q(s,a;\theta$) but updated less frequently than the actual Q-network. Updates are often performed using \textit{Polyak averaging}~\citep{polyak1992}: $\theta_{targ} \leftarrow \rho\theta_{targ} + (1-\rho)\theta$ with $\rho$ being the polyak factor.
 \end{itemize}
 
 \textbf{\ddpg} is an adaptation of \dqn to continuous action space. The challenge of dealing with continuous actions is to act greedily with respect to the learned Q-value. i.e. to evaluate $\argmax_a Q(s,a)$. To overcome this, \ddpg concurrently learns a deterministic policy with the Q-function. This policy is a parametrized network $\pi(s;\phi)$ with parameters $\phi$ and is obtained by gradient ascent. Moreover, since $\pi(s;\phi) \approx \argmax_a Q(s,a,\theta)$ it can be injected in equation~\ref{eq:loss_td}. We, therefore, have the two following losses to optimize:
 \begin{equation}
 \left\{
 \begin{split}
-	\m{L}_{\pi_\phi} &= \underset{(s\sim P_S)}{\mathbb{E}}\left[Q_\theta(s,\pi_\phi(s))\right] \quad \quad \quad \quad \text{ (Q-Value maximization)}\\
-	\m{L}_{Q_\theta} &= \underset{(s\sim P_S,a\sim\pi_c)}{\mathbb{E}}\left[(y- Q_\theta(s,a))^2 \right] \quad \text{(TD-error minimization)}\\
+	\m{L}_{\pi_\phi} &= \underset{(s\sim P_S)}{\mathbb{E}}\left[Q_\theta(s,\pi_\phi(s))\right] \quad \quad \quad \quad \text{ (Policy loss)}\\
+	\m{L}_{Q_\theta} &= \underset{(s\sim P_S,a\sim\pi_c)}{\mathbb{E}}\left[(y- Q_\theta(s,a))^2 \right] \quad \text{(Q-value loss)}\\
 	& \text{with } y = \underset{s'\sim P_S}{\mathbb{E}}\left[r +\gamma Q_\theta(s',\pi_\phi)\right]
 \end{split}
 \right.
@@ -143,7 +144,7 @@ There are numerous algorithms within the field of \drl, including on-policy meth
 
 \paragraph{Problem}
 
-\textit{Imitation Learning} (\il)~\citep{abbeel2004apprenticeship,osa2018algorithmic} is a field that considers an agent learning in a \mdp in which the reward function is not explicitly defined, but where the agent can observe demonstrations of the task it is intended to perform. \il is particularly useful in situations where it is difficult for the experimenter to design a task-specific reward function, but demonstrations are available. A classic example from the literature is the application of \il to self-driving cars. It is impractical to specify a reward function for the task of driving as successful drivers constantly adjust their criteria to adapt to the various events that occur on the road. However, there is a vast amount of video footage of people driving that could potentially be utilized by the agent to learn.
+\textit{Imitation Learning} (\il)~\citep{pommerleau1988BC,schaal1996learning,abbeel2004apprenticeship,osa2018algorithmic} is a field that considers an agent learning in a \mdp in which the reward function is not explicitly defined, but where the agent can observe demonstrations of the task it is intended to perform. \il is particularly useful in situations where it is difficult for the experimenter to design a task-specific reward function, but demonstrations are available. A classic example from the literature is the application of \il to self-driving cars. It is impractical to specify a reward function for the task of driving as successful drivers constantly adjust their criteria to adapt to the various events that occur on the road. However, there is a vast amount of video footage of people driving that could potentially be utilized by the agent to learn.
 
 \begin{figure}[!h]
 \centering
@@ -152,15 +153,40 @@ There are numerous algorithms within the field of \drl, including on-policy meth
 \label{fig:il_interacvtions}
 \end{figure}
 
-A standard way of formalizing the \il problem is to find a policy 
+A standard way of formalizing the \il problem is to find a policy that minimizes the divergence between the expert and learner data distribution. Provided a dataset $\m{D}=\{(\tau_i)\}_{i=1}^N$ containing expert trajectories of features $\tau = [\phi_0,\dots, \phi_T]$. If $q_{\pi^*}(\phi)$ is the distribution of features induced by the expert's policy (supposed optimal $\pi^*$) and $p_\pi(\phi)$ is the distribution of features induced by the learners' policy ($\pi$), the goal of \il is to find policy $\hat{\pi}$ such that:
+\begin{equation}
+\hat{\pi} = \argmin_{\pi}D(q_{\pi^*}(\phi),p_\pi(\phi))
+\end{equation}
+with $D$ being a measure of differences between probability distributions such as the well-known Kullback-Leibler (KL) divergence.
 
-\paragraph{Solution}
+\paragraph{Behavioral Cloning}
 
-\textbf{Behavioral Cloning}
+An intuitive way of solving an \il problem is to frame it as a supervised learning setting and do \textit{Behavioral Cloning}(\bc). Given a dataset of trajectories $\m{D}=\{(\tau_i)\}_{i=1}^N$ with  $\tau=[(s_0,a_0) \dots (s_T,a_T)]$, one directly minimizes the cross entropy loss:
+\begin{equation}
+\m{L}_\pi = -\expect{(s,a)~\sim\m{D}}[\log\pi(s,a)]
+\end{equation}
+Minimizing this cross-entropy loss is in fact equivalent to minimizing the KL-divergence between the trajectory distribution of the expert $P(\tau|\pi^*)$ and the trajectory distribution of the learner $P(\tau|\pi)$~\citep{ke2020imitation}:
+\begin{equation}
+D_{KL}(P(\tau|\pi^*),P(\tau|\pi)) = \underset{\tau \in \m{D}}{\sum}P(\tau|\pi^*)\log\left(\frac{P(\tau|\pi^*)}{P(\tau|\pi)}\right)
+\end{equation}
+%
+Injecting the definition of the trajectory distribution (Eq.~\ref{eq:traj_dist}) we get that:
+%
+\begin{align}
+D_{KL}(P(\tau|\pi^*),P(\tau|\pi)) &= \underset{\tau \in \m{D}}{\sum}P(\tau|\pi^*)\log\left(\prod_{t=0}^{T-1}\frac{\pi^*(a_t|s_t)}{\pi(a_t|s_t)}\right) \\
+&= \underset{\tau \in \m{D}}{\sum}P(\tau|\pi^*)\sum_{t=0}^{T-1}\left(\log\pi^*(a_t|s_t) - \log\pi(a_t|s_t)\right) \\
+&= \expect{(s,a)\sim\m{D}}\left[\log\pi^*(a_t|s_t) - \log\pi(a_t|s_t)\right]
+\end{align}
+%
+We will use behavioral cloning in chapter~\ref{chap:abig}. \bc is a simple and effective method for reproducing expert behavior. However, it has the limitation of only being able to derive an optimal policy from optimal expert trajectories, meaning that the learned policy will not exceed the performance of the expert. This assumption holds true for many applications, but not all. As a result, some researchers have turned to Inverse Reinforcement Learning as an alternative approach.
 
-\textbf{Inverse Reinforcement Learning}
+\paragraph{Inverse Reinforcement Learning}
+
+\todo{before anything send email for jury to PY}
 
 \subsection{Muli-Goal Reinforcement Learning}
+
+
 
 \paragraph{Problem}
 
