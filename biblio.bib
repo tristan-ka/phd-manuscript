@@ -4487,6 +4487,19 @@ Lapata, Mirella},
       primaryClass={cs.LG}
 }
 
+@inproceedings{ng2000irl,
+author = {Ng, Andrew Y. and Russell, Stuart J.},
+title = {Algorithms for Inverse Reinforcement Learning},
+year = {2000},
+isbn = {1558607072},
+publisher = {Morgan Kaufmann Publishers Inc.},
+address = {San Francisco, CA, USA},
+booktitle = {Proceedings of the Seventeenth International Conference on Machine Learning},
+pages = {663–670},
+numpages = {8},
+series = {ICML '00}
+}
+
 @article{Glenberg2002,
  author = {Glenberg, Arthur M. and Kaschak, Michael P.},
  issn = {1069-9384},
@@ -4498,6 +4511,77 @@ Lapata, Mirella},
  volume = {9},
  year = {2002}
 }
+
+@inproceedings{klein2011apprenticeship,
+  TITLE = {{Batch, Off-policy and Model-free Apprenticeship Learning}},
+  AUTHOR = {Klein, Edouard and Geist, Matthieu and Pietquin, Olivier},
+  URL = {https://hal-supelec.archives-ouvertes.fr/hal-00660623},
+  BOOKTITLE = {{EWRL 2011}},
+  ADDRESS = {Athens, Greece},
+  PAGES = {1-12},
+  YEAR = {2011},
+  MONTH = Sep,
+  HAL_ID = {hal-00660623},
+  HAL_VERSION = {v1},
+}
+
+@inproceedings{ratlif2006maxmargin,
+author = {Ratliff, Nathan D. and Bagnell, J. Andrew and Zinkevich, Martin A.},
+title = {Maximum Margin Planning},
+year = {2006},
+isbn = {1595933832},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1143844.1143936},
+doi = {10.1145/1143844.1143936},
+abstract = {Imitation learning of sequential, goal-directed behavior by standard supervised techniques is often difficult. We frame learning such behaviors as a maximum margin structured prediction problem over a space of policies. In this approach, we learn mappings from features to cost so an optimal policy in an MDP with these cost mimics the expert's behavior. Further, we demonstrate a simple, provably efficient approach to structured maximum margin learning, based on the subgradient method, that leverages existing fast algorithms for inference. Although the technique is general, it is particularly relevant in problems where A* and dynamic programming approaches make learning policies tractable in problems beyond the limitations of a QP formulation. We demonstrate our approach applied to route planning for outdoor mobile robots, where the behavior a designer wishes a planner to execute is often clear, while specifying cost functions that engender this behavior is a much more difficult task.},
+booktitle = {Proceedings of the 23rd International Conference on Machine Learning},
+pages = {729–736},
+numpages = {8},
+location = {Pittsburgh, Pennsylvania, USA},
+series = {ICML '06}
+}
+
+
+@article{arora_survey_2021,
+	title = {A survey of inverse reinforcement learning: Challenges, methods and progress},
+	volume = {297},
+	issn = {0004-3702},
+	url = {https://www.sciencedirect.com/science/article/pii/S0004370221000515},
+	doi = {https://doi.org/10.1016/j.artint.2021.103500},
+	abstract = {Inverse reinforcement learning ({IRL}) is the problem of inferring the reward function of an agent, given its policy or observed behavior. Analogous to {RL}, {IRL} is perceived both as a problem and as a class of methods. By categorically surveying the extant literature in {IRL}, this article serves as a comprehensive reference for researchers and practitioners of machine learning as well as those new to it to understand the challenges of {IRL} and select the approaches best suited for the problem on hand. The survey formally introduces the {IRL} problem along with its central challenges such as the difficulty in performing accurate inference and its generalizability, its sensitivity to prior knowledge, and the disproportionate growth in solution complexity with problem size. The article surveys a vast collection of foundational methods grouped together by the commonality of their objectives, and elaborates how these methods mitigate the challenges. We further discuss extensions to the traditional {IRL} methods for handling imperfect perception, an incomplete model, learning multiple reward functions and nonlinear reward functions. The article concludes the survey with a discussion of some broad advances in the research area and currently open research questions.},
+	pages = {103500},
+	journaltitle = {Artificial Intelligence},
+	author = {Arora, Saurabh and Doshi, Prashant},
+	year = {2021},
+	keywords = {Generalization, Learning accuracy, Learning from demonstration, Reinforcement learning, Reward function, Survey},
+}
+
+
+@inproceedings{neu2007apprenticeship,
+author = {Neu, Gergely and Szepesv\'{a}ri, Csaba},
+title = {Apprenticeship Learning Using Inverse Reinforcement Learning and Gradient Methods},
+year = {2007},
+isbn = {0974903930},
+publisher = {AUAI Press},
+address = {Arlington, Virginia, USA},
+abstract = {In this paper we propose a novel gradient algorithm to learn a policy from an expert's observed behavior assuming that the expert behaves optimally with respect to some unknown reward function of a Markovian Decision Problem. The algorithm's aim is to find a reward function such that the resulting optimal policy matches well the expert's observed behavior. The main difficulty is that the mapping from the parameters to policies is both nonsmooth and highly redundant. Resorting to sub differentials solves the first difficulty, while the second one is overcome by computing natural gradients. We tested the proposed method in two artificial domains and found it to be more reliable and efficient than some previous methods.},
+booktitle = {Proceedings of the Twenty-Third Conference on Uncertainty in Artificial Intelligence},
+pages = {295–302},
+numpages = {8},
+location = {Vancouver, BC, Canada},
+series = {UAI'07}
+}
+
+@inproceedings{ziebart2008maxentirl,
+author = {Ziebart, Brian and Maas, Andrew and Bagnell, J. and Dey, Anind},
+year = {2008},
+month = {01},
+pages = {1433-1438},
+title = {Maximum Entropy Inverse Reinforcement Learning.}
+booktitle={AAAI Conference on Artificial Intelligence}
+}
+
 
 @inproceedings{abbeel2004apprenticeship,
 author = {Abbeel, Pieter and Ng, Andrew Y.},
@@ -6778,6 +6862,54 @@ pages = {224--245},
 publisher = {Cambridge University Press},
 title = {{Embodied sentence comprehension}},
 year = {2005}
+}
+
+@inproceedings{ho2016gail,
+ author = {Ho, Jonathan and Ermon, Stefano},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {D. Lee and M. Sugiyama and U. Luxburg and I. Guyon and R. Garnett},
+ pages = {},
+ publisher = {Curran Associates, Inc.},
+ title = {Generative Adversarial Imitation Learning},
+ url = {https://proceedings.neurips.cc/paper/2016/file/cc7e2b878868cbae992d1fb743995d8f-Paper.pdf},
+ volume = {29},
+ year = {2016}
+}
+
+
+
+@InProceedings{brown2020better,
+  title = 	 {Better-than-Demonstrator Imitation Learning via Automatically-Ranked Demonstrations},
+  author =       {Brown, Daniel S. and Goo, Wonjoon and Niekum, Scott},
+  booktitle = 	 {Proceedings of the Conference on Robot Learning},
+  pages = 	 {330--359},
+  year = 	 {2020},
+  editor = 	 {Kaelbling, Leslie Pack and Kragic, Danica and Sugiura, Komei},
+  volume = 	 {100},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {30 Oct--01 Nov},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v100/brown20a/brown20a.pdf},
+  url = 	 {https://proceedings.mlr.press/v100/brown20a.html},
+  abstract = 	 {The performance of imitation learning is typically upper-bounded by the performance of the demonstrator. While recent empirical results demonstrate that ranked demonstrations allow for better-than-demonstrator performance, preferences over demonstrations may be difficult to obtain, and little is known theoretically about when such methods can be expected to successfully extrapolate beyond the performance of the demonstrator. To address these issues, we first contribute a sufficient condition for better-than-demonstrator imitation learning and provide theoretical results showing why preferences over demonstrations can better reduce reward function ambiguity when performing inverse reinforcement learning. Building on this theory, we introduce Disturbance-based Reward Extrapolation (D-REX), a ranking-based imitation learning method that injects noise into a policy learned through behavioral cloning to automatically generate ranked demonstrations. These ranked demonstrations are used to efficiently learn a reward function that can then be optimized using reinforcement learning. We empirically validate our approach on simulated robot and Atari imitation learning benchmarks and show that D-REX outperforms standard imitation learning approaches and can significantly surpass the performance of the demonstrator. D-REX is the first imitation learning approach to achieve significant extrapolation beyond the demonstrator’s performance without additional side-information or supervision, such as rewards or human preferences. By generating rankings automatically, we show that preference-based inverse reinforcement learning can be applied in traditional imitation learning settings where only unlabeled demonstrations are available.}
+}
+
+
+@InProceedings{dagger2011,
+  title = 	 {A Reduction of Imitation Learning and Structured Prediction to No-Regret Online Learning},
+  author = 	 {Ross, Stephane and Gordon, Geoffrey and Bagnell, Drew},
+  booktitle = 	 {Proceedings of the Fourteenth International Conference on Artificial Intelligence and Statistics},
+  pages = 	 {627--635},
+  year = 	 {2011},
+  editor = 	 {Gordon, Geoffrey and Dunson, David and Dudík, Miroslav},
+  volume = 	 {15},
+  series = 	 {Proceedings of Machine Learning Research},
+  address = 	 {Fort Lauderdale, FL, USA},
+  month = 	 {11--13 Apr},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v15/ross11a/ross11a.pdf},
+  url = 	 {https://proceedings.mlr.press/v15/ross11a.html},
+  abstract = 	 {Sequential prediction problems such as imitation learning, where future observations depend on previous predictions (actions), violate the common i.i.d. assumptions made in statistical learning. This leads to poor performance in theory and often in practice. Some recent approaches provide stronger guarantees in this setting, but remain somewhat unsatisfactory as they train either non-stationary or stochastic policies and require a large number of iterations. In this paper, we propose a new iterative algorithm, which trains a stationary deterministic policy, that can be seen as a no regret algorithm in an online learning setting. We show that any such no regret algorithm, combined with additional reduction assumptions, must find a policy with good performance under the distribution of observations it induces in such sequential settings. We demonstrate that this new approach outperforms previous approaches on two challenging imitation learning problems and a benchmark sequence labeling problem.}
 }
 
 

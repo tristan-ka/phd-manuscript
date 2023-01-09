@@ -113,7 +113,7 @@ Q_{i+1}[s,a] \leftarrow Q_i[s,a] + \alpha \left(r + \gamma\max_{a'}Q_i[s',a'] - 
 \end{equation}
 
 
-\textbf{\dqn} proposes to represent the action-value function with deep neural networks: $Q(s,a;\theta)$ with parameters $\theta$. The architecture of the network takes a state $s$ as input and outputs the value of each action $Q(s,a) \forall a \in \mathcal{A}$. Thus \dqn only works with discrete action space. When differentiating equation~\ref{eq:loss_td} with respect to the neural network parameters, we get:
+\textbf{\dqn} proposes to represent the action-value function with deep neural networks: $Q(s,a;\theta)$ with parameters $\theta$. The architecture of the network takes a state $s$ as input and outputs the value of each action $Q(s,a) \forall a \in \mathcal{A}$. Thus \dqn only works with discrete action space. When differentiating \eq{eq:loss_td} with respect to the neural network parameters, we get:
 \begin{equation}
 	\nabla_{\theta_i }\m{L}_i(\theta_i ) = \underset{(s\sim P_S, a\sim\pi_c)}{\mathbb{E}} \left[(y_i - Q(s,a;\theta _i))\nabla_{\theta_i }Q(s,a;\theta _i)\right]
 \end{equation}
@@ -123,7 +123,7 @@ During differentiation, one has to pay particular attention to freezing the weig
 \item \textit{Target network}: A target network is used to compute target $y$. This network is initialized with the actual Q-network ($Q_{targ}(s,a;\theta_{targ})=Q(s,a;\theta$) but updated less frequently than the actual Q-network. Updates are often performed using \textit{Polyak averaging}~\citep{polyak1992}: $\theta_{targ} \leftarrow \rho\theta_{targ} + (1-\rho)\theta$ with $\rho$ being the polyak factor.
 \end{itemize}
 
-\textbf{\ddpg} is an adaptation of \dqn to continuous action space. The challenge of dealing with continuous actions is to act greedily with respect to the learned Q-value. i.e. to evaluate $\argmax_a Q(s,a)$. To overcome this, \ddpg concurrently learns a deterministic policy with the Q-function. This policy is a parametrized network $\pi(s;\phi)$ with parameters $\phi$ and is obtained by gradient ascent. Moreover, since $\pi(s;\phi) \approx \argmax_a Q(s,a,\theta)$ it can be injected in equation~\ref{eq:loss_td}. We, therefore, have the two following losses to optimize:
+\textbf{\ddpg} is an adaptation of \dqn to continuous action space. The challenge of dealing with continuous actions is to act greedily with respect to the learned Q-value. i.e. to evaluate $\argmax_a Q(s,a)$. To overcome this, \ddpg concurrently learns a deterministic policy with the Q-function. This policy is a parametrized network $\pi(s;\phi)$ with parameters $\phi$ and is obtained by gradient ascent. Moreover, since $\pi(s;\phi) \approx \argmax_a Q(s,a,\theta)$ it can be injected in \eq{eq:loss_td}. We, therefore, have the two following losses to optimize:
 \begin{equation}
 \left\{
 \begin{split}
@@ -144,7 +144,7 @@ There are numerous algorithms within the field of \drl, including on-policy meth
 
 \paragraph{Problem}
 
-\textit{Imitation Learning} (\il)~\citep{pommerleau1988BC,schaal1996learning,abbeel2004apprenticeship,osa2018algorithmic} is a field that considers an agent learning in a \mdp in which the reward function is not explicitly defined, but where the agent can observe demonstrations of the task it is intended to perform. \il is particularly useful in situations where it is difficult for the experimenter to design a task-specific reward function, but demonstrations are available. A classic example from the literature is the application of \il to self-driving cars. It is impractical to specify a reward function for the task of driving as successful drivers constantly adjust their criteria to adapt to the various events that occur on the road. However, there is a vast amount of video footage of people driving that could potentially be utilized by the agent to learn.
+\textit{Imitation Learning} (\il)~\citep{pommerleau1988BC,schaal1996learning,osa2018algorithmic} is a field that considers an agent learning in a \mdp in which the reward function is not explicitly defined, but where the agent can observe demonstrations of the task it is intended to perform. \il is particularly useful in situations where it is difficult for the experimenter to design a task-specific reward function, but demonstrations are available. A classic example from the literature is the application of \il to self-driving cars. It is impractical to specify a reward function for the task of driving as successful drivers constantly adjust their criteria to adapt to the various events that occur on the road. However, there is a vast amount of video footage of people driving that could potentially be utilized by the agent to learn.
 
 \begin{figure}[!h]
 \centering
@@ -170,7 +170,7 @@ Minimizing this cross-entropy loss is in fact equivalent to minimizing the KL-di
 D_{KL}(P(\tau|\pi^*),P(\tau|\pi)) = \underset{\tau \in \m{D}}{\sum}P(\tau|\pi^*)\log\left(\frac{P(\tau|\pi^*)}{P(\tau|\pi)}\right)
 \end{equation}
 %
-Injecting the definition of the trajectory distribution (Eq.~\ref{eq:traj_dist}) we get that:
+Injecting the definition of the trajectory distribution of \eq{eq:traj_dist} we get that:
 %
 \begin{align}
 D_{KL}(P(\tau|\pi^*),P(\tau|\pi)) &= \underset{\tau \in \m{D}}{\sum}P(\tau|\pi^*)\log\left(\prod_{t=0}^{T-1}\frac{\pi^*(a_t|s_t)}{\pi(a_t|s_t)}\right) \\
@@ -178,11 +178,21 @@ D_{KL}(P(\tau|\pi^*),P(\tau|\pi)) &= \underset{\tau \in \m{D}}{\sum}P(\tau|\pi^*
 &= \expect{(s,a)\sim\m{D}}\left[\log\pi^*(a_t|s_t) - \log\pi(a_t|s_t)\right]
 \end{align}
 %
-We will use behavioral cloning in chapter~\ref{chap:abig}. \bc is a simple and effective method for reproducing expert behavior. However, it has the limitation of only being able to derive an optimal policy from optimal expert trajectories, meaning that the learned policy will not exceed the performance of the expert. This assumption holds true for many applications, but not all. As a result, some researchers have turned to Inverse Reinforcement Learning as an alternative approach.
+We will use behavioral cloning in chapter~\ref{chap:abig}. \bc is a straightforward method for reproducing expert behavior. However, simple \bc only works if the agent operates in the same region of the state space as the states provided in $\m{D}$. Otherwise, the policy of the learner will progressively deviate from this region accumulating errors at each time step. This compounding error is called \textit{distributional mismatch}. One way of addressing it is to iteratively collect new expert data when needed (in the initially uncovered region of the state space)~\citep{dagger2011}. 
+
+Another limitation of \bc is that it is only able to derive an optimal policy from optimal expert trajectories, meaning that the learned policy will not exceed the performance of the expert. In some applications collecting optimal trajectories is not always possible. As a result, some researchers have turned to \textit{Inverse Reinforcement Learning} (\irl) as an alternative approach.
 
 \paragraph{Inverse Reinforcement Learning}
 
-\todo{before anything send email for jury to PY}
+Similar to \rl, \irl can be understood both as a problem and a category of techniques. The \irl problem consists in recovering the reward function of an expert given a dataset of its trajectories~\citep{ng2000irl}. As such \irl algorithmic solutions followed by \rl can form a solution to the \il problem. The combination of \irl followed by \rl is called \textit{Apprenticeship Learning}~\citep{abbeel2004apprenticeship}. As formalized by \citet{klein2011apprenticeship}, we distinguish mainly three categories of apprenticeship algorithms:
+\begin{enumerate}[noitemsep]
+\item Feature-expectation-based methods as proposed by \citet{ziebart2008maxentirl} which learn a reward function such that the feature expectation of the optimal policy (according to the learned reward function) is similar to the feature expectation of the expert policy. 
+\item Margin-maximization-based methods~\citep{ratlif2006maxmargin}, which formulate IRL as a constrained optimization problem in which the expert's examples have a higher expected cumulative reward than all other policies by a certain margin.
+\item Approaches based on the parameterization of the policy by the reward~\citep{neu2007apprenticeship}: If it is assumed that the expert follows a Gibbs policy (or the optimal value function related to the optimized reward function), it is possible to estimate the likelihood of a set of state-action pairs provided by the expert.
+\end{enumerate}
+%
+Recent feature-expectation-based approaches use technics similar to generative adversarial networks (\gan)~\citep{goodfellow2014generative} to imitate complex behavior in high-dimensional environments~\citep{ho2016gail}. Other approaches use ranking of trajectories to reach better-than-demonstrator performances~\citep{brown2020better}. As we do not leverage \irl in our contributions we will not detail these methods (see \citet{arora_survey_2021} for a thorough survey of \irl algorithms).
+
 
 \subsection{Muli-Goal Reinforcement Learning}
 
@@ -205,7 +215,7 @@ By replacing the unique reward function $R$ by the space of reward functions $\m
 
 \paragraph{Solution}
 
-Goal-conditioned agents see their behavior affected by the goal they pursue. This is formalized via goal-conditioned policies, that is policies which produce actions based on the environment state and the agent's current goal: $\Pi:\m{S}\times\m{Z}_\m{G}\to\m{A}$, where $\m{Z}_\m{G}$ is the space of goal embeddings corresponding to the goal space $\m{G}$ \cite{schaul2015universal}. Note that ensembles of policies can also be formalized this way, via a meta-policy $\Pi$ that retrieves the particular policy from a one-hot goal embedding $z_g$ \cite{kaelbling1993learning,sutton2011horde}.
+Goal-conditioned agents see their behavior affected by the goal they pursue. This is formalized via goal-conditioned policies, that is policies that produce actions based on the environment state and the agent's current goal: $\Pi:\m{S}\times\m{Z}_\m{G}\to\m{A}$, where $\m{Z}_\m{G}$ is the space of goal embeddings corresponding to the goal space $\m{G}$ \cite{schaul2015universal}. Note that ensembles of policies can also be formalized this way, via a meta-policy $\Pi$ that retrieves the particular policy from a one-hot goal embedding $z_g$ \cite{kaelbling1993learning,sutton2011horde}.
 
 The idea of using a unique \rl agent to target multiple goals dates back to \cite{kaelbling1993learning}. Later, the \horde architecture proposed to use interaction experience to update one value function per goal, effectively transferring to all goals the knowledge acquired while aiming at a particular one \cite{sutton2011horde}. In these approaches, one policy is trained for each of the goals and the data collected by one can be used to train others.
 
@@ -255,8 +265,14 @@ The idea of \textit{hindsight learning} further improves knowledge transfer betw
 
 \paragraph{MARL communication}
 
+\paragraph{How to evaluate self-organizing communicating agents?}
+
 
 \subsection{Open-ended Skill Acquisition Problem}
+
+\paragraph{autotelic}
+
+\paragraph{How to evaluate autotelic agents?}
 
 
 
