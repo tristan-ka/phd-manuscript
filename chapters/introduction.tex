@@ -1,10 +1,11 @@
 
 \chapter{Introduction}
+\ref{chap:intro}
 %\addcontentsline{toc}{chapter}{Introduction}
 %\adjustmtc
 
 
-\minitoc
+%\minitoc
 
 One fundamental goal of Artificial Intelligence (\ai) is to design embodied autonomous interactive agents that can evolve in various environments and complete a wide range of tasks. To that end, researchers in \ai take several angles of attack and rely on different paradigms that consider different drivers for learning. In Reinforcement Learning (\rl)~\citep{sutton2018reinforcement}, agents learn from \textit{exploration} of their environment. They rely solely on their experience of the world in order to solve a pre-defined task. In Imitation Learning (\il)~\citep{pomerleau1991efficient}, agents learn from \textit{demonstrations}, i.e. trajectories provided by an expert that correspond to the transitions required to take to solve a pre-defined task.  In Multi-Agent Reinforcement Learning (\marl)~\citep{LITTMAN1994157}, agents learn in \textit{cooperation} and need to interact with each other in order to solve collaborative tasks.
 
@@ -13,7 +14,7 @@ Recent extensions of \rl algorithm have shown success in solving a wealth of pro
 
 But unlike humans, these algorithms are still heavily sample-inefficient, requiring billions of transitions to become proficient on isolated tasks. Most importantly, they lack the ability to generalize and transfer across a wide variety of problems, to be creative, and tackle tasks never seen during training. They are far from displaying human-like capabilities in terms of open-ended learning. This is, perhaps, because they rely on isolated signals for learning. The way forward might be to build on child development theory and to consider learning from \textit{sociocultural interactions}. Indeed humans are social beings, they interact and cooperate with their peers~\citep{tomasello_cultural_1999,tomasello_understanding_2005, brewer2014addressing}. As soon as they discover and learn a language, they assimilate thousands of years of experience embedded in their culture~\citep{bruner1991narrative}.  Most of their skills could not be learned in isolation. Formal education teaches them to reason systematically, books teach them history, and YouTube might teach them how to cook. Most importantly, humans' values, traditions, norms, and most of their goals are cultural in essence.
 
-The present research proposes to immerse artificial agents in social contexts in order to observe the impact of sociocultural interactions on learning. As displayed in figure~\ref{fig:intro_chapter_def}, it has a dual objective. In the first part of this manuscript, we propose to use artificial agents as an anthropological tool to study the formation of cultural conventions in populations of individuals. More specifically, we investigate the key mechanisms required for the self-organization of cultural models between artificial agents in absence of pre-existing conventions. In the second part, we focus on autonomous artificial agents exploiting already existing cultural conventions to augment their capabilities in the open-ended skill acquisition problem. To accomplish this, we build on previous theories at the intersection of developmental psychology and machine learning to introduce a new framework coined \textit{Vygotskian Autotelic Artificial Intelligence} which enables sociocultural interactions to transform agents' learning signal, yielding better learners. 
+The present research proposes to immerse artificial agents in social contexts in order to observe the impact of sociocultural interactions on learning. As displayed in \fig{fig:intro_chapter_def}, it has a dual objective. In the first part of this manuscript, we propose to use artificial agents as an anthropological tool to study the formation of cultural conventions in populations of individuals. More specifically, we investigate the key mechanisms required for the self-organization of cultural models between artificial agents in absence of pre-existing conventions. In the second part, we focus on autonomous artificial agents exploiting already existing cultural conventions to augment their capabilities in the open-ended skill acquisition problem. To accomplish this, we build on previous theories at the intersection of developmental psychology and machine learning to introduce a new framework coined \textit{Vygotskian Autotelic Artificial Intelligence} which enables sociocultural interactions to transform agents' learning signal, yielding better learners. 
 
 %
 \begin{figure}[!h]
@@ -31,11 +32,12 @@ The remaining of this introduction presents key features of human learning that 
 Humans are an incredible source of inspiration for \ai. They are the fastest learning system we can ever witness. Within only a few years, children learn to crawl and navigate their home, identify and manipulate objects, they even learn to speak and interact with their peers. How do they reach such a level of proficiency in such a short period of time? 
 
 \subsection{Humans are autotelic learners}
+\label{sec:humans_autotelic}
 
 A central aspect of human development is the notion of goal. Studying the use of the notion of goal in past psychological research, \citet{elliot2008goal} propose the following general definition:
 \begin{quote}
-    "\textit{A goal is a cognitive representation of a future object that the organism is committed to approach or
-    avoid}"~\citep{elliot2008goal}.
+   	``\textit{A goal is a cognitive representation of a future object that the organism is committed to approach or
+    avoid} ''~\citep{elliot2008goal}.
 \end{quote}
 %
 A goal is therefore a future projection that influences human behaviors. During exploratory play, children constantly invent and pursue their own problems/goals~\citep{chu2020exploratory}. In particular, children's exploration seems to be driven by intrinsically motivated brain processes that trigger spontaneous exploration for the mere purpose of visiting interesting situations~\citep{gopnik1999scientist,kaplan2007search,kidd_psychology_2015}. But how do we measure interestingness?  \citet{hunt1965} propose to evaluate situations in term of \textit{optimal incongruity}. Similarly, \citet{berlyne1966curiosity} suggest relying on the notion of \textit{intermediate level of novelty} while \citet{Kidd2012TheGE} showed that young infants focus on goals with \textit{intermediate complexity}.  Finally, \citet{csikzentmihalyi1997finding}, in his flow theory suggests that for human beings to feel pleasure during learning they should target goals with \textit{optimal challenge}. He uses the term \textit{autotelic} to describe intrinsically motivated agents that are in the flow state. 
@@ -63,7 +65,7 @@ In a more structured way, social interactions also enable us to \textbf{teach}. 
 \label{fig:intro_zpd}
 \end{wrapfigure}
 %
-Pragmatic frames may also adapt to the learners' abilities. In Vygotsky's \textit{zone of proximal development}~\citep{vygotsky_thought_1934}, caretakers naturally scaffold the learning experiences of children, tailoring them to their current objectives and capacities. Through encouragement, attention guidance, explanations, or plan suggestions, they provide cognitive aids to children in the form of interpersonal social processes. In this zone, children can benefit from these social interactions to achieve more than they could alone as illustrated in figure~\ref{fig:intro_zpd}. In Vygotsky's terms, the \textsc{zpd} is defined as
+Pragmatic frames may also adapt to the learners' abilities. In Vygotsky's \textit{zone of proximal development}~\citep{vygotsky_thought_1934}, caretakers naturally scaffold the learning experiences of children, tailoring them to their current objectives and capacities. Through encouragement, attention guidance, explanations, or plan suggestions, they provide cognitive aids to children in the form of interpersonal social processes. In this zone, children can benefit from these social interactions to achieve more than they could alone as illustrated in \fig{fig:intro_zpd}. In Vygotsky's terms, the \textsc{zpd} is defined as
 \begin{quote}
 "\textit{the distance between the actual developmental level as determined by independent problem solving and the level of potential development as determined through problem-solving under adult guidance, or in collaboration with more capable peers}"~\citep{vygotsky_thought_1934}	
 \end{quote}
@@ -101,7 +103,7 @@ The present research aims at bridging developmental psychology with recent \ai m
 \label{fig:intro_language_paradigms}
 \end{figure}
 
-The immersion of artificial agents in social worlds does not require starting from fresh grounds. In fact, numerous works already include social elements in pre-existing \ai paradigms. In a recent survey, \citet{Luketina2019} review several approaches instructing \rl agents with language, either to condition them or to assist them as displayed in figure~\ref{fig:intro_language_paradigms}~(a). Similarly, recent \il settings have had their training datasets augmented with linguistic descriptions of expert trajectories~\citep{ALFRED20,pashevich2021episodic} as displayed in figure~\ref{fig:intro_language_paradigms}~(b). In the present research, we will demonstrate that agents can use language as a cognitive tool to imagine creative goals~\citep{colas2022language} as illustrated in figure~\ref{fig:intro_language_paradigms}~(c). Finally, \citet{jaques2019social} recently presented a \marl framework where agents use social motivations to solve collaborative tasks such as the one depicted in figure~\ref{fig:intro_language_paradigms}(d). 
+The immersion of artificial agents in social worlds does not require starting from fresh grounds. In fact, numerous works already include social elements in pre-existing \ai paradigms. In a recent survey, \citet{Luketina2019} review several approaches instructing \rl agents with language, either to condition them or to assist them as displayed in \fig{fig:intro_language_paradigms}~(a). Similarly, recent \il settings have had their training datasets augmented with linguistic descriptions of expert trajectories~\citep{ALFRED20,pashevich2021episodic} as displayed in \fig{fig:intro_language_paradigms}~(b). In the present research, we will demonstrate that agents can use language as a cognitive tool to imagine creative goals~\citep{colas2022language} as illustrated in \fig{fig:intro_language_paradigms}~(c). Finally, \citet{jaques2019social} recently presented a \marl framework where agents use social motivations to solve collaborative tasks such as the one depicted in \fig{fig:intro_language_paradigms}(d). 
 
 \paragraph{Objectives}
 

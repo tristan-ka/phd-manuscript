@@ -11,15 +11,23 @@ Our contributions bridge standard \ai paradigms and developmental psychology to 
 
 \subsection{Reinforcement Learning}
 
+\label{sec:background_rl}
+
 \paragraph{Problem}
 
-In a Reinforcement Learning problem, an agent learns to perform sequences of actions in an environment by maximizing some notion of cumulative reward~\citep{sutton2018reinforcement}.  The agent interacts with the environment in the form of a temporal sequence unfolding from time $t=0$ to time $t=T$, $T$ being the episode horizon and representing the lifetime of the agent (potentially variable or infinite). \rl problems are commonly framed as Markov Decision Processes (\mdps):
+In a Reinforcement Learning problem, an agent learns to perform sequences of actions in an environment by maximizing some notion of cumulative reward~\citep{sutton2018reinforcement}.  The agent interacts with the environment in the form of a temporal sequence unfolding from time $t=0$ to time $t=T$, $T$ being the episode horizon and representing the lifetime of the agent (potentially variable or infinite). \rl problems are commonly framed as Markov Decision Processes (\mdps).
+\begin{tcolorbox}
+\small
+\paragraph{Definition}
+\gls{Markov Decision Process} (\mdp):
 \begin{equation}
-	\m{M}\,=\,\{\m{S},\,\m{A},\,\m{T},\,\rho_0,\,R\}	
+	\m{M}\,=\,\{\m{S},\,\m{A},\,\m{T},\,\rho_0,\,R\}
+	\label{eq:standard_mdp}	
 \end{equation}
 where $\m{S}$ and $\m{A}$ are respectively the state and action spaces, $\m{T}$ is the transition function that dictates how actions impact the world (lead to the next state), $\rho_0$ is the initial state distribution and $R$ is the reward function. 
+\end{tcolorbox}
 %\textbf{Interactions. }  
-At the beginning of an episode, the agent starts in the initial state $s_0 \sim \rho_0(\mathcal{S})$. At each time step the agents takes action $a_t \in \mathcal{A}$ and observes the next state $s'=s_{t+1} \in \m{S}$ and the reward $r_{t+1}=R(s_t,a_t)$. A diagram of interaction is given in figure~\ref{fig:rl_interacvtions}.
+At the beginning of an episode, the agent starts in the initial state $s_0 \sim \rho_0(\mathcal{S})$. At each time step the agents takes action $a_t \in \mathcal{A}$ and observes the next state $s'=s_{t+1} \in \m{S}$ and the reward $r_{t+1}=R(s_t,a_t)$. A diagram of interaction is given in \fig{fig:rl_interacvtions}.
 \begin{figure}[!h]
 \centering
 \includegraphics[width=0.3\textwidth]{background/rl_interactions.pdf}	
@@ -49,10 +57,15 @@ The reward function plays therefore a crucial role in a \rl problem as its maxim
 \paragraph{Value Functions}
 
 Most \rl algorithms rely on the definition of \textit{value} and \textit{action-value} functions:
+
+\begin{tcolorbox}
+\small
+\paragraph{Definitions}
 \begin{itemize}[noitemsep]
-	 \item The value function $V_\pi(s)$ of a policy $\pi$ gives the expected return of a trajectory starting from $s$ and following $\pi$. 
-	 \item The action-value function $Q_\pi(s,a)$ is the expected return of the trajectory taking action $a$ from state $s$ before following $\pi$ from the next state $s'$. 
+	 \item The \gls{value function} $V_\pi(s)$ of a policy $\pi$ gives the expected return of a trajectory starting from $s$ and following $\pi$. 
+	 \item The \gls{action-value function} $Q_\pi(s,a)$ is the expected return of the trajectory taking action $a$ from state $s$ before following $\pi$ from the next state $s'$. 
 \end{itemize}
+\end{tcolorbox}
 Action-value functions are powerful because they allow us to instantly assess the quality of a situation without waiting for the end of the trajectory. The value and action-value function obey the Bellman expectation equations~\citep{sutton1998intra}, a recursive definition that states that the value of a certain state (when following policy $\pi$) is equal to the sum of the instantaneous reward and the value from the next state.
 \begin{equation}
 \left\{
@@ -79,7 +92,7 @@ Acting greedily with respect to the optimal action-value function gives the opti
 
 Computing $Q^*$ is therefore a way to solve a \rl problem. When agents have access to perfect knowledge of the dynamic of the environment ($P_E$) and when the dimensionality of $\m{S}$ and $\m{A}$ is small, they can do planning to find the optimal action-value function via Dynamic Programming~\citep{bellman1966dynamic} for instance. Planning approaches that leverage the transition function of the environments are called \textit{model-based} \rl algorithms. They are opposed to \textit{model-free} \rl algorithms that do not use $P_E$ but interact directly with a simulator (with transition function $P_S$).
 
-Because the present research builds on both families of solutions, we detail the techniques used for each in the following paragraphs. We first briefly detail the \textit{Monte-Carlo Tree Search} planning algorithm (\mcts)~\citep{browne2012mcts} used in our first experimental contribution (in chapter~\ref{chap:abig}) and then introduce the deep \rl algorithms used in chapter~\ref{chap:imagine}.
+Because the present research builds on both families of solutions, we detail the techniques used for each in the following paragraphs. We first briefly detail the \textit{Monte-Carlo Tree Search} planning algorithm (\mcts)~\citep{browne2012mcts} used in our first experimental contribution (in chapter~\ref{chap:abig}) and then introduce the deep \rl algorithm used in chapter~\ref{chap:imagine}.
 
 \paragraph{Model-based \rl with \mcts:}
 
@@ -88,7 +101,7 @@ Because the present research builds on both families of solutions, we detail the
 	\item \textbf{Selection:} In the selection phase, the \mcts algorithm starts from the root node and uses a tree policy to decide which node to expand. The tree policy is guided by an evaluation function ($UCT$) and stops when a node with remaining actions to explore is reached. 
 	\item \textbf{Expansion:} Once a leaf node is reached, a new action $a$ is sampled among the non-explored ones and the corresponding node is computed using the transition function $s' \sim P_E(.|s,a)$
 	\item \textbf{Simulation:} From the newly created node corresponding to state $s'$, a simulation policy $\pi_{sim}$ is used to draw a full trajectory (until termination or for a predefined horizon) and compute return $R^{tot}$. $\pi_{sim}$ is often a random policy.
-	\item \textbf{Backpropagation:} $R^{tot}$ is backpropagated to the root node as indicated in figure~\ref{fig:mcts_steps}.
+	\item \textbf{Backpropagation:} $R^{tot}$ is backpropagated to the root node as indicated in \fig{fig:mcts_steps}.
 \end{enumerate}
 For the tree policy evaluation function, we use the Upper Confidence Bound~\citep{auer_finite-time_2002}: $UCT = \frac{1}{k}\sum_{i=0}^{k} R^{tot}_{i} + C\sqrt{\frac{\text{ln}(n)}{k}}$ where $k$ is the number of completed trajectory going through node $s$ and $n$ is the number of iterations. The first term of $UCT$ is an estimation of the expected return while the second term encourages the tree policy to explore unexpanded nodes.
 \begin{figure}[!h]
@@ -184,10 +197,10 @@ Another limitation of \bc is that it is only able to derive an optimal policy fr
 
 \paragraph{Inverse Reinforcement Learning}
 
-Similar to \rl, \irl can be understood both as a problem and a category of techniques. The \irl problem consists in recovering the reward function of an expert given a dataset of its trajectories~\citep{ng2000irl}. As such \irl algorithmic solutions followed by \rl can form a solution to the \il problem. The combination of \irl followed by \rl is called \textit{Apprenticeship Learning}~\citep{abbeel2004apprenticeship}. As formalized by \citet{klein2011apprenticeship}, we distinguish mainly three categories of apprenticeship algorithms:
+Similar to \rl, \irl can be understood both as a problem and a category of techniques. The \irl problem consists in recovering the reward function of an expert given a dataset of its trajectories~\citep{ng2000irl}. As such \irl algorithmic solutions followed by \rl can form a solution to the \il problem. The combination of \irl followed by \rl is called \textit{Apprenticeship Learning}~\citep{abbeel2004apprenticeship}. As opposed to \bc, apprenticeship learning ensures that the learned policy is bellman consistent (with respect to an underlying learned value-function). As formalized by \citet{klein2011apprenticeship}, there are mainly three categories of strategies to obtain the policy:
 \begin{enumerate}[noitemsep]
 \item Feature-expectation-based methods as proposed by \citet{ziebart2008maxentirl} which learn a reward function such that the feature expectation of the optimal policy (according to the learned reward function) is similar to the feature expectation of the expert policy. 
-\item Margin-maximization-based methods~\citep{ratlif2006maxmargin}, which formulate IRL as a constrained optimization problem in which the expert's examples have a higher expected cumulative reward than all other policies by a certain margin.
+\item Margin-maximization-based methods~\citep{ratlif2006maxmargin}, which formulate \irl as a constrained optimization problem in which the expert's examples have a higher expected cumulative reward than all other policies by a certain margin.
 \item Approaches based on the parameterization of the policy by the reward~\citep{neu2007apprenticeship}: If it is assumed that the expert follows a Gibbs policy (or the optimal value function related to the optimized reward function), it is possible to estimate the likelihood of a set of state-action pairs provided by the expert.
 \end{enumerate}
 %
@@ -196,57 +209,109 @@ Recent feature-expectation-based approaches use technics similar to generative a
 
 \subsection{Muli-Goal Reinforcement Learning}
 
+Standard \rl can be extended to a multi-goal setting. Let us return to the definition of goal by \citet{elliot2008goal} provided in the introduction (\sect{sec:humans_autotelic}):
+\begin{quote}
+   	``\textit{A goal is a cognitive representation of a future object that the organism is committed to approach or
+    avoid} ''.
+\end{quote}
+\rl algorithms seem, indeed, to be a good fit to train goal-conditioned agents: they train learning agents (\textit{organisms}) to maximize (\textit{approach}) a cumulative (\textit{future}) reward (\textit{object}). In \rl, goals can be seen as a set of \textit{constraints} on one or several consecutive states that the agent seeks to respect. These constraints can be very strict and characterize a single target point in the state space (\eg image-based goals) or a specific sub-space of the state space (\eg target x-y coordinate in a maze, target block positions in manipulation tasks). They can also be more general when expressed by language for example (\eg '\textit{find a red object or a wooden one}'). 
 
+\paragraph{Formal Definition of Goals and Skills}
+
+To represent these goals, \rl agents must be able to 1)~have a compact representation of them and 2)~assess their progress towards it. This is why we propose the following formalization for \rl goals: 
+
+\begin{tcolorbox}
+\small
+\paragraph{Generalized definition of the goal construct for \rl:}
+\begin{itemize}
+    \item \gls{Goal}: a $g\,=\,(z_g,\,R_g)$ pair where $z_g$ is a compact \textit{goal parameterization} or \textit{goal embedding} and $R_g$ is a \textit{goal-achievement} function.
+    \item \gls{Goal-achievement function}: $R_g(\cdot)\,=\,R_\m{G}(\cdot\mid\,z_g)$ where $R_\m{G}$ is a goal-conditioned reward function.
+\end{itemize}
+\end{tcolorbox}
+
+The objective of a goal-conditioned agent is to learn a \textit{goal-conditioned policy}: a function that generates the next action given the current state and the goal $a_t \sim \pi(\cdot|s_t,z_g)$. The goal-achievement function and the goal-conditioned policy both assign \textit{meaning} to a goal. The former defines what it means to achieve the goal, it describes how the world looks like when it is achieved. The latter characterizes the process by which this goal can be achieved; what the agent needs to do to achieve it. In this search for the meaning of a goal, the goal embedding can be seen as the map: the agent follows this map and via the two functions above, experiences the meaning of the goal.
+
+\begin{tcolorbox}
+\small
+\paragraph{Definition}
+\begin{itemize}
+    \item \gls{Goal-conditioned policy}: a function that generates the next action given the current
+state and the goal.
+	\item \gls{Skill}:  the association of a goal and a policy to reach it.
+\end{itemize}
+\end{tcolorbox}
 
 \paragraph{Problem}
 
-By replacing the unique reward function $R$ by the space of reward functions $\m{R}_\m{G}$, \rl problems can be extended to handle multiple goals: $\m{M}\,=\,\{\m{S},\,\m{A},\,\m{T},\,\rho_0,\,\m{R}_\m{G}\}$. The term \textit{goal} should not be mistaken for the term \textit{task}, which refers to a particular \mdp instance. As a result, \textit{multi-task} \rl refers to \rl algorithms that tackle a set of \mdps that can differ by any of their components (\eg $\m{T}$,\,$R$,\,$\m{S}_0$, etc.). The \textit{multi-goal} \rl problem can thus be seen as the particular case of the multi-task \rl problem where \mdps differ by their reward functions. In the standard multi-goal \rl problem, the set of goals\,---\,and thus the set of reward functions\,---\,is pre-defined by engineers. The experimenter sets goals to the agent, and provides the associated reward functions. 
+By replacing the unique reward function $R$ by the space of reward functions $\m{R}_\m{G}$ in the definition of \mdp of \eq{eq:standard_mdp}, \rl problems can be extended to handle multiple goals: $\m{M}\,=\,\{\m{S},\,\m{A},\,\m{T},\,\rho_0,\,\m{R}_\m{G}\}$. The term \textit{goal} should not be mistaken for the term \textit{task}, which refers to a particular \mdp instance. As a result, \textit{multi-task} \rl refers to \rl algorithms that tackle a set of \mdps that can differ by any of their components (\eg $\m{T}$,\,$R$,\,$\rho_0$, etc.). The \textit{multi-goal} \rl problem can thus be seen as the particular case of the multi-task \rl problem where \mdps differ by their reward functions. In the standard multi-goal \rl problem, the set of goals\,---\,and thus the set of reward functions\,---\,is pre-defined by engineers. As one can observe in \fig{fig:mg_rl_interactions}, the experimenter sets goals to the agent, and provides the associated reward functions. 
 
-
-\paragraph{Interactions}
 
 \begin{figure}[!h]
 \centering
 \includegraphics[width=0.3\textwidth]{background/multi_goal_rl_interactions.pdf}	
-\caption{}
-\label{fig:mg_rl_interacvtions}
+\caption{Interactions in a multi-goal \rl loop. The experimenter provides goals and their associated rewards to the agent.}
+\label{fig:mg_rl_interactions}
 \end{figure}
 
 
-\paragraph{Solution}
+\paragraph{Solutions: Horde, UVFA, and HER}
 
-Goal-conditioned agents see their behavior affected by the goal they pursue. This is formalized via goal-conditioned policies, that is policies that produce actions based on the environment state and the agent's current goal: $\Pi:\m{S}\times\m{Z}_\m{G}\to\m{A}$, where $\m{Z}_\m{G}$ is the space of goal embeddings corresponding to the goal space $\m{G}$ \cite{schaul2015universal}. Note that ensembles of policies can also be formalized this way, via a meta-policy $\Pi$ that retrieves the particular policy from a one-hot goal embedding $z_g$ \cite{kaelbling1993learning,sutton2011horde}.
+Goal-conditioned agents see their behavior affected by the goal they pursue. This is formalized via goal-conditioned policies, that is policies that produce actions based on the environment state and the agent's current goal: 
+\begin{equation}
+\Pi:\m{S}\times\m{Z}_\m{G}\to\m{A}
+\end{equation}
+where $\m{Z}_\m{G}$ is the space of goal embeddings corresponding to the goal space $\m{G}$~\citep{schaul2015universal}. Note that ensembles of policies can also be formalized this way, via a meta-policy $\Pi$ that retrieves the particular policy from a one-hot goal embedding $z_g$~\citep{kaelbling1993learning,sutton2011horde}.
 
-The idea of using a unique \rl agent to target multiple goals dates back to \cite{kaelbling1993learning}. Later, the \horde architecture proposed to use interaction experience to update one value function per goal, effectively transferring to all goals the knowledge acquired while aiming at a particular one \cite{sutton2011horde}. In these approaches, one policy is trained for each of the goals and the data collected by one can be used to train others.
+The idea of using a unique \rl agent to target multiple goals dates back to \citep{kaelbling1993learning}. Later, the \horde architecture proposed to use interaction experience to update one value function per goal, effectively transferring to all goals the knowledge acquired while aiming at a particular one \cite{sutton2011horde}. In these approaches, one policy is trained for each of the goals and the data collected by one can be used to train others.
 
-Building on these early results, \cite{schaul2015universal} introduced \textit{Universal Value Function Approximators} (\uvfa). They proposed to learn a unique goal-conditioned value function and goal-conditioned policy to replace the set of value functions learned in \horde. Using neural networks as function approximators, they showed that \uvfas enable transfer between goals and demonstrate strong generalization to new goals.
+Building on these early results, \citet{schaul2015universal} introduced \textit{Universal Value Function Approximators} (\uvfa). They proposed to learn a unique goal-conditioned value function and goal-conditioned policy to replace the set of value functions learned in \horde. Using neural networks as function approximators, they showed that \uvfas enable transfer between goals and demonstrate strong generalization to new goals.
 
-The idea of \textit{hindsight learning} further improves knowledge transfer between goals \cite{kaelbling1993learning,andrychowicz2017hindsight}. Learning by hindsight, agents can reinterpret a past trajectory collected while pursuing a given goal in the light of a new goal. By asking themselves, \textit{what is the goal for which this trajectory is optimal?}, they can use the originally failed trajectory as an informative trajectory to learn about another goal, thus making the most out of every trajectory \cite{eysenbach2020rewriting}. This ability dramatically increases the sample efficiency of goal-conditioned algorithms and is arguably an important driver of the recent interest in goal-conditioned \rl approaches.
+The idea of \textit{hindsight learning} further improves knowledge transfer between goals~\citep{kaelbling1993learning,andrychowicz2017hindsight}. Learning by hindsight, agents can reinterpret a past trajectory collected while pursuing a given goal in the light of a new goal. By asking themselves, \textit{what is the goal for which this trajectory is optimal?}, they can use the originally failed trajectory as an informative trajectory to learn about another goal, thus making the most out of every trajectory~\citep{eysenbach2020rewriting}. This ability dramatically increases the sample efficiency of goal-conditioned algorithms and is arguably an important driver of the recent interest in goal-conditioned \rl approaches.
 
 
 \subsection{Multi-Agent Reinforcement Learning}
 
 \paragraph{Problem}
 
-\todo{markov games}
+Standard \rl can also be extended to scenarios where several agents interact with the environment. For this purpose \mdps are extend to \textit{Markov Games}.
+\begin{tcolorbox}
+\small
+\paragraph{Definition}
+\gls{Markov Game} are defined by the following terms:
+\begin{equation}
+	\m{M}\,=\,\{\m{S},\m{T},\,\rho_0,\,\{\m{O}_i,\m{A}_i,R_i\}_{i=1}^N\}
+	\label{eq:standard_mdp}	
+\end{equation}
+The first three terms of a Markov Game are the same as those of a \mdp: $\m{S}$ is the state space, $\m{T}$ is the transition function, and $\rho_0$ the initial state distribution. However, each agent (denoted by the index $i$) perceives a different perspective of the state through observation transformation $\m{O}_i$. Agents also have different action spaces $\m{A}_i$ and reward function $R_i$
+\end{tcolorbox}
 
-\paragraph{Interactions}
+In Multi-Agent Reinforcement learning (\marl), each agent aims at learning a policy that maps their observation $o_i=\m{O}_i(s)$ to actions: $a_i \sim \pi_i(\cdot|o_i)$. Similarly to \rl, each agent aim at maximizing its expected return:
+\begin{equation}
+	\pi_i^* = \argmax_{\pi_i} \expect{(a_t\sim\pi_i, s_t \sim P_E}\left[\sum_{t=0}^T\gamma^tR_i(\m{O}_i(s_t),a_t)\right]
+\end{equation}
+A diagram of interaction is provided in \fig{fig:marl_interactions}. The field of \marl considers mainly two types of tasks:
+\begin{itemize}[noitemsep]
+\item \textit{Cooperative tasks} where the agents pursue the same goal and need to coordinate in order to solve it. Cooperative tasks are usually hard to design and often involve the maximization of a common objective (sometimes at the expense of individual gains). For a review of cooperative \marl see~\citet{OroojlooyJadid2019cooperative}.
+\item \textit{Competitive tasks} where the agents pursue non-aligned goals. In these settings agents explicitly aim at maximizing their individual gains. 
+\end{itemize}
+Among the recent innovations in \marl, \citet{Baker2020Emergent} trained agents to play the hide-and-seek game, \citet{perolat2017commonpool} to solve common-pool resource problems, and more recently \citet{team2021open} trained an agent on a spectrum of cooperative and competitive tasks including cooperative games to find objects, hide and seek or even capture the flag.
 
 \begin{figure}[!h]
 \centering
 \includegraphics[width=0.5\textwidth]{background/marl_interactions.pdf}	
 \caption{}
-\label{fig:marl_interacvtions}
+\label{fig:marl_interactions}
 \end{figure}
-
 
 \paragraph{Solution}
 
-\todo{maddpg centralized trainign decentralized execution}
+One of the main challenges of multi-agent learning systems is to take into account the non-stationary dynamics caused by the change of state of the agents when they learn. Indeed, an isolated agent of a Markov game does not evolve in a stationary \mdp because all agents are learning, and their behavior will be different during training. For this reason, most of the \marl algorithms rely on the \textit{centralized training, decentralized execution} paradigm. For instance, Muli-Agent Deep Deterministic Policy gradient~\citep{lowe2017multi}, uses a centralized training procedure where all agents can see other agents' observations and actions to learn an action-value function that is then used to optimize decentralized policies that only depends on local observations. As none of our contributions builds on \marl we will not elaborate on other \marl algorithms.
+
+
 
 \section{Problem Definition: Developmental AI}
 
-\todo{objective is very different from engineering problems in standard ai paradigms. we don't have clear and rigurous problem definition, we rather analyze all the facets of emerging phenomenon.}
+\todo{objective is very different from engineering problems in standard ai paradigms. we don't have clear and rigurous problem definition, we rather analyze all the facets of emerging phenomenon. This is why each defintion in the followoing subsection ends with a How to evaluate the system paragraph.}
 
 \gls{Self-organization} is a process by which spontaneously ordered patterns and structures emerge in a system without the need for central control or external guidance. It is a bottom-up process, meaning that it arises from the interactions and behaviors of the individual components within the system, rather than being imposed on the system from the top down. Self-organization can occur in various systems, including biological, chemical, physical, and social systems. It is often characterized by the emergence of complex, dynamic patterns and structures that exhibit behaviors that are not present in the individual components alone.
 
