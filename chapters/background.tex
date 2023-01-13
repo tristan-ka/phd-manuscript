@@ -7,7 +7,7 @@ Our contributions bridge standard \ai paradigms and developmental psychology to 
 
 \section{Background: Standard \ai Paradigms}
 
-
+\label{sec:standard_ai}
 
 \subsection{Reinforcement Learning}
 
@@ -299,7 +299,7 @@ Among the recent innovations in \marl, \citet{Baker2020Emergent} trained agents 
 \begin{figure}[!h]
 \centering
 \includegraphics[width=0.5\textwidth]{background/marl_interactions.pdf}	
-\caption{}
+\caption{Diagram of interactions in a \marl loop. Each agent perceives a (potentially) different perspective of the states provided by the environment. Each agent also has its own action space and is given a (potentially) different reward.}
 \label{fig:marl_interactions}
 \end{figure}
 
@@ -311,13 +311,35 @@ One of the main challenges of multi-agent learning systems is to take into accou
 
 \section{Problem Definition: Developmental AI}
 
+The present research expands upon the standard \ai methods presented in previous section, with the aim of investigating fundamental inquiries within the domain of \gls{Developmental Artificial Intelligence}. Developmental \ai is a multidisciplinary field that integrates principles from artificial intelligence, developmental psychology, and neuroscience to simulate and analyze the cognitive mechanisms of artificial agents. While standard \ai paradigms are structured around precise and formal problems addresed by algorithmic contributions, developmental \ai is concerned with modelling the cognitive, sensorimotor and social development of agents. This study aims to investigate the following research questions: 1) How do cultural conventions emerge through interactions among agents in social contexts? 2) How can embodied agents utilize cultural conventions to acquire new skills? These questions can be approached through the lens of self-organization theory. Specifically, this study will examine: 1) the self-organization of conventions, or language, among agents, and 2) the role of cultural conventions in the self-organization of agents' developmental trajectories."
+
+This investigation deals with emergent phenomenon formalized by the concept of ``self-organization'' and 
+
+\paragraph{Self-organization}
+
 \todo{objective is very different from engineering problems in standard ai paradigms. we don't have clear and rigurous problem definition, we rather analyze all the facets of emerging phenomenon. This is why each defintion in the followoing subsection ends with a How to evaluate the system paragraph.}
 
 \gls{Self-organization} is a process by which spontaneously ordered patterns and structures emerge in a system without the need for central control or external guidance. It is a bottom-up process, meaning that it arises from the interactions and behaviors of the individual components within the system, rather than being imposed on the system from the top down. Self-organization can occur in various systems, including biological, chemical, physical, and social systems. It is often characterized by the emergence of complex, dynamic patterns and structures that exhibit behaviors that are not present in the individual components alone.
 
+At the origin the term comes from cybernetic, it was defined by \citet{ashby1962self} and \citet{vonFoerster2003} `` order from noise ''.
 
 
-\todo{add definition of self-organization} \citet{oudeyer2005selforganization} \citet{steels1997evolution}
+Attractors can be multiple for a given system as illustrated by the following illusion proposed by \citet{dilts1995nlp}
+\begin{figure}[!h]
+\centering
+\begin{tabular}{cc}
+\includegraphics[width=.2\textwidth]{background/Youngoldwoman.jpg}	& \includegraphics[width=.45\textwidth]{background/stability_plot_yougoldwoman.pdf} \\
+(a) & (b)
+\end{tabular}
+\caption{(a) My Wife and My Mother-In-Law, by the cartoonist W. E. Hill, 1915 (b) Stability plots illustratin the two attractors of the cartoon as proposed by~\citet{dilts1995nlp}}
+\label{fig:youngoldlady}
+\end{figure}
+\todo{old-young lady metaphor, switching from one atractor to another, you need to pass through states were the image does not have any meaning anymore}
+
+
+\paragraph{A Multi-faceted Investigation}
+
+In the formation of speech and language\todo{add definition of self-organization} \citet{oudeyer2005selforganization} \citet{steels1997evolution} \cite{moulinfriergmm} and but also to agent behavior (trajectories)~\citep{martius2013information} (connection with dynamical system approach to agent-envrionemnt analysis~\cite{beer1995dynamical}
 
 \todo{example}
 
@@ -326,16 +348,52 @@ One of the main challenges of multi-agent learning systems is to take into accou
 
 \paragraph{Language Games}
 
+\begin{figure}[!h]
+\centering
+\includegraphics[width=.8\textwidth]{background/language_game_interactions.pdf}	
+\caption{Diagram of interactions in a language game}
+\label{fig:language_game_interactions}
+\end{figure}
+
+steels~\citep{steels2001language}, referential games~\citep{Lewis1969}
+
 \paragraph{Neural Network Communicating Agents}
 
+Work of lazaridou~\citep{lazaridou2017multiagent}
+
 \paragraph{MARL communication}
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=.5\textwidth]{background/marl_comm_interactions.pdf}	
+\caption{Diagram of interactions in \marl emergence communication setup.}
+\label{fig:marl_comm_interactions}
+\end{figure}
+
+Sequential decision making problems with multiple agent with explicit channel of communication
+
+Zhang impact of communication bandwith on marl settings~\citep{zhang2013coordinating}, RIAL and DIAL~\citep{foerster2016learning}, scheduling communication~\citep{kim2021communication}
+
+\paragraph{Other related setups (based on fixed protocol of communication)}
+
+Feudal Reinforcement learning? Human robot interactions?
 
 \paragraph{How to evaluate self-organizing communicating agents?}
 
 
 \subsection{Open-ended Skill Acquisition Problem}
 
-\paragraph{autotelic}
+\paragraph{Intrinsic Motivations}
+
+\paragraph{Auotelic RL}
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=.65\textwidth]{background/autotelic_rl_interactions.pdf}	
+\caption{From multi-goal \rl to Autotelic \rl}
+\label{fig:autotelic_interactions}
+\end{figure}
+
 
 \paragraph{How to evaluate autotelic agents?}
 
