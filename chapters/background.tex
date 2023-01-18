@@ -307,7 +307,7 @@ Among the recent innovations in \marl, \citet{Baker2020Emergent} trained agents 
 
 One of the main challenges of multi-agent learning systems is to take into account the non-stationary dynamics caused by the change of state of the agents when they learn. Indeed, an isolated agent of a Markov game does not evolve in a stationary \mdp because all agents are learning, and their behavior will be different during training. For this reason, most of the \marl algorithms rely on the \textit{centralized training, decentralized execution} paradigm. For instance, Muli-Agent Deep Deterministic Policy gradient~\citep{lowe2017multi}, uses a centralized training procedure where all agents can see other agents' observations and actions to learn an action-value function that is then used to optimize decentralized policies that only depends on local observations. As none of our contributions builds on \marl we will not elaborate on other \marl algorithms.
 
-
+%\newpage
 
 \section{Problem Definition: Developmental AI}
 
@@ -315,33 +315,62 @@ The present research expands upon the standard \ai methods presented in previous
 
 \paragraph{Self-organization}
 
-\todo{objective is very different from engineering problems in standard ai paradigms. we don't have clear and rigurous problem definition, we rather analyze all the facets of emerging phenomenon. This is why each defintion in the followoing subsection ends with a How to evaluate the system paragraph.}
+Self-organization is a term now used in a variety of sciences that can be described with the following definition:
+\begin{tcolorbox}
+\small
+\paragraph{Definition}
+\gls{Self-organization} is a process by which spontaneously ordered patterns and structures emerge from the interactions of the many constituents of a system without the need for central control or external guidance. Crucially, the emergent global structure of self-organizing systems cannot be explained by the properties of its constituents and must be analyzed as a whole.
+\end{tcolorbox}
 
-\gls{Self-organization} is a process by which spontaneously ordered patterns and structures emerge in a system without the need for central control or external guidance. It is a bottom-up process, meaning that it arises from the interactions and behaviors of the individual components within the system, rather than being imposed on the system from the top down. Self-organization can occur in various systems, including biological, chemical, physical, and social systems. It is often characterized by the emergence of complex, dynamic patterns and structures that exhibit behaviors that are not present in the individual components alone.
-
-At the origin the term comes from cybernetic, it was defined by \citet{ashby1962self} and \citet{vonFoerster2003} `` order from noise ''.
-
-
-Attractors can be multiple for a given system as illustrated by the following illusion proposed by \citet{dilts1995nlp}
+The notion of \textit{emerging order} draws its origin from the study of chaos and was originally used to describe thermodynamical systems that spontaneously organize themself from complex chaotic interactions. The theory of self-organization was formalized by cybernetician \citet{ashby1962self}. Borrowing concepts from dynamical system theory, he stated that any complex dynamical systems organize themselves around specific 'attractors' within a vast landscape of possible states. These attractors are stable equilibrium points and may be multiple for a given system. An intuitive explanation of attractors, proposed by \citet{dilts1995nlp}, is given in \fig{fig:youngoldlady}. It illustrates how our complex perception system can fall into different attractors when presented with an illusion. In one case, we see a young woman wearing a necklace looking up to the left, in the other we perceive an old woman leaning slightly forward. This illustration also demonstrates that certain attractors may be difficult to reach. Indeed, when looking at \fig{fig:youngoldlady} we often rapidly converge to one attractor and have difficulty escaping it to organize our perception around the other. Finding an attractor requires exploring the landscape of possible states. For this, noise and stochasticity can help as described by \citet{vonFoerster2003}:
+\begin{quote}
+   	``\textit{I think it is favorable to have some noise in the system. If a system is going to freeze into a particular state, it is inadaptable and this final state may be altogether wrong. It will be incapable of adjusting itself to something that is a more appropriate situation.}''
+\end{quote}
 \begin{figure}[!h]
 \centering
 \begin{tabular}{cc}
 \includegraphics[width=.2\textwidth]{background/Youngoldwoman.jpg}	& \includegraphics[width=.45\textwidth]{background/stability_plot_yougoldwoman.pdf} \\
 (a) & (b)
 \end{tabular}
-\caption{(a) My Wife and My Mother-In-Law, by the cartoonist W. E. Hill, 1915 (b) Stability plots illustratin the two attractors of the cartoon as proposed by~\citet{dilts1995nlp}}
+\caption{(a) My Wife and My Mother-In-Law, by the cartoonist W. E. Hill, 1915 (b) Stability plots illustrating the two attractors of the cartoon as proposed by~\citet{dilts1995nlp}}
 \label{fig:youngoldlady}
 \end{figure}
-\todo{old-young lady metaphor, switching from one atractor to another, you need to pass through states were the image does not have any meaning anymore}
+
+As displayed in \fig{fig:example_self_org}, nature is full of examples of self-organizing systems. Physical systems exhibit self-organizing behavior through the formation of patterns, such as the longitudinal stripes of sand dunes or the crystalline structure of snowflakes. Similarly, biological systems display self-organizing behaviors\citep{camazine2001self-organization}, as exhibited in the social organization of fish schools and insect swarms, as well as in their ability to collectively adapt to and modify their environment when termites construct mounds and bees build their hives.
+%
+\begin{figure}[!h]
+\small
+\centering
+\begin{tabular}{c}
+	(a) Physical self-organizing systems\\
+	\includegraphics[width=.6\textwidth]{background/self_organizing_physical.pdf}\\
+	(b)Biological self-organizing systems\\
+	\includegraphics[width=.6\textwidth]{background/self_organizing_biological.pdf}
+\end{tabular}
+\caption{Example of self-organizing systems (a) sand dunes in namibia and cristal structure of a snow ice; and (b) a bee comp and a fish school. Images are royalty-free and obtained from \url{pixabay.com}}
+\label{fig:example_self_org}	
+\end{figure}
+
+Self-organization also enable creative technical innovation such as the development of self-organizing traffic lights~\citep{ferreira2010self-organized}. These traffic lights are able to adapt to changing traffic conditions through the use of local interactions, rather than relying on communication or external signals. The authors argue that self-organization is particularly well suited for the problem of traffic light regulation because traffic condition change constantly. Thus, the problem at hand is not one of optimization, but rather of adaptation, and self-organization seems to be better equipped to handle this type of challenge.
+
+\paragraph{Self-organization in Developmental \ai}
+
+Developmental \ai problems can be formulated as adaptive problems where one or more agents and the environment are coupled dynamical systems whose interactions are responsible for the agents' behavior~\citep{beer1995dynamical}. The language of dynamical systems and the theory of self-organization can thus help formalize the two fundamental problems of this research.
+
+ First, the problem of the emergence of cultural convention among artificial agents, can be analyzed as the self-organization of a language community~\citep{steels1995selforganizing,oudeyer2005selforganization}. A cultural convention is thus an attractor of a language community: when multiple agents interact, variations of language behaviors are attracted to an equilibrium state because the more members of a community adopt a particular convention, the stronger the convention becomes. We will present several approaches that model language acquisition in \sect{sec:self-orga-lang}. 
+
+Second, the problem of autonomous skill acquisition can be framed as the self-organization of agents' trajectories where agents use internal mechanisms to develop rather than being controlled by hierarchical top-down control~\citep{pfeifer2007robotics}. In this context, agents develop and grow repertoire of skills via internal drivers. These internal drivers, referred to as intrinsic motivations~\citep{oudeyer2005selforganization}, allow agents to self-organize their behavior into developmental trajectories and enable them to acquire increasingly complex skills. We will explore the open-ended skill acquisition problem and present various approaches to it in \sect{sec:self-orga-traj}.
 
 
 \paragraph{A Multi-faceted Investigation}
 
-In the formation of speech and language\todo{add definition of self-organization} \citet{oudeyer2005selforganization} \citet{steels1997evolution} \cite{moulinfriergmm} and but also to agent behavior (trajectories)~\citep{martius2013information} (connection with dynamical system approach to agent-envrionemnt analysis~\cite{beer1995dynamical}
+\todo{objective is very different from engineering problems in standard ai paradigms. we don't have clear and rigurous problem definition, we rather analyze all the facets of emerging phenomenon. This is why each defintion in the followoing subsection ends with a How to evaluate the system paragraph.}
+
 
 \todo{example}
 
-\subsection{Language Acquisition Problem}
+\subsection{Self-organisation of Cultural Convention and the Language Acquisition Problem}
+\label{sec:self-orga-lang}
 
 
 \paragraph{Language Games}
@@ -379,7 +408,8 @@ Feudal Reinforcement learning? Human robot interactions?
 \paragraph{How to evaluate self-organizing communicating agents?}
 
 
-\subsection{Open-ended Skill Acquisition Problem}
+\subsection{Self-organisation of Trajectories and the Open-ended Skill Acquisition Problem}
+\label{sec:self-orga-traj}
 
 \paragraph{Intrinsic Motivations}
 
