@@ -208,7 +208,7 @@ Recent feature-expectation-based approaches use technics similar to generative a
 
 
 \subsection{Muli-Goal Reinforcement Learning}
-
+\label{sec:background_mg_rl}
 Standard \rl can be extended to a multi-goal setting. Let us return to the definition of goal by \citet{elliot2008goal} provided in the introduction (\sect{sec:humans_autotelic}):
 \begin{quote}
    	``\textit{A goal is a cognitive representation of a future object that the organism is committed to approach or
@@ -270,7 +270,7 @@ The idea of \textit{hindsight learning} further improves knowledge transfer betw
 
 
 \subsection{Multi-Agent Reinforcement Learning}
-
+\label{sec:background_marl}
 \paragraph{Problem}
 
 Standard \rl can also be extended to scenarios where several agents interact with the environment. For this purpose \mdps are extended to \textit{Markov Games}.
@@ -280,7 +280,7 @@ Standard \rl can also be extended to scenarios where several agents interact wit
 \gls{Markov Game} are defined by the following terms:
 \begin{equation}
 	\m{M}\,=\,\{\m{S},\m{T},\,\rho_0,\,\{\m{O}_i,\m{A}_i,R_i\}_{i=1}^N\}
-	\label{eq:standard_mdp}	
+	\label{eq:markov_game}	
 \end{equation}
 The first three terms of a Markov Game are the same as those of a \mdp: $\m{S}$ is the state space, $\m{T}$ is the transition function, and $\rho_0$ the initial state distribution. However, each agent (denoted by the index $i$) perceives a different perspective of the state through observation transformation $\m{O}_i$. Agents also have different action spaces $\m{A}_i$ and reward function $R_i$
 \end{tcolorbox}
@@ -311,7 +311,7 @@ One of the main challenges of multi-agent learning systems is to take into accou
 
 \section{Problem Definition: Developmental AI}
 
-The present research expands upon the standard \ai methods presented in previous section, with the aim of investigating fundamental inquiries within the domain of \gls{Developmental Artificial Intelligence}. Developmental \ai is a multidisciplinary field that integrates principles from artificial intelligence, developmental psychology, and neuroscience to simulate and analyze the cognitive mechanisms of artificial agents. While standard \ai paradigms are structured around precise and formal problems addresed by algorithmic contributions, developmental \ai is concerned with modelling the cognitive, sensorimotor and social development of agents. In this research the specific questions that we investigate are: 1) How do cultural conventions emerge through interactions among agents in social contexts? 2) How can embodied agents utilize cultural conventions to acquire new skills? These questions can be approached through the lens of self-organization theory. Specifically, this study will examine: 1) the self-organization of conventions, or language, among agents, and 2) the role of cultural conventions in the self-organization of agents' developmental trajectories. Before introducing these two questions we will therefore define the concept of self-organization and present the challenges inherent in the field of developmental \ai.
+The present research expands upon the standard \ai methods presented in previous section, with the aim of investigating fundamental inquiries within the domain of \gls{Developmental Artificial Intelligence}. Developmental \ai is a multidisciplinary field that integrates principles from artificial intelligence, developmental psychology, and neuroscience to simulate and analyze the cognitive mechanisms of artificial agents. While standard \ai paradigms are structured around precise and formal problems addresed by algorithmic contributions, developmental \ai is concerned with modelling the cognitive, sensorimotor and social development of agents. In this research the specific questions that we investigate are: 1) How do cultural conventions emerge through interactions among agents in social contexts? 2) How can embodied agents utilize cultural conventions to acquire open-ended skill repertoires? These questions can be approached through the lens of self-organization theory. Specifically, this study will examine: 1) the self-organization of conventions, or language, among agents, and 2) the role of cultural conventions in the self-organization of agents' developmental trajectories. Before introducing these two questions we will therefore define the concept of self-organization and present the challenges inherent in the field of developmental \ai.
 
 \paragraph{Self-organization}
 
@@ -376,65 +376,53 @@ The study of the origin of language has been a subject of interest and debate am
 
 \paragraph{Language Acquisition with Artificial Agents}
 
-
-
+The study of language emergence can benefit greatly from the utilization of agent-based modeling and simulation~\citep{Hurford1989BiologicalEO,birghton2002compositional,cangelosi2002simulating,steels2015talkingheads,kirby2014iterated}. \textit{Computational Experimental Semiotics}~\citep{galantucci2011experimental} is a field that analyzes the numerous factors that contribute to language emergence by examining a population of simulated agents engaging in two distinct types of interaction: \textit{linguistic} and \textit{genetic interactions}. When two agents take part in linguistic interaction, they are in turn speakers and listeners and respectively produce and receive messages describing a context. To study the formation of meanings, linguistic interactions occur within physical environments that contain objects and embodied situations~\citep{steels2012grounded}. Depending on the communicative success of linguistic interactions, agents can update their internal state and adapt to their artificial peers. To investigate the impact of population dynamics, the studied population is open: new agents enter, and others leave. These new agents, generated through genetic interactions and subject to potential mutations, introduce an element of novelty into the system. Finally, in order to obtain realistic models, the population should be studied as a distributed multi-agent system, i.e. there should not be any main global agent that acts over the entire population. Moreover, just like humans cannot enter the brain of others, agents should not be able to access each other's internal states.  A diagram of interactions as well as a high-level algorithmic implementation of the language acquisition framework is provided in \fig{fig:language_acquisition_framework} and Alg.~\ref{alg:langage-acquisition}.
 \begin{figure}[!h]
 \centering
-\includegraphics[width=.8\textwidth]{background/language_acquisition_framework.pdf}	
-\caption{The language acquisition framework: A population of agents}
+\vspace{-.5cm}
+\includegraphics[width=.85\textwidth]{background/language_acquisition_framework.pdf}	
+\caption{The language acquisition framework: A population of agents is an open multi-agent system where new agent enters and others leave. New agents are generated by genetic interactions: crossovers between parents with potential mutations. Agents have internal states allowing them to map signals to actions. They can perform linguistic interactions, i.e. exchanging messages to describe a physical situation of the world.}
 \label{fig:language_acquisition_framework}
 \end{figure}
-
-
-\todo{present the set of objects that we will use,  multi-agent setup without access to internal states of other agents, agents with internal models , population, in out etc.., physical environment (sequential decision making or simpler), collaborative objectiv (refer to section marl)}
-
-\todo{figure}
-
+%
 \begin{algorithm}[!h]
     \begin{algorithmic}
+    \small
         \caption{\label{alg:langage-acquisition}Language Acquisition Simulation}
-      
-        \REQUIRE Population of Agents $\mathcal{P}$, Language Interaction $\mathcal{L}$ and Genetic Interaction $\mathcal{G}$
-        
-        
-        \FOR{$i$ in range($N_{iterations}$)}
-        \STATE\underline{MODELLING FRAME:}
+        \REQUIRE Language Interaction $L$, Genetic Interaction $G$, Environment $\mathcal{E}$
+        \STATE \textbf{Initialize} Population $\mathcal{P}_A$ and internal states of agents 
+		\LOOP
+        \STATE Sample two agents from population: $(A_1,A_2) \sim \mathcal{P}_A$ 
+        \STATE Store result of linguistic interaction about the world: $ \leftarrow L(A_1,A_2,\mathcal{E})$
+        \STATE Update $A_1$ and $A_2$ based on score $s$
+        \STATE \textbf{With prob $p_{\text{out}}$:}
         \bindent
-            \FOR {$e$ in range($N_{collect}/2$)}
-                \STATE Architect populates $\Da$ using $m \sim$ Uniform() and observing $a\sim \pib(\cdot|s,m)$\\
-            \ENDFOR
-            \STATE Architect learns $\tildepib(a|s,m)$ on $\Da$ with BC
-            \STATE
-            Architect sets $\pia(m|s) \triangleq \text{MCTS}(r, \tildepib, \Pe)$
-            \STATE
-            Architect flushes $\Da$
-            \eindent\\
-            \underline{GUIDING FRAME:}
-            \bindent
-            \FOR {$e$ in range($N_{collect}/2$)}
-                \STATE Builder populates $\Db$ using $\pib$ while guided by Architect, i.e.  $m \sim \pia(\cdot|s)$\\
-            \ENDFOR
-            \STATE Builder learns $\pib(a|s,m)$ on $\Db$ with BC
-            \STATE Builder flushes $\Db$
-            \eindent
-        \ENDFOR
-        \STATE Architect runs one last Modelling Frame\\
-    \KwResult{$\pia$, $\pib$}
+        \STATE Remove agent from population: $\mathcal{P}_A$.pop()
+        \eindent
+        \STATE \textbf{With prob $p_{\text{in}}$:}
+        \bindent
+        \STATE Sample two parents from population: $(A_1,A_2) \sim \mathcal{P}_A$  
+        \STATE Perform Genetic Interaction: $A' \leftarrow G(A_1,A_2)$
+        \STATE Add child to population: $\mathcal{P}_A$.add($A'$)
+        \eindent
+        \ENDLOOP
     \end{algorithmic}
 \end{algorithm}
-\todo{complete set of interactions as an algorithm}
 
-\todo{say that in this research we will mainly focus on adaptive-self organizing structures}.
+This study will not investigate the impact of population dynamics on the emergence of language. Rather, it will focus on the development of agents during a lifetime and disregard any genetic interactions. We will thus focus on the self-organization of cultural conventions during linguistic interactions. We will restrict our analysis to the smallest population of two individuals. 
 
-\todo{steels takling heads:What is the interaction between cultural evolution and genetic evolution? I have
-argued in favour of culture-driven genetic evolution but what kind of genetic change is necessary to support the processes that we have been found to be operating at the cultural level? Clearly, flexible recruitment and huge amounts of memory are key demands on the human brain, but there are undoubtedly others.}
-
-\todo{mention that in the present research we focus on self-organization and the development of agents during a life time and so therefore we ignore all genetic interactions. We moreover consider only populations of two agents!!!!}
-
-
+\newpage
 \paragraph{Language Games}
 
-\todo{Internal models are tables}
+The simplest forms of linguistic interaction are coined language games. They derive from \textit{Signaling Games} introduced by \citet{Lewis1969} as a game theoretic approach to the problem of the emergence of conventions. In game theoretic words, a convention is a system of arbitrary rules that enables two players to share meaningful information.  \fig{fig:lewis_game} presents a simple example of a Lewis game. The two players of a signaling game are the speaker and the listener. In our example, the world is providing two world states to the speaker ($w_1$ and $w_2$). Based on the world state, the speaker sends a signal to the listener. Here, there are two available signals ($s_1$ and $s_2$). From the received signal, the listener then chose an action (among two actions $a_1$ and $a_2$). If the listener picks the correct action for the associated word state then both agents perceive a reward. Note that the Listener never perceives the world state.  
+\begin{figure}[!h]
+\centering
+\includegraphics[width=.525\textwidth]{background/lewis_game.pdf}
+\caption{Illustration of Lewis Signalling game with two world states, two signs, and two actions.}
+\label{fig:lewis_game}
+\end{figure}
+
+To investigate the self-organization of conventions around meanings in a more realistic scenario, \citet{steels2012grounded} proposed to update signaling games with grounding elements.  In a grounded language game, the speaker and the listener are given a shared \textit{context} made of several \textit{referents} (objects) as displayed in \fig{fig:language_game_interactions}. The speaker samples a target referent from the context and produces an utterance to name it. Then, the speaker receives the utterance and picks a referent inside the context. If the chosen referent matches the target referent, the game is a success. To self-organize a language, a population of artificial agents needs to play numerous language games. In doing so, agents will alternate between speakers and listers. Depending on the outcome of the game they will update their internal states to reinforce successful conventions and diminish unsuccessful ones. Note that several update strategies are possible. They vary in how the outcome is actually perceived by the agents. On the speaker side, the referent ground truth (target) is known so the outcome of the game can be directly used for the update. On the other hand, since the listener does not know about the target referent some implementations of language games do not communicate the outcome to the listener. In \citet{steels2001language}'s formulation of language game, the outcome is communicated to the speaker via a retroactive pointing mechanism. The speaker basically points toward the target referent at the end of the game to communicate the outcome to the speaker.
 
 \begin{figure}[!h]
 \centering
@@ -443,17 +431,33 @@ argued in favour of culture-driven genetic evolution but what kind of genetic ch
 \label{fig:language_game_interactions}
 \end{figure}
 
-steels~\citep{steels2001language}, referential games~\citep{Lewis1969}
+Early solutions to the language game~\citep{lipowska2011naming,steels2012grounded} use tables scoring associations between referents and utterances. Given fixed predefined numbers of utterances and referent categories, the agents can adjust the score of utterance/referent association depending on their communicative success. Examples of such tables for the speaker (left) and for the listener (right) are given in \fig{fig:language_game_tabular}.  If predefined referent categories are not available to the agents, \citet{steels2012grounded} propose mechanisms to map visual inputs to object categories. Similarly, the Talking Head experiments~\citep{steels2015talkingheads} propose strategies to adapt the language game to more realistic configurations with flexible and dynamic inventories of words and meanings.
 
-\paragraph{Neural Network Communicating Agents}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=.8\textwidth]{background/language_game_tabular.pdf}	
+\caption{Example of agents' tabular internal models, with 3 referents and 5 words.}
+\label{fig:language_game_tabular}
+\end{figure}
 
-\todo{Internal models are neural networks}
+\paragraph{Neural Communicating Agents}
 
-Work of lazaridou~\citep{lazaridou2017multiagent}
+Inspired by the success of Convolutional Neural Network in Computer Vision, \citet{lazaridou2017multiagent} proposed to extend language games to image referents with agents using neural networks to take actions \footnote{In deep learning, language games are often referred to as referential games or guessing games}. \fig{fig:language_game_network} illustrates their setup. The context is made of two images ($i_1$ and $i_2$), a target ($t$) and a distractor. The utterances are discrete utternaces $u$ coming from a fixed-sized dictionary $\mathcal{V}$.  The speaker's utterance is given by a neural network parametrizing a policy that maps the two images to the utterance: $u=\pi_S(i_1,i_2,t; \theta_S)$. Similarly, the listener uses policy $\pi_L$ to make a choice given the utterance: $a=\pi_L(i_1,i_2,\pi_S(i_1,i_2,t; \theta_S);\theta_L)$. The policies are trained using \rl (\sect{sec:background_rl}) with reward function $R$ returning 1 iff $\pi_L(i_1,i_2,\pi_S(i_1,i_2,t; \theta_S);\theta_L) := t$. Note that in their implementation the reward and thus the outcome of the game is communicated to both agents which is equivalent to Steel's pointing mechanism. 
 
-\paragraph{MARL communication}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=.75\textwidth]{background/language_game_network.pdf}	
+\caption{Example of agents' neural network internal models, with 2 referents and 3 words (adapted from \citet{lazaridou2017multiagent}).}
+\label{fig:language_game_network}
+\end{figure}
 
+Beyond scaling previous language game approaches to visual referents, \citet{lazaridou2017multiagent} propose a strategy to achieve human interpretable code. They demonstrate that alternating between \rl in the classical language game and standard supervised learning for image classification leads to the effective grounding of agents' code in natural language. In a similar study, \citet{havrylov2017emergence} examine the emergence of communication with sequences of symbols and visual referents. They use \lstms within the speaker and listener architectures to support the encoding and decoding of discrete tokens arranged in fixed-size sequences. They also analyze the compositionality and variability of the emerging sequences in both tabular-rasa and natural language communication. 
 
+The identification of the factors that contribute to the emergence of compositional communication code is a fundamental objective within the field of computational linguistics. To this end, the use of neural communicating agents in language games has emerged as a valuable experimental setting. \citet{kottur2017natural} propose to analyze how utterances consisting of sequences of symbols can name referents that are compositions of abstract attributes (represented as one-hot vectors). The decomposition of referents into pre-defined hardcoded attributes enables a more comprehensive and systematic analysis of the compositional properties of the evolving communication code. Building upon this work, \citet{chaabouni2020compositionality} emphasize the importance of separating the compositional generalization capabilities of agents and compositional properties of the emerging code. They have established that the former can be achieved independently of the latter. Other works look at the environmental and internal factors that favor the emergence of compositionality. For instance, \citet{rodriguez-luna-etal-2020-internal} show that auxiliary objectives incentivizing object consistency or least effort (the generation of short sequences) support the emergence of compositional code in language games. Similarly, \citet{mu2021emergent} demonstrate that agents solving a variation of the language games where referents are organized in sets of objects agree on a more interpretable and systematic communication code. Finally, \citet{Ren2020Compositional} proposed to study the emergence of compositional code in a more complete setting with a population of agents playing language games over several generations.
+
+\paragraph{Goal-Directed Communicating agents}
+
+The prior paragraph demonstrates that guessing interactions provide an effective experimental testbed to study language acquisition. But, as outlined in the introduction, human language serves a multitude of purposes beyond mere object guessing. Therefore, \ai researchers have aimed to examine the development of communication in more realistic scenarios, where agents must communicate to accomplish a collaborative task in complex environments that involve interactions with the physical world across multiple time steps. These problems are modeled using \marl as described in \sect{sec:background_marl}. The agents must concurrently learn to interact with the world and communicate with others by observing rewards related to their collaborative goal, provided by an expert. See \fig{fig:marl_comm_interactions} for a visual representation of these interactions. Seminal works on \marl involving communicating agents consider problems such as efficient car coordination at traffic junctions to avoid collision~\citep{sukhbaatar2016learning} or riddles where agents need to combine environmental inputs with information communicated over several time steps to succed~\citep{foerster2016learning}. In their work, \citet{foerster2016learning} introduce two approaches for learning to communicate in \marl: Differentiable Inter-Agent Learning (\textsc{dial}) and Reinforced Inter-Agent Learning (\textsc{rial}). \textsc{dial} is based on the centralized training and decentralized execution method and enables gradient to be exchanged between agents, thereby breaking the assumption of the language acquisition framework that agents should not be able to have access to each other's internal states. Conversely, in \textsc{rial}, messages are viewed as actions produced by a \rl algorithm where each agent treats others as a part of the environment, without the need to have access to other agents’ internal parameters or to back-propagate gradients. The \textsc{rial} algorithm now serves as a baseline for a variety of \marl communication investigations. \cite{jiang2018learning} extended it with an attention mechanism that enables agents to learn when communication is required to solve collaborative tasks.  Similarly, \citet{eccles2019biases} showed that adding positive signaling (messages must be different in different situations) and positive listening (actions must be different when messages are different) biases to agents via auxiliary losses yields an increase in communicative performance. For a complete survey of emergent communication in \marl setups, see \citet{zhu2022survey}.
 
 \begin{figure}[!h]
 \centering
@@ -462,33 +466,100 @@ Work of lazaridou~\citep{lazaridou2017multiagent}
 \label{fig:marl_comm_interactions}
 \end{figure}
 
-Sequential decision making problems with multiple agent with explicit channel of communication
 
-Zhang impact of communication bandwith on marl settings~\citep{zhang2013coordinating}, RIAL and DIAL~\citep{foerster2016learning}, scheduling communication~\citep{kim2021communication}
+\paragraph{Conclusion and connection with our contributions}
 
-\paragraph{Other related setups (based on fixed protocol of communication)}
+In this section, we presented the language acquisition framework which study the emergence of communication inside a population of agents interacting within linguistic and genetic interactions. Our contributions focus on linguistic interactions and ignore the influence of population dynamics on the emergence of communication. We, therefore, presented the most broadly studied linguistic interactions: the language game. Additionally, we showed that this particular guessing interaction setup could be scaled to neural agents. Finally, we noted that \marl offers a valuable framework to study the emergence of communication as a tool to achieve collaborative behaviors in physically complex environments. Our first contribution (Chapter~\ref{chap:curves}) extends the language game framework to investigate the self-organization of a graphical communication code with visual referents and agents communicating via a sensory-motor channel. Our second contribution (Chapter~\ref{chap:abig}) investigates the emergence of communication in the scenario where agents have asymmetries of information and affordances, where the reward cannot be communicated to all agents.  
 
-Feudal Reinforcement learning? Human robot interactions?
-
-\paragraph{How to evaluate self-organizing communicating agents?}
-
+%
+\newpage
 
 \subsection{Self-organisation of Trajectories and the Open-ended Skill Acquisition Problem}
 \label{sec:self-orga-traj}
+%
 
-\paragraph{Intrinsic Motivations}
+Beyond modeling language acquisition, developmental \ai aims to model how children learn skills in general. In this study, we propose a computational framework that addresses the challenge of self-organizing developmental trajectories through intrinsically motivated skills acquisition. The framework, referred to as autotelic \rl, is a combination of developmental approaches and reinforcement learning (see the definition of autotelic in \sect{sec:humans_autotelic}).  It builds on \textit{intrinsic motivations} (\ims) to enable agents to learn to represent, generate, select, and solve their own problems. To provide a comprehensive understanding of the framework, we first present a typology of intrinsic motivation approaches in developmental \ai, followed by a presentation of the intrinsically motivated skills acquisition problem and its solution through autotelic reinforcement learning.
 
-\paragraph{Auotelic RL}
+
+\paragraph{Intrinsic Motivations in Developmental AI}
+
+ Developmental \ai aims to model children learning and, thus, takes inspiration from the mechanisms underlying autonomous behaviors in humans. Most of the time, humans are not motivated by external rewards but spontaneously explore their environment to discover and learn about what is around them. This behavior seems to be driven by \textit{intrinsic motivations} (\ims) a set of brain processes that motivate humans to explore for the mere purpose of experiencing novelty, surprise or learning progress~\citep{berlyne1966curiosity,gopnik1999scientist,kidd2015psychology,oudeyer2016evolution,gottlieb2018towards}. The integration of \ims into artificial agents thus seems to be a key step towards autonomous learning agents \citep{schmidhuber1991possibility,kaplan2007search}. In developmental robotics, this approach enabled sample efficient learning of high-dimensional motor skills in complex robotic systems \citep{santucci2020intrinsically}, including locomotion \citep{baranes2013active,martius2013information}, soft object manipulation \citep{rolf2013efficient,nguyen2014socially}, visual skills \citep{lonini2013robust} and nested tool use in real-world robots \citep{imgep}. Most of these approaches rely on \textit{population-based} optimization algorithms, non-parametric models trained on datasets of (policy, outcome) pairs. Population-based algorithms cannot leverage automatic differentiation on large computational clusters, often demonstrate limited generalization capabilities and cannot easily handle high-dimension perceptual spaces (\eg images) without hand-defined input pre-processing. For these reasons, developmental robotics could benefit from new advances in deep \rl.
+
+These convergences can mostly be categorized in two ways depending on the type of intrinsic motivation (\ims) being used \citep{oudeyer2007intrinsic}:
+\begin{itemize}
+    \item
+    \textbf{Knowledge-based IMs} are about prediction. They compare the situations experienced by the agent to its current knowledge and expectations, and reward it for experiencing dissonance (or resonance). This family includes \ims rewarding prediction errors \citep{schmidhuber1991possibility,pathak2017curiosity}, novelty \citep{bellemare2016unifying,burda2018exploration,raileanu2020ride}, surprise \citep{achiam2017surprise}, negative surprise \citep{berseth2019smirl}, learning progress \citep{lopes2012exploration,kim2020active} or information gains \citep{houthooft2016vime}, see a review in \citep{linke2019adapting}. This type of \im is often used as an auxiliary reward to organize the exploration of agents in environments characterized by sparse rewards. It can also be used to facilitate the construction of world models \citep{lopes2012exploration,kim2020active,sekar2020planning}.
+    \item
+    \textbf{Competence-based IMs}, on the other hand, are about control. They reward agents to solve self-generated problems, to achieve self-generated goals. In this category, agents need to represent, select and master self-generated goals. As a result, competence-based \ims were often used to organize the acquisition of repertoires of skills in task-agnostic environments \citep{baranes2010intrinsically,baranes2013active,santucci2016grail,forestier2016modular,nair2018visual,warde2018unsupervised,curious,blaes2019control,pong2019skew,imagine}. Just like knowledge-based \ims, competence-based \ims organize the exploration of the world and, thus, might be used to train world models \citep{baranes2013active,chitnis2020glib} or facilitate learning in sparse reward settings \citep{geppg}. We propose to use the adjective \textbf{autotelic}, from the Greek \textit{auto} (self) and \textit{telos} (end, goal), to characterize agents that are intrinsically motivated to represent, generate, pursue and master their own goals (\ie that are both intrinsically motivated and goal-conditioned).
+\end{itemize}
+
+\rl algorithms using \textit{knowledge-based} \ims leverage ideas from developmental robotics to solve standard \rl problems. On the other hand, \rl algorithms using competence-based \ims organize exploration around self-generated goals and can be seen as targeting a developmental robotics problem: the \textit{open-ended and self-supervised acquisition of repertoires of diverse skills}. 
+ 
+\textit{Intrinsically Motivated Goal Exploration Processes} (\imgep) is the family of autotelic algorithms that bake competence-based \ims into learning agents \citep{imgep}. \imgep agents generate and pursue their own goals as a way to explore their environment, discover possible interactions and build repertoires of skills. This framework emerged from the field of developmental robotics \citep{oudeyer2007intrinsic,baranes2009proximo,baranes2010intrinsically,rolf2010goal} and originally leveraged population-based learning algorithms (\popimgep) \citep{baranes2009r,baranes2013active,forestier2016modular,imgep}. 
+
+Recently, goal-conditioned \rl agents were also endowed with the ability to generate and pursue their own goals and learn to achieve them via self-generated rewards. We call this new set of autotelic methods \rlimgeps. In contrast, one can refer to externally-motivated goal-conditioned \rl agents as \rlemgeps.
 
 \begin{figure}[!h]
 \centering
-\includegraphics[width=.65\textwidth]{background/autotelic_rl_interactions.pdf}	
-\caption{From multi-goal \rl to Autotelic \rl}
-\label{fig:autotelic_interactions}
+\includegraphics[width=\textwidth]{survey/scope_survey.pdf}
+\caption{A typology of intrinsically-motivated and/or goal-conditioned rl approaches. \popimgep, \rlimgep and \rlemgep refer to population-based intrinsically motivated goal exploration processes, \rl-based \imgep and \rl-based externally motivated goal exploration processes respectively. \popimgep, \rlimgep, and \rlemgep all represent goals, but knowledge-based \ims do not. While \imgeps (\popimgep and \rlimgep) generate their own goals, \rlemgeps require externally defined goals. Autotelic agents are \rlimgep: at the intersection of goal-conditioned \rl agents and intrinsically motivated processes that train agents to generate and pursue their own goals with goal-conditioned \rl algorithms.}	
 \end{figure}
 
+\paragraph{The Intrinsically Motivated Skills Acquisition Problem}
 
-\paragraph{How to evaluate autotelic agents?}
+In the \textit{intrinsically motivated skills acquisition problem}, the agent is set in an open-ended environment without any pre-defined goal and needs to acquire a repertoire of skills. Here, a skill is defined as the association of a goal embedding $z_g$ and the policy to reach it $\Pi_g$. A repertoire of skills is thus defined as the association of a repertoire of goals $\m{G}$ with a goal-conditioned policy trained to reach them $\Pi_\m{G}$. The intrinsically motivated skills acquisition problem can now be modeled by a reward-free \mdp $\m{M}\,=\,\{\m{S},\, \m{A},\, \m{T},\, \rho_0\}$ that only characterizes the agent, its environment and their possible interactions. Just like children, agents must be autotelic, \ie they should learn to represent, generate, pursue and master their own goals.
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=.65\textwidth]{background/autotelic_rl_interactions.pdf}
+\caption{}
+\end{figure}
+
+\paragraph{Evaluating Autotelic Agents}
+
+Evaluating agents is often trivial in reinforcement learning. Agents are trained to maximize one or several pre-coded reward functions\,---\,the set of possible interactions is known in advance. One can measure generalization abilities by computing the agent's success rate on a held-out set of testing goals. One can measure exploration abilities via several metrics such as the count of task-specific state visitations.
+
+In contrast, autotelic agents evolve in open-ended environments and learn to represent and form their own set of skills. In this context, the space of possible behaviors might quickly become intractable for the experimenter, which is perhaps the most interesting feature of such agents. For these reasons, designing evaluation protocols is not trivial.
+
+The evaluation of such systems raises similar difficulties as the evaluation of task-agnostic content generation systems like Generative Adversarial Networks (\gan) \citep{goodfellow2014generative} or self-supervised language models \citep{devlin2019bert,brown2020language}. In both cases, learning is \textit{task-agnostic} and it is often hard to compare models in terms of their outputs (\eg comparing the quality of \gan output images, or comparing output repertoires of skills in autotelic agents).
+
+One can also draw parallel with the debate on the evaluation of open-ended systems in the field of \textit{open-ended evolution} \citep{hintze_open-endedness_2019,stanley_role_2016,stanley_why_2019}. In both cases, a \textit{good} system is expected to generate more and more original solutions such that its output cannot be predicted in advance. But what does \textit{original} mean, precisely? \citep{stanley_role_2016} argues that subjectivity has a role to play in the evaluation of open-ended systems. Indeed, the notion of \textit{interestingness} is tightly coupled with that of \textit{open-endedness}. What we expect from our open-ended systems, and of our \rlimgep agents in particular, is to generate more and more behaviors that \textit{we} deem interesting. This is probably why the evaluation of content generators often include human studies. Our end objective is to generate interesting artefacts for us; we thus need to evaluate open-ended processes ourselves, subjectively.
+
+Our end goal would be to interact with trained \rlimgep directly, to set themselves goals and test their abilities. The evaluation would need to adapt to the agent's capabilities. As Einstein said \textit{``If you judge a fish by its ability to climb a tree, it will live its whole life believing that it is stupid.''}. \rlimgep need to be evaluated by humans looking for their area of expertise, assessing the width and depth of their capacities in the world they were trained in. This said, science also requires more objective evaluation metrics to facilitate the comparison of existing methods and enable progress. Let us list some evaluation methods measuring the competency of agents via proxies:
+
+\begin{itemize}
+    \item \textbf{Measuring exploration:} one can compute task-agnostic exploration proxies such as the entropy of the
+    visited state distribution, or measures of state coverage (\eg coverage of the high-level x-y state space in mazes) \citep{goalgan}. Exploration can also be measured as the number of interactions from a set of \textit{interesting} interactions defined subjectively by the experimenter (interactions with objects \citet{imagine}).
+    \item \textbf{Measuring generalization:} The experimenter can subjectively define a set of relevant target goals
+    and prevent the agent from training on them. Evaluating agents on this held-out set at test time provides a measure of generalization \citep{ruis2020benchmark}, although it is biased towards what the experimenter assesses as \textit{relevant} goals.
+    \item \textbf{Measuring transfer learning:} The intrinsically motivated exploration of the environment can be seen as a pre-training phase to bootstrap learning in a subsequent downstream task. In the downstream task, the agent is trained to achieve externally-defined goals. We report its performance and learning speed on these goals. This is akin to the evaluation of self-supervised language models, where the reported metrics evaluate performance in various downstream tasks \citep{brown2020language}. In this evaluation setup, autotelic agents can be compared to task-specific agents. Ideally, autotelic agents should benefit from their open-ended learning process to outperform task-specific agents on their own tasks. This said, performance on downstream tasks remains an evaluation proxy and should not be seen as the explicit \textit{objective} of the skill discovery phase. Indeed, in humans, skill discovery processes do not target any specific future task, but emerged from a natural evolutionary process maximizing reproductive success, see a discussion in \citep{singh2010intrinsically}.
+    \item \textbf{Opening the black-box:} Investigating internal representations learned during intrinsically motivated exploration is often informative. One can investigate properties of the goal generation system (\eg does it generate out-of-distribution goals?), investigate properties of the goal embeddings (\eg are they disentangled?). One can also look at the learning trajectories of the agents across learning, especially when they implement their own curriculum learning \citep{goalgan,curious,blaes2019control,pong2019skew,akakzia2020decstr}.
+    \item \textbf{Measuring robustness:} Autonomous learning agents evolving in open-ended environment should be robust to a variety of properties than can be found in the real-world. This includes very large environments, where possible interactions might vary in terms of difficulty (trivial interactions, impossible interactions, interactions whose result is stochastic thus prevent any learning progress). Environments can also include distractors (\eg non-controllable objects) and various forms of non-stationarity. Evaluating learning algorithms in various environments presenting each of these properties allows to assess their ability to solve the corresponding challenges.
+\end{itemize}
+
+
+\paragraph{Autotelic RL Agents}
+
+Until recently, the \imgep family was powered by population-based algorithms (\popimgep). The emergence of goal-conditioned \rl approaches that generate their own goals gave birth to a new type of \imgeps: the \rl-based \imgeps (\rlimgep). This section builds on traditional \rl and goal-conditioned \rl algorithms to give a general definition of intrinsically motivated goal-conditioned \rl algorithms (\rlimgep).
+
+\rlimgep are intrinsically motivated versions of goal-conditioned \rl algorithms. They need to be equipped with mechanisms to represent and generate their own goals in order to solve the intrinsically motivated skills acquisition problem, see Figure~\ref{fig:goal_directed_rl}. Concretely, this means that, in addition to the goal-conditioned policy, they need to learn: 1)~to represent goals $g$ by compact embeddings $z_g$; 2)~to represent the support of the goal distribution, also called \textit{goal space} $\m{Z}_\m{G}=\{z_g\}_{g\in\m{G}}$; 3)~a goal distribution from which targeted goals are sampled $\m{D}(z_g)$; 4)~a goal-conditioned reward function $\m{R}_\m{G}$. In practice, only a few architectures tackle the four learning problems above. 
+
+In this survey, \textbf{we call \textit{autotelic} any architecture where the agent selects its own goals (learning problem 3)}. Simple autotelic agents assume pre-defined goal representations (1), the support of the goals distribution (2) and goal-conditioned reward functions (4). As autotelic architectures tackle more of the 4 learning problems, they become more and more advanced. As we will see in the following sections, many existing works in goal-conditioned \rl can be formalized as autotelic agents by including goal sampling mechanisms \textit{within the definition of the agent}. 
+
+With a developmental perspective, one can reinterpret existing work through the autotelic \rl framework. Let us take an example. The \textsc{agent$_{57}$} algorithm automatically selects a parameter to balance the intrinsic and extrinsic rewards of the agent at the beginning of each training episode \citep{badia2020agent57}. The authors do not mention the concept of \textit{goal} but instead present this mechanism as a form of reward shaping technique independent from the agent. With a developmental perspective, one can interpret the mixing parameter as a goal embedding. Replacing the sampling mechanism within the boundaries of the agent, \textsc{agent$_{57}$} becomes autotelic. It is intrinsically motivated to sample and target its own goals; \ie to define its own reward functions (here mixtures of intrinsic and extrinsic reward functions). 
+
+Algorithm~\ref{algo:IMGEP} details the pseudo-code of \rlimgep algorithms. Starting from randomly initialized modules and memory, \rlimgep agents enter a standard \rl interaction loop. They first observe the context (initial state), then sample a goal from their goal sampling policy. Then starts the proper interaction. Conditioned on their current goal embedding, they act in the world so as to reach their goal, \ie to maximize the cumulative rewards generated by the goal-conditioned reward function. After the interaction, the agent can update all its internal models. It learns to represent goals by updating its goal embedding function and goal-conditioned reward function, and improves its behavior towards them by updating its goal-conditioned policy. 
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=.65\textwidth]{background/inside_autotelic_agent.pdf}
+\caption{}
+\end{figure}
+\input{algorithms/survey.tex}
+
+
+\todo{adjust this} This surveys focuses on the mechanisms specific to \rlimgep agents, \ie mechanisms that handle the representation, generation and selection of goals. These mechanisms are mostly orthogonal to the question of how to reach the goals themselves, which often relies on existing goal-conditioned algorithms, but can also be powered by imitation learning, evolutionary algorithms or other control and planning methods. Section~\ref{sec:survey_goal_rep} first presents a typology of goal representations used in the literature, before Sections~\ref{sec:survey_learning_goal_rep}~and~\ref{sec:survey_generation} cover existing methods to learn to represent and prioritize goals respectively.
+
 
 
 
