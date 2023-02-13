@@ -1,6 +1,9 @@
 \begin{document}
 \chapter{CURVES}
 
+\begin{center}
+    \Large \textsc{Supplementary Material}
+\end{center}
 This Supplementary Material provides additional derivations, implementation details and results. More specifically: 
 \begin{itemize}[noitemsep]
 \item Section A provides supplementary implementation details in the form of:
@@ -24,25 +27,52 @@ This Supplementary Material provides additional derivations, implementation deta
 
 \section{Supplementary Methods}
 
+\subsection{Sensory-Motor System}
+\label{sec:suppl_sensorymotor}
+\textit{Dynamic Motion Primitives.} This subsection provides additional details about the implementation of the Dynamical Movement Primitives use to produce 2-dimensional trajectories. Our drawing system consists of a 2-dimensional system that mimics the motion of a pen in a plan. Each of the $x$ and $y$ positions of the pen is controlled by a DMP starting at the center of the image and parameterized by 10 weights. These weights are the parameters of the motion of a one-dimensional oscillator that generates a smooth trajectory of 10 points. The parameters of the two DMPs are given in table~\ref{tab:dmp_parameters}.
+
+\begin{table}[!h]
+    \centering
+    \small
+      \def\arraystretch{1.5}
+    \begin{tabular}{|c|c|}
+    \hline
+        \textbf{Parameter} & \textbf{Value}\\
+        \hline
+         Number of weights & 10  \\
+         Delta time & 0.1 \\
+         Number of points & 10 \\
+         Weights range & [-500, 500]\\
+         Position Init. & 0\\
+         \hline
+    \end{tabular}
+    \caption{DMP parameters for each of the two coordinate motions}
+    \label{tab:dmp_parameters}
+\end{table}
+
+\textit{Sketching Library. } Trajectories obtained with the DMPs are then mapped to a 52x52 grid which is converted to an image with the \texttt{raster} and \texttt{softor} functions of the sketching library~\cite{Mihai2021DifferentiableDA}. The drawing thickness parameter is fixed to $1\text{e}-2$.
+
+\newpage
 \subsection{Testing Set}
 
-
+Figure~\ref{fig:suppl_referents} displays examples of compositional referents made of 2 features.
 \begin{figure}[h!]
 \centering 
  \begin{tabular}{ccccc}
-     \includegraphics[width=0.12\textwidth]{"curves/R2_examples/0.pdf"} &
-     \includegraphics[width=0.12\textwidth]{"curves/R2_examples/1.pdf"} &
-     \includegraphics[width=0.12\textwidth]{"curves/R2_examples/2.pdf"} &
-     \includegraphics[width=0.12\textwidth]{"curves/R2_examples/3.pdf"} &
-     \includegraphics[width=0.12\textwidth]{"curves/R2_examples/4.pdf"} \\
-     \includegraphics[width=0.12\textwidth]{"curves/R2_examples/5.pdf"} &
-     \includegraphics[width=0.12\textwidth]{"curves/R2_examples/6.pdf"} &
-     \includegraphics[width=0.12\textwidth]{"curves/R2_examples/7.pdf"} &
-     \includegraphics[width=0.12\textwidth]{"curves/R2_examples/8.pdf"} &
-     \includegraphics[width=0.12\textwidth]{"curves/R2_examples/9.pdf"}
- \end{tabular}
+     \includegraphics[width=0.1\textwidth]{curves/R2_examples/0.pdf} &
+     \includegraphics[width=0.1\textwidth]{curves/R2_examples/1.pdf} &
+     \includegraphics[width=0.1\textwidth]{curves/R2_examples/2.pdf} &
+     \includegraphics[width=0.1\textwidth]{curves/R2_examples/3.pdf} &
+     \includegraphics[width=0.1\textwidth]{curves/R2_examples/4.pdf} \\
+     \includegraphics[width=0.1\textwidth]{curves/R2_examples/5.pdf} &
+     \includegraphics[width=0.1\textwidth]{curves/R2_examples/6.pdf} &
+     \includegraphics[width=0.1\textwidth]{curves/R2_examples/7.pdf} &
+     \includegraphics[width=0.1\textwidth]{curves/R2_examples/8.pdf} &
+     \includegraphics[width=0.1\textwidth]{curves/R2_examples/9.pdf}	
+ \end{tabular}1
 
 \caption{\textbf{Perspective instances of the testing set} $\mathcal{R}_5^2$.}
+\label{fig:suppl_referents}
 \end{figure}
 
 
@@ -67,12 +97,12 @@ and compute their Hausdorff distances to $u(r_i)$ and $u(r_j)$.
 As displayed in Figure~\ref{fig:topo_distances_intuitive}, if utterances $u(r_{ij})$ are compositional we expect them to be at the same time close to $u(r_{i})$ and close to $u(r_{j})$ and hence to land in the bottom left corner of the distance graph. Moreover, they should be closer to the origin than $u(r_{xj})$ and $u(r_{iy})$. To quantify to what extent it is the case we compute the barycenter of each group $h_i, h_j, h_{ij}$ and $h_{xy}$ and compute "how closer to the origin" is the compositional barycenter $h_{ij}$ compared to its closest barycenter using equation~\ref{eq:topo_score}.
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=0.7\textwidth]{curves/topographic_map.pdf}
+    \includegraphics[width=0.5\textwidth]{curves/topographic_map.pdf}
     \caption{Idealized mapping of utterances denoting compositional referents in the plan representing distances to utterances naming isolated features $i$ and $j$.}
     \label{fig:topo_distances_intuitive}
 \end{figure}
 
-
+\newpage
 \subsection{Training procedure and hyperparameters}
 \label{sup:training_proc}
 Agents have two separate encoders based on the same model architecture described in Table.\ref{table:hyperparameters}. Each agent performs association updates with a single step of gradient descent, using its own Adam optimizer with a learning rate of $1e^{-4}$. To allow faster convergence, agents perform an association update between an abstract referent $r^\star_A$ and an utterance $u$ by using a batch of 64 perspectives $\{\Phi(r^\star_A)\}_{i \in [1,64]}$. From a cognitive science perspective, this is comparable to an agent "walking around" an object to better understand how different perceptions relate to the same object. From a computer science perspective, this is similar to the self-supervised framework of SimCLR~\citep{Chen2020ASF}, where agents learn representation by contrastively aligning the embeddings of an input with these of the same transformed input.
@@ -83,7 +113,7 @@ Agents have two separate encoders based on the same model architecture described
 \def\arraystretch{1.5}
 \begin{tabular}{ |c|c|} 
  \hline
- Layer & Activation\\
+ \textbf{Layer} & \textbf{Activation}\\
  \hline
  Conv2D(filters=8, stride=2, padding=1) & ReLU\\ 
  \hline
@@ -99,17 +129,72 @@ Agents have two separate encoders based on the same model architecture described
 
 \caption{\textbf{Model architecture used for both the referent and utterance Encoders.} (when referents are one-hot vectors, the 3 Conv2D layers are replaced by a Linear layer with ReLu activation)}
 
-\label{table:hyperparameters}
+\label{table:curves_hyperparams}
 \end{table}
 
 While the drawing pipeline is fully differentiable, it is highly sensitive to local minima. Thus, we solve equation~\ref{eq:descri_gen} in the descriptive case or equation~\ref{eq:discri_gen} in the discriminative scenario by simultaneously performing gradient descent on a batch of $64$ randomly initialized command vectors over 100 iterations, using a newly initialized Adam optimizer each time with a learning rate of $1e^{-2}$.
 
-\newpage
 \subsection{Pseudo-code}
+\textbf{ }
+\begin{algorithm}
+\caption{Speaker's Utterances}\label{alg:sp}
+\begin{algorithmic}
 
+\REQUIRE perceived referents $\tilde{R}_S$, speaker's referent encoder $f_S$, speaker's utterance encoder $g_S$, sensory-motor system $M$
 
+\STATE $Z_r \gets f_S(\tilde{R}_S) $
+\STATE $c \sim \textrm{Uniform}()$
+\FOR{$i \textrm{ in range} (N_{\textrm{production}})$}
+    \STATE $U_S \gets M(c)$
+    \STATE $Z_u \gets g_S(U)$
+    \STATE $S \gets \textrm{sim}_{\textrm{cos}}(Z_r,Z_u)$
+    \STATE $\mathcal{L} \gets \textrm{mean(diag(S))} * (-1)$
+    \STATE GD step on $c$ to minimize $\mathcal{L}$
+\ENDFOR
+\STATE \textrm{\textbf{Return} }$M(c)$
+\end{algorithmic}
+\end{algorithm}
 
-\input{algorithms/curves}
+\begin{algorithm}
+\caption{Listener's Selections \& Binary Outcomes}\label{alg:ls}
+\begin{algorithmic}
+
+\REQUIRE perceived referents $\tilde{R}_L$, produced utterances $U_S$, listener's referent encoder $f_L$, listener's utterance encoder $g_L$
+
+\STATE $Z_r \gets f_L(\tilde{R}_L) $
+\STATE $Z_u \gets g_L(U_S) $
+\STATE $S\gets \textrm{sim}_{\textrm{cos}}(Z_r,Z_u)$
+\STATE $t \gets \textrm{argmax}(S, \textrm{axis=}1)$
+\STATE $o \gets \textbf{0}$
+\FOR{$i \textrm{ in range} (N_{\textrm{referents}})$}
+    \STATE $o_i \gets \mathds{1}_{[t_i = i]}$
+\ENDFOR
+\STATE \textrm{\textbf{Return} }$o$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Agents's Association Losses}\label{alg:al}
+\begin{algorithmic}
+
+\REQUIRE perceived referents $\tilde{R}_A$, produced utterances $U_A$, outcomes $o$, agent's referent encoder $f_A$, agent's utterance encoder $g_A$
+
+\STATE $Z_r \gets f_A(\tilde{R}_A) $
+\STATE $Z_u \gets g_A(U_A) $
+\STATE $S\gets \textrm{sim}_{\textrm{cos}}(Z_r,Z_u)$
+\STATE $\mathcal{L}_0 \gets CE(S, \textrm{reduction=False})$
+\STATE $\mathcal{L}_1 \gets CE(S^{\top},\textrm{reduction=False})$
+\STATE $\mathcal{L} \gets (\mathcal{L}_0 + \mathcal{L}_1)/2$
+\IF{$A = \textrm{"S"}$} 
+    \STATE $\mathcal{L} \gets (\mathcal{L} \cdot o) / N_{\textrm{referents}}$
+\ELSE
+    \STATE $\mathcal{L} \gets (\mathcal{L} \cdot \textbf{1}) / N_{\textrm{referents}}$
+\ENDIF 
+
+\STATE $\textrm{\textbf{Return} } \mathcal{L}$
+\end{algorithmic}
+\end{algorithm}
+
 \newpage
 \section{Supplementary Results}
 
@@ -159,17 +244,17 @@ We define the \textbf{Auto} performance metric as the communicative success rate
 \begin{figure}[h!]
 
 \centering
-\includegraphics[trim={5cm 1cm 1cm 2cm},clip,width=0.95\textwidth]{curves/training/other_lexicon/Lexicon_SHARED.pdf}
-\caption{\textbf{Instance of an emerging lexicon.} (Visual-shared).}
+\includegraphics[trim={5cm 1cm 1cm 2cm},clip,width=0.85\textwidth]{curves/training/other_lexicon/Lexicon_SHARED.pdf}
+\caption{\textbf{Instance of an emerging lexicon.} (Utterances are naming visual-shared referents).}
 \end{figure}
 
 
 \begin{figure}[h!]
 
 \centering
-    \includegraphics[trim={5cm 1cm 1cm 2cm},clip,width=0.95\textwidth]{curves/training/other_lexicon/Lexicon_ONEHOT.pdf}
+    \includegraphics[trim={5cm 1cm 1cm 2cm},clip,width=0.85\textwidth]{curves/training/other_lexicon/Lexicon_ONEHOT.pdf}
     
-\caption{\textbf{Instance of an emerging lexicon.} (One-hot).}
+\caption{\textbf{Instance of an emerging lexicon.} (Utterances are naming one-hot referents).}
 \end{figure}
 
 \newpage
@@ -313,16 +398,16 @@ The following figures illustrate the P-coherence and A-coherence of an emerging 
 
  \begin{tabular}{cc}
 
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R01.pdf} & 
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R02.pdf} \\
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R03.pdf}  &
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R04.pdf}  \\
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R12.pdf} &  
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R13.pdf}    \\
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R14.pdf} & 
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R23.pdf} \\
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R24.pdf}  &
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R34.pdf}
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R01.pdf} & 
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R02.pdf} \\
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R03.pdf}  &
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R04.pdf}  \\
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R12.pdf} &  
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R13.pdf}    \\
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R14.pdf} & 
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R23.pdf} \\
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R24.pdf}  &
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R34.pdf}
     
  \end{tabular}
 
@@ -336,19 +421,17 @@ The following figures illustrate the P-coherence and A-coherence of an emerging 
 \begin{figure}[h!]
  \begin{tabular}{cc}
 
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R01.pdf} & 
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R02.pdf} \\
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R03.pdf}  &
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R04.pdf}  \\
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R12.pdf} &  
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R13.pdf}    \\
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R14.pdf} & 
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R23.pdf} \\
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R24.pdf}  &
-     \includegraphics[width=0.5\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R34.pdf}
-    
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R01.pdf} & 
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R02.pdf} \\
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R03.pdf}  &
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R04.pdf}  \\
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R12.pdf} &  
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R13.pdf}    \\
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R14.pdf} & 
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R23.pdf} \\
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R24.pdf}  &
+     \includegraphics[width=0.45\textwidth]{curves/tsnes/discriminativ/9-TSNE-R2-R34.pdf}
  \end{tabular}
 \caption{\textbf{T-sne of referent and discriminative utterance embeddings.}  Embeddings are computed for 100 perspectives of referents from $R_2$. Training conditions are unshared visual referents.}
 \end{figure}
-
 \end{document}

@@ -1,0 +1,295 @@
+\chapter{Emergence of Graphical language}
+\label{chap:curves}
+\minitoc
+
+In this chapter, we investigate whether artificial agents can develop a shared language in an ecological setting where communication relies on a \emph{sensory-motor channel}. To this end, we extend the setup of neural language games described in \sect{sec:self-orga-lan-context} and introduce the Graphical Referential Game (\greg). In the \greg, a speaker must produce a graphical utterance to name a visual referent object consisting of combinations of MNIST digits while a listener has to select the corresponding object among distractor referents, given the produced message. The utterances are drawing images produced using dynamical motor primitives combined with a sketching library. To tackle \greg we present \curves: a multimodal contrastive deep learning mechanism that represents the energy (alignment) between named referents and utterances generated through gradient ascent on the learned energy landscape. We demonstrate that \curves not only succeed at solving the \greg but also enable agents to self-organize a language that generalizes to feature compositions never seen during training. In addition to evaluating the communication performance of our approach, we also explore the structure of the emerging language. Specifically, we show that the resulting language forms a coherent lexicon that is shared between agents and that basic compositional rules on the graphical productions could not explain the compositional generalization
+
+\section{Motivations}
+
+\label{sec:intro_curves}
+
+As we described in \sect{sec:self-orga-lan-context}, most approaches to language games have considered only idealized symbolic communication channels based on discrete tokens~\citep{lazaridou2017multiagent,mordatch2018emergence,chaabouni2021communicating} or fixed-size sequences of word tokens~\citep{havrylov2017emergence,portelance2021emergence}. This predefined means of communication is motivated by language's discrete and compositional nature. But how can this specific structure emerge during vocalization or drawing, for instance? Although fundamental in the investigation of the origin of language~\citep{Dessalles2000,cheney2005constraints,oller2019language}, this question seems to be neglected by recent approaches to Language Games~\citep{moulinfrier2020multi}. We, therefore, propose to study how communication could emerge between agents producing and perceiving continuous signals with a constrained \textit{sensory-motor system}.
+
+\begin{figure}[h!]
+\centering 
+\includegraphics[width=1\textwidth]{curves/graphical_language_game.pdf}
+\caption{\textbf{The Graphical Referential Game:} During an instantiation of the game, the speaker's goal is to produce a motor command $c$ that will yield an utterance $u$ in order to denote a referent $r_S$ sampled from a context $\tilde{R}_S$. Following this step, the listener needs to interpret the utterance in order to guess the referent it denotes among a context $\tilde{R}_L$. The game is a success if the listener and the speaker agree on the referent ($r_L\equiv r_S$).}% At the end of each game, agents swap their roles.}
+\label{fig:1}
+\end{figure}
+
+Such continuous constrained systems have been used in the cognitive science literature as models of sign production to study the self-organization of speech in artificial systems~\citep{deBoer2000selforganization,oudeyer2006selforganization,MOULINFRIER20155}. 
+%They could also be applied to produce gestures as it is deemed a foundational modality in the "gesture-first" hypothesis of language origins\citep{kendon2016reflections}. 
+In this chapter, we focus on a drawing sensory-motor system producing graphical signs. The sensory-motor system is made of Dynamical Motor Primitives (DMPs)~\citep{schaal2006dynamic} combined with a sketching system~\citep{Mihai2021DifferentiableDA} enabling the conversion of motor commands into images.  Drawing systems have the advantage of producing 2D trajectories interpretable by humans while preserving the non-linear properties of speech models, which were shown to ease the discretization of the produced signals~\citep{STEVENS19893,MOULINFRIER20155}. We introduce the \textit{Graphical Referential Game}: a variation of the original referential game, where a \textit{Speaker} agent (top of Figure~\ref{fig:1}) has to produce a graphical \textit{utterance} given a single target \textit{referent} while a \textit{Listener} agent (bottom of Figure~\ref{fig:1}) has to select an element among a context made of several referents, given the produced utterance (agents alternate their roles).  In this setting, we first investigate whether a population of agents can converge on an efficient communication protocol to solve the graphical language game. Then, we evaluate the coherence and compositional properties of the emergent language, since it is one of the main characteristics of human languages.
+%The graphical utterances are generated by a sketching system\citep{Mihai2021DifferentiableDA} which offers fast utterance generation in the form of 2D trajectories interpretable by humans. 
+
+Early language game implementations~\citep{steels1995selforganizing,steels2001language} achieve communication convergence by using contrastive methods to update association tables between object referents and utterances. While recent works use deep learning methods to target high-dimensional signals they do not explore contrastive approaches. Instead, they model interactions as a multi-agent reinforcement learning problem where utterances are actions, and agents are optimized with policy gradients, using the outcomes of the games as the reward signal~\citep{lazaridou2017multiagent}. In the meantime, recent models leveraging contrastive multimodal mechanisms such as CLIP~\citep{radford2021learning} have achieved impressive results in modeling associations between images and texts. Combined with efficient generative methods~\citep{ramesh2021zero-shot}, they can compose textual elements that are reflected in image form as the composition of their associated visual concepts. Inspired by these techniques, we propose \curves: Contrastive Utterance-Referent associatiVE Scoring, an algorithmic solution to the graphical referential game. \curves relies on two mechanisms: 1) The contrastive learning of an energy landscape representing the alignment between utterances and referents and 2) the generation of utterances that maximize the energy for a given target referent. We evaluate \curves in two instantiations of the graphical referential game: one with symbolic referents encoded by one-hot vectors and another with visual referents derived from the multiple MNIST digits~\citep{LeCun1998GradientbasedLA}. We show that \curves converges to a shared graphical language that enables a population of agents not only to name complex visual referents but also to name new referent compositions that were never encountered during training.
+
+\paragraph{Scope}
+
+ The idea of using a sensory-motor system to study the emergence of forms of combinatoriality in language dates back to methods investigating the origins of digital vocalization systems~\citep{deBoer2000selforganization,oudeyer2005selforganization,zuidema2009evolution}. Such studies were conducted in the context of imitation games at the level of phonemes to observe the formation of speech utterances (syllables, words) that were systematically composed from lower-level meaningless elements (phonemes). This corresponded to the first level of compositionality within the notion of duality of patterning~\citep{hockett1960origin}. Yet, these works did not consider referential games and did not study agents' ability to compose meaningful words to denote referents, i.e. they did not address the second level of the duality of patterning. 
+
+One of the goals of emergent communication research is to develop machines that can interact with humans. As a result, a variety of referential game approaches ensure that the emergent language is as close to natural language. This can be achieved by adding a supervised image captioning objective to encourage agents to use natural language in order to solve their communicative tasks~\citep{havrylov2017emergence,lazaridou2017multiagent}. Other methods use constraints such as memory restrictions~\citep{kottur2017natural} to act as an information bottleneck to increase interpretability and compositionality. While we purposefully chose a graphical sensory-motor system to ease the visualization of the emerging language, we do not inject prior knowledge or pressures to facilitate the emergence of an iconic language. Our produced utterances are completely arbitrary. This fundamentally differentiates our work from ~\citet{mihai2021learning} that trains agents to communicate via sketches replicating the visual referents they name. Note also that their drawing setup does not include dynamical motor primitives and utterances are directly optimized in image space. They, moreover, allow gradients to back-propagate from listener to speaker while we use a decentralized approach. Finally, they do not consider contrastive learning. To our knowledge, \curves is the first contrastive deep-learning algorithm successfully applied to a referential game.
+
+There is a large body of work exploring the factors that promote
+compositionally in emerging languages~\citep{kottur2017natural,li2019ease,rodriguez-luna-etal-2020-internal,Ren2020Compositional,chaabouni2020compositionality,gupta-etal-2020-compositionality}. In this context, a crucial question is how to actually measure it in the first place~\citep{mu2021emergent}. To this end, \citep{choi2018compositional} proposes to measure communicative performances on unseen compositions of known objects as a way to evaluate compositionality. However, it has been shown that a good performance in this test may be achieved without leveraging any actual compositionality in language~\citep{andreas2019measuring, chaabouni2020compositionality}. Thus, others instead compute topographic similarities \citep{brighton2006understanding}, measuring the correlation between distances in the utterance space (distance between signs) and distances in the referents space (such as the cosine similarity between the embeddings of objects)~\citep{lazaridou2018emergence}. In this contribution we propose to do both and study 1) the generalization to unseen combinations of abstract features and 2) topographic measures based on the Hausdorff distances between utterances denoting composition and utterances denoting isolated features. 
+
+\paragraph{Specific Contributions} 
+
+The specific contributions introduced in this chapter are:
+\begin{itemize}[noitemsep,topsep=0pt]
+    \item The Graphical Referential Game (\greg): a variation of the referential language game to study the formation of signs from a graphical sensory-motor system.
+    \item \curves: an algorithmic solution to \greg, consisting of a contrastive multimodal encoder coupled with a generative model enabling the emergence of a graphical language.
+    \item A study of \curves's generalization performances on compositions of features never seen during training in a simplified control setting and a more perceptually challenging one.
+    \item A complementary analysis of the structure of the emerging graphical language measuring lexicon coherence and compositionality scores derived from the Haussdorf distance.
+\end{itemize}
+
+
+\section{The Graphical Referential Games}
+
+\label{sec:prob_def_curves}
+
+We consider a group of two agents playing a fixed number of referential games, each time alternating their roles (speaker or listener). During a game, we first present a context $R$ of $n$ objects, called referents to a speaker $S$ and a listener $L$. At the beginning of each game, the target $r^\star \in R$ is assigned to the speaker. Given this target referent $r^\star$, $S$ produces an utterance ($u$) to designate it. Based on the produced utterance $u$, $L$ selects a referent ($\hat{r}$) in $R$. The game outcome $o$ is a success if the selected referent ($\hat{r}$) matches the target $r^\star$. 
+
+\paragraph{The setup}
+
+\noindent\textbf{Referents. } Referents are compositions of orthogonal vector features (one-hot vectors). Given a set of $m$ orthogonal features $F_m$, we define the set of all possible referents as ${\mathcal{R}_m = \{ \textstyle\sum_{f \in S} f | S \subseteq F_m \}}$. The subset of referents made of exactly $k$ features are thus: ${\mathcal{R}^k_m=\{ \textstyle\sum_{f \in S} f | S \subseteq F_m, |S| = k\}}$. In our experiments, we fix $m=5$.
+
+From these orthogonal referents, we propose to generate objects made of digit images sampled from the MNIST dataset~\citep{LeCun1998GradientbasedLA}. More precisely, we define the stochastic mapping $\Phi: \mathcal{R}_m \rightarrow \tilde{\mathcal{R}}_m$ that maps each feature $f \in F_m$ to a digit class in the MNIST dataset. For each feature in a referent, we sample a random instance from the corresponding class and randomly place it on a $4\times4$ grid such that no number overlap. Note that the listener and speaker can perceive different realizations of $\Phi$, in this case, we say that they see different \textit{perspectives} of the referents. More precisely, the speaker perceives the context $R$ as $\tilde{R}_S$ and its target $r^\star$ as $r^\star_S$. Similarly, the listener perceives the context $R$ as $\tilde{R}_L$ and selects a referent $\hat{r}$ among it.
+
+We use this formalism to instantiate three settings of the Graphical Referential Game (\greg):
+\begin{itemize}[noitemsep,topsep=0pt]
+    \item \textit{one-hot}: where referents are one-hot vectors $r \in \mathcal{R}_m$.
+    \item \textit{visual-shared}: where referents are MNIST digits $r \in \tilde{\mathcal{R}}_m$ and agents share the same perspective: $\tilde{R}_S = \tilde{R}_L$.
+    \item \textit{visual-unshared} where referents are MNIST digits $r \in \tilde{\mathcal{R}}_m$ and agents have different perspectives of referents in their contexts $\tilde{R}_S \neq \tilde{R}_L$.
+\end{itemize}
+
+
+\noindent\textbf{Sensory-motor drawing system.} 
+Utterances are produced by a sensory-motor system ${M: \R^m \rightarrow \mathcal{U} \subset \R^{D\times D}}$ mimicking an arm drawing sketches displayed in Figure~\ref{fig:prob_def}(a). The arm motion is derived from Dynamical Motor Primitives (DMPs)~\citep{schaal2006dynamic}. The DMP is parametrized by a command vector $c\in\R^{20}$. Each of the $x$ and $y$ positions of the pen is controlled by a DMP starting at the center of the image and parameterized by 10 weights. These weights are the parameters of the motion of a one-dimensional oscillator that generates a smooth drawing trajectory $T$ made of 10 coordinates $T=\{v_i\}_{i=0,...,9}$. The parameters of the two DMPs are given in Suppl. table~\ref{tab:dmp_parameters}. The trajectory is then fed to a Differentiable Sketching model~\citep{Mihai2021DifferentiableDA} generating an $D\times D$ image (in our implementation, $D=52$). %\newpage
+
+\begin{figure}[h!]
+\centering 
+\vspace{-0.3cm}
+\begin{tabular}{cc}
+\includegraphics[width=0.54\textwidth]{curves/sensory-motor-v2.pdf} &  \includegraphics[width=0.4\textwidth]{curves/referents-v2.pdf}\\
+(a) & (b)
+\end{tabular}
+\vspace{-0.2cm}
+\caption{(a) \textbf{Sketching sensory-motor system}: The sensory-motor system imitates a robotic arm drawing a sketch on a 2D plan. DMPs first convert a continuous command $c$ into a sequence of coordinates $T$. This trajectory is then rendered as a $52\times52$ graphical utterance thanks to a differentiable sketching library. (b) \textbf{Referent transformation:} An example of a one-hot context $R$ being transformed into two contexts $\tilde{R}_S$ and $\tilde{R}_L$ by the stochastic transformation $\Phi$. The two contexts are different perspectives of the same objects.}
+\vspace{-0.1cm}
+\label{fig:prob_def}
+\end{figure}
+
+\paragraph{Objectives} 
+
+In this study, we aim to answer the three following questions:
+\begin{enumerate}[noitemsep,topsep=0pt]
+\item What are agents' communicative performances in the \greg? Are agents able to solve the game? Are they able to generalize to compositional referents?
+\item Are the emergent signs coherent? Do agents produce the same utterances to denote the same referents?
+\item Are the emergent signs compositional? Are there compositional rules in the production of signs naming compositional referents? \footnote{Note that the ability to perform compositional generalization (question 1) and the presence of compositional structure in utterances (question 3) are two separate investigations.}
+\end{enumerate}
+
+\textit{Are agents able to solve the \greg? } To answer the first question,  we will monitor the communicative
+performance of agents on both training and testing referents.  The training referents consist of a single feature: $\mathcal{R}_{\text{train}} = \mathcal{R}_5^1$ while the testing referents consists of two features: $\mathcal{R}_{\text{test}}=\mathcal{R}_5^2$. For visual examples of compositional referents, see~ \ap\ref{sup:ref_comp}.
+
+\textit{Are the emergent signs coherent? } To measure coherence we propose to use a similarity measure based on the Hausdorff distance. Haussdorf distance is known to capture geometric features of trajectories, in particular, their shape~\citep{Besse2015review}. The Hausdorff distance $d_H$ is the maximum distance from any coordinate in a trajectory to the closest coordinate in the other:
+$d_H(T_1,T_2) = \max\{\sup_{v \in T_1} d(v,T_2), \sup_{v' \in T_2}d(T_1,v') \}$.
+In particular, we compute the following metrics.
+\begin{itemize}[noitemsep,topsep=0pt]
+    \item Agent Coherence (A-coherence): For a given referent $r$ with the same perspective for all agents, measure the mean pairwise similarity between each agent's utterance.
+    \item Perspective Coherence (P-coherence): For a given agent and a given referent $r$, measure the mean pairwise similarity between utterances produced from different perspectives 
+    \item Referent Coherence (R-coherence): For a given agent, measure the mean pairwise similarity between utterances produced for different referents.
+\end{itemize}
+
+\textit{Are the emergent signs compositional? } To measure the compositionally of the utterances, we introduce a topographic score based on the Hausdorff distance $\rho$. $\rho$ quantifies how an utterance denoting a compositional referent made of feature $i$ and $j$ ($u(r_{ij})$) is actually closer to the utterances denoting isolated features $u(r_i)$ or $u(r_j)$ than the utterance naming other compositional referents ($u(r_{xy})$, $x\neq i, y\neq j$). For a detailed derivation of metric $\rho$, see \ap\ref{sup:topo_comp}.t
+
+\section{Contrastive Utterance-Referent associatiVE Scoring}
+
+
+\curves is an energy-based approach that relies on two mechanisms:
+\begin{enumerate}[noitemsep,topsep=0pt]
+\item  The contrastive learning of an energy landscape $E(r,u)$, defined as the cosine similarity between utterance and referent embeddings.
+\item The generation of an utterance that maximizes the energy for a given target referent $r^\star_S$.
+\end{enumerate}
+% \begin{enumerate}[noitemsep,topsep=0pt]
+% \item  \textbf{a contrastive model} $C: \mathcal{R}_m \times \mathcal{U} \rightarrow \R$ that learns an energy landscape  representing the alignment between utterances and referents.
+% \item \textbf{a generative model} $G: \mathcal{R}_m \rightarrow \mathcal{U}$ that produces an utterance that maximizes the energy for a given target referent $r_S$. 
+% \end{enumerate}
+
+\paragraph{Agents modules and interactions. } Each agent $A\in\{A_1,A_2\}$ perceives utterances and referents using two distinct CNN encoders $f_A$ (for referents) and $g_A$ (for utterances)\footnote{when referents are one-hot vectors $f_A$ is a fully-connected network. Parameters for both encoders are given in Suppl. table~\ref{table:curves_hyperparams}.}. $f_A$ and $g_A$ map referents and utterances in a shared $d$-dimensional latent space: $f_A(\cdot,\theta_{fA}): \mathcal{R}_m \rightarrow \mathbb{R}^d$ and $g_A(\cdot,\theta_{gA}): \mathcal{U} \rightarrow  \R^d$ such that $z_{rA}=f_A(r)$ and $z_{uA}=g_A(u)$, as displayed in Figure~\ref{fig:curves_encoders}(a). The agent then computes the energy landscape as: $E_A(r,u) = \cos(f_A(r),g_A(u))$.
+
+A given referential game unfolds as follows. Agents have randomly attributed roles, for instance, $A_1$ is the speaker $A_1\leftarrow S$ and $A_2$ is the listener $A_2 \leftarrow L$. The speaker is given a context $\tilde{R}_S$ and a target referent perceived as $r^\star_S$ to produce an utterance $\hat{u}$ intending to approach the utterance $u^\star$ that maximizes $E_S(r^\star_S,u)$. The listener observes $\hat{u}$ and selects referent $\hat{r}$ in context $\tilde{R}_L$ that maximizes $E_L=(r,\hat{u})$:
+\begin{equation}
+\left\{
+\begin{split}
+    \hat{u} &\approx u^\star= \underset{u \in \mathcal{U}}{\textrm{argmax }} E_S(r^\star_S,u) \\
+    \hat{r} &= \underset{r \in \tilde{R}_L}{\textrm{argmax }} E_L(r,\hat{u}) \end{split}
+\right.
+\label{eq:ut_gen_ref_sel}
+\end{equation}
+The outcome of the game is then $o = \mathbbm{1}_{[\hat{r}=r^\star]} - b$ where $b$ is a baseline parameter representing the mean success across previous games. 
+
+
+\begin{figure}[h!]
+\centering 
+\includegraphics[width=0.95\textwidth]{curves/curves_similarity.pdf}
+\caption{(a) \textbf{Agents's dual encoder architecture.} Referents and utterances are mapped to a share latent space. The energy between a referent $r$ and an utterance $u$ is computed as the cosine similarity between their respective embeddings. (b) \textbf{Cosine similarity matrix update from collected samples.} Agents compute the energy for all referents and utterances they collected to form the squared matrix $\Sigma_A$. During contrastive updates agents maximize blue circles and minimize white ones.}
+\label{fig:curves_encoders}
+\end{figure}
+
+\paragraph{Contrastive representation learning in referential games. } 
+For a given context $R$, agents are randomly assigned their roles and play $n=|R|$ games. During these $n$ games, roles are fixed and the speaker agent successively selects each referent of the context $\tilde{R}_S$ as the target $r^\star_S$. During interactions, the speaker collects data $\{(r_S^i, u^i, o^i)\}_{i=1,...,n}$ while the listeners observes $\{(u^i, r_L^i)\}_{i=1,...,n}$. From the collected data each agent can compute the squared cosine similarity matrices $\Sigma_A$ whose elements are $(\Sigma_A)_{i,j} = E_A(r_A^i, u^j)$ as shown in Figure~\ref{fig:curves_encoders}(b). Contrastive updates are then performed using the objective $J_A$ that applies \textit{Cross Entropy} ($CE$) on the $i$-th row and $i$-th column of $\Sigma_A$.
+\begin{equation}
+\small
+        J_A(\Sigma_A,i) = \frac{CE((\Sigma_A)_{i,1:n},e_i) + CE((\Sigma_A)_{1:n,i},e_i)}{2}\\    
+\end{equation}
+$e_i$ being a one-hot vector of size $n$ with value 1 at index $i$. Depending on the role of the agent, $J_A$ is instantiated either as $J_S$ (speaker) or $J_L$ (listener). Thus, the speaker updates its representation using the outcomes $o_i$ of the games (reinforcing the successful associations while decreasing the unsuccessful ones):
+\begin{equation}
+        \underset{\theta_{f_S}, \theta_{g_S}}{\textrm{minimize } } \overset{n}{\underset{i = 1}{\sum}} o_i  J_S(\Sigma_S,i)
+\end{equation}
+On the other hand, the listener needs to make sure that the selection matches the speaker's referent
+\citep{steels2015talkingheads} and hence always increases associations (no matter the games' outcomes):
+\begin{equation}
+    \underset{\theta_{f_L}, \theta_{g_L}}{\textrm{minimize } } \overset{n}{\underset{i = 1}{\sum}} J_L(\Sigma_L,i)
+    \label{eq:listener_loss}
+\end{equation}
+Note that in Eq.~\ref{eq:listener_loss}, $r_L^i$ is the target referent perceived by the listener. This means that, at the end of the game, the speaker indicates the referent (as perceived by the listener) that they named. As reviewed in \sect{sec:self-orga-traj-context}, this retroactive pointing mechanism was employed in both early language game implementations~\citep{steels1995self} and more recent ones~\citep{lazaridou2017multiagent,chaabouni2020compositionality,portelance2021emergence}.
+
+
+\paragraph{Speaker's utterance optimization. } We distinguish two utterance generation strategies:
+\begin{itemize}[noitemsep]
+    \item The descriptive generation: in which the speaker agent only considers the target referent $r_S^\star$ to produce an utterance that maximizes the cosine similarity between the embeddings of $r_S^\star$ and an utterance produced by our sensory system $u = M(c)$ from motor command $c$. Since $M$ is fully differentiable, we inject the sensory-motor constraint in equation~\ref{eq:ut_gen_ref_sel} and seek for the optimal motor command $c^\star$ using gradient ascent:
+\begin{equation}
+c^\star = \underset{c \in \mathbb{R}^p}{\textrm{argmax }} E(r^\star_S, M(c))
+\label{eq:descri_gen}
+\end{equation}
+    \item The discriminative generation: in which the speaker also perceives the context $\tilde{R}_S$ during production. This is achieved by finding the motor command that minimizes the cross entropy given a target referent $r^\star_S$ and its context $\tilde{R}_S$:
+\begin{equation}
+    c^\star = \underset{c\in \R ^p}{\textrm{argmin }} CE( \sigma_S, e_{r^\star_S})
+    \label{eq:discri_gen}
+\end{equation}
+%
+where $\sigma_S$ is the vector with coordinates $\sigma_{Si} = [E(r^i, M(c))]_{r^i\in \tilde{R}_S}$ and $e_{r^\star_S}$ is the one-hot vector of size $|\tilde{R}_S|$ with value 1 at the position of $r^\star_S$ in $\tilde{R}_S$. This discriminative generation process is only used at test time when investigating \curves's generalization capabilities. 
+\end{itemize}
+
+\section{Experiments and Results}
+
+\subsection{CURVES Communicative Performance}
+\label{sec:results_perf}
+
+
+ In all three settings of the Graphical Referential Game (one-hot, visual-shared, and visual-unshared), agents succeed and achieve a perfect training success rate of 1.
+
+
+
+\paragraph{Generalization to compositional referents. } Table~\ref{tab:generalization_perf} exposes the generalization performances of agents evaluated on referents $r \in \mathcal{R}_5^2$. During an evaluation, the context is exhaustive and contains all the combinations of 2 features: $|R|=10$. We compare the success rates to a \textit{random} baseline where the listener always selects the referent $\hat{r}_L$ randomly no matter the utterance ($\textsc{sr}_{\text{random}}=0.1$). We also introduce a \textit{1-feature} baseline where the speaker produces an utterance $u$ that only denotes one of the two features contained in $r_S^\star$ and the listener randomly selects one of the four combinations containing the communicated feature ($\textsc{sr}_{\text{1-feat}}=0.25$). 
+
+\begin{table}[!h]
+\small
+    \centering
+    \small
+    \begin{tabular}{|c|c|c|}
+        \hline
+        \textbf{Referents} & \textbf{Descriptive} \textsc{SR} & \textbf{Discriminative} \textsc{SR}  \\
+        \hline
+         One-hot & $0.99\pm0.01$ & $0.99\pm0.01$ \\
+         Visual-shared & $0.57\pm0.04$ & $0.56\pm0.03$ \\
+         Visual-unshared & $0.39\pm0.02$ & $0.40\pm0.02$ \\
+         \hline
+    \end{tabular}
+    \caption{\textbf{Generalization performances. } Success rates evaluated on exhaustive context $|R|=10$ with referents $r \in \mathcal{R}_5^2$ for both generative (Eq.~\ref{eq:descri_gen}) and discriminative (Eq.\ref{eq:discri_gen}) utterance generation.}
+    \label{tab:generalization_perf}
+\end{table}
+
+The success rates for all referent types are significantly higher than the baseline values suggesting that agents are indeed able to communicate about compositional referents. Generalization performances are nearly perfect with one-hot referents but they decrease in visual settings. This performance gap can be explained by the extra difficulty of adding inter-perspective variability to the multi-agent interaction dynamic during the contrastive learning of referent representations. The better success rates obtained in auto-learning (where a single agent plays both the speaker and the listener roles) provided in \ap\ref{sup:auto_social_perf} seem to corroborate this hypothesis. Surprisingly, we observe that success rates for descriptive (Eq.~\ref{eq:descri_gen}) and discriminative (Eq.\ref{eq:discri_gen}) generation are very similar. This suggests that optimizing utterances so as to minimize their energy between non-targeted compositional referents ($r \in R, r \neq r^\star$) does not improve generalization performances.
+
+\subsection{Analysis of the Structure of the Emergent Language}
+
+\paragraph{Coherence}  Figure~\ref{fig:conv_coher} displays the evolution of the inter-agent (A), inter-perspective (P), and inter-referent (R) coherence during training. A group starts to converge and succeed at the game when inter-agent and inter-perspective coherence distances decrease. This correlation is proof of emergent communication as it indicates that agents start agreeing on signs to denote referents. The constant (for one-hot referent) and increasing (for visual referents) values of the R-coherence suggest that agents use distinct signs to name referents.
+
+\begin{figure*}[!h]
+    \centering
+    \begin{tabular}{@{}c@{}c@{}c@{}}
+    \includegraphics[width=0.32\textwidth]{curves/training/one-hot.png} &  \includegraphics[width=0.32\textwidth]{curves/training/base-shared.png} &
+    \includegraphics[width=0.32\textwidth]{curves/training/base.png}\\
+    (a) & (b) & (c)
+    \end{tabular}
+    \caption{\textbf{Training success rate (SR) and Coherence distances} (a) one-hot referents (b) visual-shared referents (c) visual-unshared referents.}
+    \label{fig:conv_coher}
+\end{figure*}
+
+As displayed in Figure~\ref{fig:lexicon_example}, the language used by agents self-organizes around five distinct symbols. It is important to note that this self-organization arises from the production of continuous signals with no explicit communication of the five categories of visual referents. Other visualizations for one-hot and shared visual referents are available in \ap\ref{sup:lexicon_one_hot_shared}. We also provide illustrations of P-coherence in \ap\ref{sup:P-coherence}.
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{curves/training/Lexicon_Example.pdf}
+    \caption{\textbf{Instance of an emerging lexicon.} Utterances are produced by a pair of agents trained with unshared perspectives (1 seed). The perspective for each referent is chosen randomly.}
+    \label{fig:lexicon_example}
+\end{figure}
+
+
+\paragraph{Compositionality} 
+
+
+
+ In Section~\ref{sec:results_perf}, we showed that agents achieve a near-perfect success rate at naming compositions of one-hot features at test time. Is this successful communication reflected by a compositional structure in the produced signs? To investigate this question we propose the topographic maps associated with their topographic scores in Figure~\ref{fig:topo_maps}.
+ 
+ \begin{figure}[!h]
+    \centering
+    \tiny
+    \begin{tabular}{cc}
+    \includegraphics[width=0.3\textwidth]{curves/onehot_distance_plots/0_d=-0.401.pdf} &     \includegraphics[width=0.3\textwidth]{curves/onehot_distance_plots/9_d=0.147.pdf} \\
+    (a) ${\rho=-0.401}$  &     (b) ${\rho=0.147}$ 
+    \end{tabular}
+    \caption{\textbf{Topographic map examples for a single seed in one-hot referents setting}. Each utterance names a compositional referent and is colored in blue if it contains feature $i$ ($R[i, X]$), orange if it contains feature $j$ ($R[X, j]$), green if it contains both ($R[i, j]$), and black if it contains none ($R[X, X]$). (a) Corresponding to the worst topographic score ${\rho=-0.401}$ (combination of feature $i=2$ and $j=3$) (b) Corresponding to the best topographic score $\rho=0.147$ (combination of feature $i=0$ and $j=4$). }
+    \label{fig:topo_maps}
+\end{figure}
+ 
+  Each point in a topographic map is an utterance naming a compositional referent $r\in \mathcal{R}_5^2$ and has coordinate $(d_H(u(r_i), \cdot), d_H(u(r_j), \cdot))$. Utterances at the bottom left of the topographic maps are therefore simultaneously close to the two utterances naming the isolated features. All the topographic maps are available in Figure~\ref{fig:sup_topo_one_hot} of \ap\ref{sup:topo_maps}. They show that for a minority of compositions (3 out of 10), the utterances naming the composition of two features are not close in Haussdorf distance to the utterances naming the two isolated features ($\rho < 0$).  This indicates that proximity in Haussdorf distance is not a necessary condition for agents to generalize on compositional referents. The matrix of composition provided in figure~\ref{fig:compo_matrix} illustrate that it is indeed very difficult to infer a composition rule from the generated utterances. 
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.3\textwidth]{curves/compo_m/compo_4_main.pdf}
+\caption{\textbf{Matrix of compositions. }Blue frames represent utterances generated for a perspective in $\mathcal{R}_5^1$, other utterance denote the corresponding compositions in $\mathcal{R}_5^2$ }
+\label{fig:compo_matrix}
+\end{figure}
+
+Despite the fact that we cannot perceive the compositional structure of emerging signs, the internal representations of agents seem to leverage compositional mechanisms. The t-snes provided in Figure~\ref{fig:tsne} shows that the embeddings for both compositional referents and the utterances naming them are close to their constituents. 
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=0.48\textwidth]{curves/tsnes/descriptive/9-TSNE-R2-R01.pdf}
+    \caption{\textbf{T-sne of utterance and referent embeddings.} Embeddings are computed for 100 perspectives in the visual-unshared setting. Additional t-snes are provided in \ap\ref{sup:tsnes}.}
+    \label{fig:tsne}
+\end{figure}
+
+\paragraph{Conclusion} If the Haussdorf distance does not enable us to identify compositional rules in the production of utterances, it is particularly relevant for describing their coherence. This paper, therefore, provides the first step toward understanding the mechanisms at hand for the emergence of structure in self-organizing languages. The structural analysis we present sheds light on the importance of studying ecological systems. 
+%It is important to note that our structural analysis is only made possible by our  ecological system and its constrained utterance generation mechanism.
+Indeed, agents directly optimizing utterances in pixel space can negotiate a successful communication protocol (as indicated in table~\ref{tab:lexicon_ablation}) but the absence of structure in the resulting lexicon (illustrated in figure~\ref{fig:lexicon_ablation}) prevents us from analyzing the properties of utterances. 
+
+\begin{figure}[!h]
+\centering
+ \includegraphics[width=.65\textwidth]{curves/lexicon_ablation_dmp.jpg}
+        \captionof{figure}{\textbf{Emerging lexicon without motion primitives.} Utterances naming referents with unshared perspectives.}
+        \label{fig:lexicon_ablation}
+\end{figure}
+\begin{table}[!h]
+\centering
+        \small
+        \begin{tabular}{|l|c|c|}    
+        \hline
+        & \textbf{SR}$_{\text{train}}$ & \textbf{SR}$_{\text{test}}$\\ \hline
+        One-hot & $0.99 \pm 0.01$  & $0.96\pm0.02$  \\
+        Visual-shared & $0.99 \pm 0.01$  & $0.55\pm0.03$  \\
+        Visual-unshared & $0.99 \pm 0.01$ & $0.41 \pm 0.02$\\
+        \hline
+        \end{tabular}
+        \captionof{table}{\textbf{Training and generalization success without DMPs.} Utterances are generated in descriptive mode, and visual referents are seen from different perspectives.}
+        \label{tab:lexicon_ablation}
+\end{table}
+
+
+\section{Discussion and Future Work}
+
+In this chapter we formalized \greg: a new ecological referential game where two agents must communicate via a continuous sensory-motor system imitating a robotic arm drawing sketches. To tackle \greg, we propose \curves: a contrastive representation learning algorithm inspired by early language game contrastive implementation that scales to high dimensional signals. \curves allows a group of two agents two converge on a shared graphical language in contexts where referents are one-hot vectors or images of MNIST digits. The representations that agents learn enable them to communicate about compositional referents never encountered during training. If the Haussdorf distance illustrates that emergent signs are coherent, it does not capture compositionality among them. 
+
+Future work may leverage our ecological setup and algorithmic solution to experiment with and test a variety of hypotheses that influence structures in self-organizing sing systems. An analysis of the impact of the sensory-motor constraints on the topology of graphical signs could for instance provide valuable insight into the ecological factors facilitating the emergence of a compositional graphical language. Inspired by work on the cultural evolution of language~\citep{kirby2001spontaneous}, our setup can also serve as a basis to investigate and visualize the impact of other factors such as population dynamic or cognitive abilities of agents (with varying memory or perceptual systems). Finally, \curves is agnostic to the modality used to represent utterances. As such, it could tackle other sensory-motor systems.  The central element of \curves lies in the contrastive learning of utterance-referent associations. In our implementation, we optimize utterances by maximizing this energy via gradient ascent. Much like CLIP opened many avenues for multi-modal generation, we could plug in more complex generative strategies such as diffusion models~\cite{Rombach2021HighResolutionIS,Saharia2022PhotorealisticTD}. 
