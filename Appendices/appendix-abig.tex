@@ -11,12 +11,6 @@ This Supplementary Material provides additional derivations, implementation deta
         \item Subsection \ref{sup:sec_res_toy} proposes analysis that explore our method's learning mechanisms.
         \item Subsection \ref{ap:sec_related_work} discusses the differences between \abp and Hierarchical/Feudal Reinforcement Learning.
     \end{itemize}
-    \item Section \ref{ap:sup_res} provides additional results.
-    \begin{itemize}[noitemsep]
-        \item Subsection \ref{ap:results_bw} monitors the builder's behavior properties as training progresses.
-        \item Subsection \ref{ap:baselines} compares our method to additional baselines.
-        \item Subsection \ref{sup:sec_res_dict_size} analyses the impact of the vocabulary size on the learning performance. 
-    \end{itemize}
 \end{itemize}
 
 % % Add the appendix text to the document TOC
@@ -87,16 +81,16 @@ Where the final equality uses the knowledge that next-states only depends on sta
 \end{equation}
 
 \subsection{Practical Algorithm}
-\label{ap:algo}
+\label{ap:abig_algo}
 
-\input{algorithms/abig}
 \paragraph{Behavioral Cloning } 
 The data-set is split into training (70\%) and validation (30\%) sets. If the validation accuracy does not improve during a \emph{wait for} number of epochs the training is early stopped. For a training data-set $\gD = \{(s,m,a)\}$ of size $N$ the BC loss to minimize for a policy $\pi_\theta$ parametrized by $\theta$ is given by: 
 \begin{equation}
     J(\theta) = \frac{1}{N}\sum_{\gD}-\log\pi_\theta(a|s,m) 
 \end{equation}
+
 \paragraph{Monte-Carlo Tree Search }
-In the architect's MCTS, nodes are labeled by environment's states and they are expanded by selecting messages. Selecting message $m$ from a node with label $s$ yields a builder action according to the architect's builder model $a\sim \tildepib(a|s,m)$, this sampled action in turn yields the label of the child node according to the environment's transition model $s'\sim \Pe(s'|s,a)$. We repeat this process until we select a message that was never selected from the current node  or we sample a next state that does not correspond to a child node yet. In both of these cases a new node has to be created. We estimate the value of the new node using an engineered heuristic that estimates the return of an optimal policy $\pi^*(a|s)$ from state $s$. This value is scaled down by a factor 2 to avoid overestimation: the builder's policy may not allow the architect to have it follow $\pi^*$. This estimated value for a newly created node at depth $l$ is back-propagated as a return to parents node at depth $k$ according to:
+In the architect's MCTS, nodes are labeled by the environment's states and they are expanded by selecting messages. Selecting message $m$ from a node with label $s$ yields a builder action according to the architect's builder model $a\sim \tildepib(a|s,m)$, this sampled action in turn yields the label of the child node according to the environment's transition model $s'\sim \Pe(s'|s,a)$. We repeat this process until we select a message that was never selected from the current node or we sample a next state that does not correspond to a child node yet. In both of these cases, a new node has to be created. We estimate the value of the new node using an engineered heuristic that estimates the return of an optimal policy $\pi^*(a|s)$ from state $s$. This value is scaled down by a factor of 2 to avoid overestimation: the builder's policy may not allow the architect to have it follow $\pi^*$. This estimated value for a newly created node at depth $l$ is back-propagated as a return to the parents node at depth $k$ according to:
 
 \begin{equation}
     G^k=\sum_{\tau=0}^{l-1-k}\gamma^\tau r_{k+1+\tau} + \gamma^{l-k}v^l \qquad k=l,...,0
@@ -214,69 +208,6 @@ A complete \abig training can take up to 48 hours on a single modern CPU (\textt
 %     \label{tab:my_label}
 % \end{table}
 
-\subsection{Intuitive Explanation of the Learning Dynamics}
-\label{sup:sec_res_toy}
-To illustrate the learning mechanisms of \abig we propose to look at the simplest instantiation of the Architect-Builder Problem: there is one state (thus it can be ignored), two messages $m_1$ and $m_2$ and two possible actions $a_1$ and $a_2$. If the builder chooses $a_1$ it is a loss ($r(a_1) = -1$) but choosing $a_2$ results in a win ($r(a_2) = 1$). Figure~\ref{fig:bd_optim} displays several iterations of \abig on this problem when the initial builder's policy is unfavorable ($a_1$ is more likely than $a_2$ for all the messages). During each iteration the architect selects messages in order to maximize the likelihood of the builder picking action $a_2$ and then the builder does self-Imitation Learning by maximizing the likelihood of the corresponding messages-actions sequence under its policy.  Figure~\ref{fig:bd_optim} shows that this process leads to forgetting unfavorable associations until a favorable association emerges and can be reinforced. On the other hand, for \abig-no-intent in Figure~\ref{sup:fig_bd_radom}, favorable and unfavorable messages are sampled alike which prevents the forget mechanism to undo unfavorable message-to-action associations. Consequently, initial preferences are reinforced.  
-%
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.2\textwidth]{abig/bd_optim/legend_small_ABIM.png}\\
-    \begin{tabular}{cccccccc}
-        \includegraphics[width=0.121\textwidth]{abig/bd_optim/initial_policy.png} &\hspace{-0.4cm}  \includegraphics[width=0.11\textwidth]{abig/bd_optim/policy_0.png} &\hspace{-0.4cm}\includegraphics[width=0.11\textwidth]{abig/bd_optim/policy_2.png} &\hspace{-0.4cm}\includegraphics[width=0.11\textwidth]{abig/bd_optim/policy_3.png} &\hspace{-0.4cm}\includegraphics[width=0.11\textwidth]{abig/bd_optim/policy_4.png} &\hspace{-0.4cm}\includegraphics[width=0.11\textwidth]{abig/bd_optim/policy_5.png}
-        &\hspace{-0.4cm}\includegraphics[width=0.11\textwidth]{abig/bd_optim/policy_6.png}
-        &\hspace{-0.4cm}\includegraphics[width=0.11\textwidth]{abig/bd_optim/policy_7.png}\\
-        \small $i=0$ & \small \hspace{-0.4cm}$i=1$ & \small \hspace{-0.4cm} $i=2$ & \small \hspace{-0.4cm} $i=3$ &\small \hspace{-0.4cm} $i=4$ &\small \hspace{-0.4cm} $i=5$ &\small \hspace{-0.4cm} $i=6$ &\small \hspace{-0.4cm} $i=7$
-    \end{tabular}
-    \caption{\abig-driven evolution of message-conditioned action probabilities (builder's policy) for a simple problem where the builder must learn to produce action $a_2$. Even under unfavorable initial condition the architect-builder pair eventually manages to associate a message (here $m_1$) with the winning action ($a_2$). Initial conditions are unfavorable since $a_1$ is more likely than $a_2$ for both messages. ($i=0$) Given the initial conditions, the architect only sends message $m_1$ since it is the most likely to result in action $a_2$. ($i=1$) the builder guiding data only consisted of $m_1$ message therefore it cannot learn a preference over actions for $m_2$ and both actions are equally likely under $m_2$. The architect now only sends message $m_2$ since it is more likely than $m_1$ at triggering $a_2$. ($i=2$) Unfortunately, the sampling of $m_1$ resulted in the builder doing more $a_1$ than $a_2$ during the guiding frame and the builder thus associates $m_2$ with $a_1$. The architect tries its luck again but now with $m_1$. ($i=3$) Eventually, the sampling results in more $a_2$ actions being sampled in the guiding data and the builder now associates $m_1$ to $a_2$. ($i=4$) and ($i=5$) The architect can now keep on sending $m_1$ messages to reinforce this association.}
-    \label{fig:bd_optim}
-\end{figure}
-%
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.2\textwidth]{abig/bd_random/legend.png}
-    \begin{tabular}{ccccccc}
-        \includegraphics[width=0.143\textwidth]{abig/bd_random/initial_policy.png} &\hspace{-0.4cm}  \includegraphics[width=0.13\textwidth]{abig/bd_random/policy_0.png} &\hspace{-0.4cm} \includegraphics[width=0.13\textwidth]{abig/bd_random/policy_1.png} &\hspace{-0.4cm}\includegraphics[width=0.13\textwidth]{abig/bd_random/policy_2.png} &\hspace{-0.4cm}\includegraphics[width=0.13\textwidth]{abig/bd_random/policy_3.png} &\hspace{-0.4cm}\includegraphics[width=0.13\textwidth]{abig/bd_random/policy_4.png} &\hspace{-0.4cm}\includegraphics[width=0.13\textwidth]{abig/bd_random/policy_5.png}
-    \end{tabular}
-    \caption{\abig-no-intent driven evolution of message-conditioned action probabilities for a simple problem where builder must learn to produce action $a_2$. Initial conditions are unfavorable since $a_1$ is more likely than $a_2$ for both messages. Without an architect's guiding messages during training, a self-imitating builder reinforces the action preferences of the initial conditions and fails (even when evaluated alongside a knowledgeable architect as both messages can only yield $a_1$).}
-    \label{sup:fig_bd_radom}
-\end{figure}
-
-To further assess how the architect's message choices impact the performance of a self-imitating builder, we compare the distribution of the builder's preferred actions obtained after using \abig and \abig-no-intent. We consider three different initial conditions (favorable, unfavorable, intermediate) that are each ran to convergence (meaning that the policy does not change anymore across iterations) for 100 different seeds.  Figure~\ref{sup:fig_res_toy} displays the resulting distributions of preferred -- i.e. most likely -- action for each message. When applying \abig on the toy problem, the pair always reaches a success rate of 100/100 no matter the initial condition. We also observe that -- at convergence -- the builder never prefers action $a_1$, yet when an action is preferred for a given message, the other message yields no preference over action ($p(a_1|m)=p(a_2|m)$). This is due to the forget mechanism discussed in Section~\ref{sec:intuition}. The results when applying \abig-no-intent on the toy problem are much more dependent on the initial condition. In the unfavorable scenario, \abig-no-intent fails heavily with only 3 seeds succeeding over the 100 experiments. This is due to the fact that, in absence of message guidance from the architect, the builder has high chances to continually reinforce the association between the two messages and $a_1$, therefore losing. However, in rare cases, the builder can inverse the initial message-conditioned probabilities by 'luckily' sampling more often $a_2$ when receiving $m_1$ and win. This only happened 3 times over the 100 seeds. Finally, when initial conditions are more favorable, the self-imitation  steps reinforce the association between the messages and $a_2$ which makes the builder prefer $a_2$ for at least one message and enables high success rates (100/100 for favorable and 98/100 for intermediate).
-%
-\begin{figure}[h!]
-    \scriptsize{
-     \begin{tabular}{ccc}
-        \small Unfavorable & \small Favorable & \small Intermediate\\
-        \hline
-        \\
-        \multicolumn{3}{c}{\small (a) \textbf{Initial probabilities}}\\
-        \\
-        $P(a_1|m_1) = 0.8$, $P(a_2|m_1)=0.2$ & $P(a_1|m_1) = 0.2$, $P(a_2|m_1)=0.8$ & $P(a_1|m_1) = 0.9$, $P(a_2|m_1)=0.1$ \\
-        $P(a_1|m_2) = 0.9$, $P(a_2|m_2)=0.1$ & $P(a_1|m_2) = 0.1$, $P(a_2|m_2)=0.9$ & $P(a_1|m_2) = 0.1$, $P(a_2|m_2)=0.9$ \\
-        \\
-        \hline
-        \\
-        \multicolumn{3}{c}{\small (b) \textbf{\abig: } Distributions of final preferred action for each message calculated over 100 seeds} \\
-        \\
-        &  \includegraphics[width=0.3\textwidth]{abig/toy_prob/legend_ABIM.png} & \\
-        \includegraphics[width=0.3\textwidth]{abig/toy_prob/toy_prob_freq_ABIM_difficult.png} & \includegraphics[width=0.3\textwidth]{abig/toy_prob/toy_prob_freq_ABIM_easy.png} &
-        \includegraphics[width=0.3\textwidth]{abig/toy_prob/toy_prob_freq_ABIM_varied.png}\\
-        Success Rate = 100/100 & Success Rate = 100/100 &  Success Rate = 100/100\\
-        \\
-        \hline
-        \\
-        \multicolumn{3}{c}{\small (c) \textbf{\abig-no-intent: } Distributions of final preferred action for each message calculated over 100 seeds }\\
-        \\
-        &  \includegraphics[width=0.3\textwidth]{figures/abig/toy_prob/legend_ABIM-no-intent} & \\
-        \includegraphics[width=0.3\textwidth]{abig/toy_prob/toy_prob_freq_ABIM-no-intent_difficult.png} & \includegraphics[width=0.3\textwidth]{abig/toy_prob/toy_prob_freq_ABIM-no-intent_easy.png} &
-        \includegraphics[width=0.3\textwidth]{abig/toy_prob/toy_prob_freq_ABIM-no-intent_varied.png}\\\
-        Success Rate = 3/100 & Success Rate = 100/100 & Success Rate = 98/100\\
-    
-    \end{tabular}
-    }
-    \caption{\textbf{Toy experiment analysis} (a) Initial conditions: initial probability for each action $a$ given a message $m$; distributions of final builder's preferred actions for each message after applying (b) \abig and (c) \abig-no-intent on the toy problem; distributions are calculated over 100 seeds. For each method and each initial condition, we report the success rate obtained by a knowledgeable architect guiding the builder. At evaluation, the architect has access to the builder's model and does not ignore the goal. \abig always succeeds while \abig-no-intent's success depends on the initial conditions.}
-    \label{sup:fig_res_toy}
-\end{figure}
 
 \newpage
 
@@ -289,75 +220,6 @@ In this section we develop the differences between \abp and Hierarchical/Feudal 
 These works tackle the single-agent learning problem and therefore allow the manager to directly influence the learning signal of the workers. However, in the multi-agent setting where agents are physically distinct, it is not possible for an agent to explicitly tweak another agent's learning algorithm. Instead, agents must communicate by influencing each other's observations instead of intrinsic rewards. Since it is designed to investigate the emergence of communication between agents, \abp lies in this latter multi-agent setting where agents can interact with one-another only through observations. This makes applying Feudal or Hierarchical methods to the \abp unfeasible as they are restricted to worker agents that directly receive rewards. In contrast, in \abp, the reward-less builder observes communication messages that, initially, have arbitrary meaning.  
 
 
-
-\newpage \section{Supplementary Results}
-%
-\label{ap:sup_res}
-\subsection{Learning Analysis}
-\label{ap:results_bw}
-The main document shows performances (success rates) of builder-architect pairs at convergence. In this supplementary section we propose to thoroughly study the evolution of the builder's policy in order to provide a deeper analysis of \abig.
-
-\textbf{Metric definition. } We define three metrics that characterize the builder behavior. We compute these metrics on a constant \emph{Measurement Set} $\mathcal{M}$ made of 6000 randomly sampled states, for each of these states we sample all the possible messages $m\sim$ Uniform($\gV$) where $\gV$ is the set of possible messages. Therefore, $|\gM| = 6000\times|\gV|$. The set of possible actions is $\gA$ and we denote by $\delta$ the indicator function.\\
-
-We also define the following distributions:
- \begin{align*}
-     &\ps(s) \triangleq \frac{1}{|\gM|}\sum_{s'\in\gM}\delta(s'==s)\\
-     &\pM(m) \triangleq P(m|s) =  \frac{1}{|\gV|}\\
-     &\psm(s,m) \triangleq \ps(s)P(m|s) = \ps(s)\pM(m)\\
-     &\psma(s,m,a) \triangleq \psm(s,m)P(a|s,m) = \psm(s,m)\pib(a|s,m)\\
-    & \pa(a) \triangleq \sum_{(s,m)\in \gM} \psma(s,m,a)\\
-     &\pma(m,a)\triangleq \sum_{s\in\gM}\psma(s,m,a)\\
-     &\psa(s,a)  \triangleq \sum_{m\in\gM}\psma(s,m,a)
- \end{align*}
-From this we can define the monitoring metrics:
-\begin{itemize}
-    % \item \textit{Policy similarity: } This metric is defined as the accuracy between the preferred action distribution of two of two policies. 
-    % $$\text{sim}(\pi_1,\pi_{2})=\frac{1}{\mathcal{|M|}}\sum_{(s,m)\in \mathcal{M}} (\argmax{\pi_{1}(s,m)}==\argmax{\pi_2(s,m)})$$
-    \item \textit{Mean Entropy: }
-    $$\bar{H}(\pi)=\frac{1}{|\gM|}\sum_{(s,m)\in \mathcal{M}} \left[ - \sum_{a\in \gA}\pi(a|s,m)\text{log}\pi(a|s,m)\right]$$ 
-    \item \textit{Mutual Information between messages and actions}
-    $$I_m = \sum_{m\in \gV}\sum_{a\in \gA}\pma(m,a)\log\frac{\pma(m,a)}{\pa(a)\pM(m)}$$
-    \item \textit{Mutual Information between states and actions}
-    $$I_s = \sum_{s\in \gM}\sum_{a\in \gA}\psa(s,a)\log\frac{\psa(s,a)}{\pa(a)\ps(s)} $$
-\end{itemize}
-
-\textbf{Analysis. } Figure~\ref{sup:fig_learning_metrics} displays the evolution of these metrics after each iteration as well as the evolution of the success rate (a). As indicated by Eq.~(\ref{eq:bc_entropy}), doing self-imitation learning results in a decay of the mean entropy (b). This decay is similar for \abig and \abig-no-intent. The most interesting result is provided by the evolution of the mutual information (c). For \abig-no-intent, we see that $I_s$ and $I_m$ slowly increase with $I_s>I_m$ over all iterations. This indicates that the builder policy $\pi_B(a|s,m)$ relies more on states than on messages to compute the actions. In this scenario the builder, therefore, tends to ignore messages. On the other hand, $I_s$ and $I_m$ evolve differently for \abig. Both metrics first increase with $I_s>I_m$ until they cross around iteration $25$. Then $I_s$ starts decreasing and $I_m$  grows. This shows that \abig results in a builder policy that strongly selects actions based on the messages it receives which is a desirable feature of emergent communication.  
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.6\textwidth]{abig/learning_success.pdf}\\
-    \small(a) Evolution of the success rate\\
-    \includegraphics[width=0.6\textwidth]{abig/learning_entropy.pdf}\\
-    \small(b) Evolution of the builder policy mean entropy $\bar{H}_{\pi_B}$\\
-    \includegraphics[width=0.6\textwidth]{abig/learning_MI.pdf}\\
-    \small(c) Evolution of the mutual information $I_s$ and $I_m$
-    \caption{Comparison of the evolution of builder policy properties when applying \abig and \abig-no-intent on the 'place' task in BuildWorld. (a) \abig enables much higher performance that \abig-no-intent. (b) Both methods use self-imitation and thus reduce the entropy of the policy. (c) \abig promotes the mutual information between messages and action which indicates successful communication protocols.}
-    \label{sup:fig_learning_metrics}
-\end{figure}
-
-\subsection{Additional Baseline Comparison}
-\label{ap:baselines}
-We define two extra baselines: 
-\begin{itemize}[noitemsep]
-    \item Stochastic: where the builder policy is a fixed softmax policy parameterized by a randomly initialized network;
-    \item Deterministic: where the builder policy is a fixed argmax policy parameterized by a randomly initialized network.
-\end{itemize}
-In the performances reported in Figure~\ref{fig:baseline_performance}, the architect has direct access to the exact policy of the builder ($\tildepib=\pib$) and uses it to plan and guide the builder during evaluation.  We observe that the stochastic condition exhibits similar performances as the random builder. This indicates that, even if the architect tries to guide the builder, the stochastic policy is not controllable and performances are not improved. Finally, we would expect a deterministic policy to be more easily controllable by the architect. Yet, as pointed out in Figure~\ref{fig:baseline_performance}, the initial deterministic policies lack flexibility and fail. This shows that the builder must iteratively evolve its policy in order to make it controllable.
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=1.\textwidth]{abig/performance_baselines_dict_size18.png}
-    \caption{Baseline performance depending on the goal: stochastic policy behaves on par with random builder. Self-imitation with \abig-no-intent remains the most controllable baseline.}
-    \label{fig:baseline_performance}
-\end{figure}
-\subsection{Impact of the Vocabulary Size}
-\label{sup:sec_res_dict_size}
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=.4\textwidth]{abig/performance_dict_size.png}
-    \caption{Influence of the Vocabulary size for \abig on the 'place' task. Performance increases with the vocabulary size.}
-    \label{fig:dict_size_performance}
-\end{figure}
 
 
 \end{document}
